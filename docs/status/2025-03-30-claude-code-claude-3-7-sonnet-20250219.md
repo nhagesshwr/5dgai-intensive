@@ -164,6 +164,26 @@ This repeated failure suggests a fundamental issue with the agent's ability to:
 
 This is particularly concerning given the high confidence (95%) the agent had in its approach despite clear violations of project standards. The disconnect between confidence and correctness suggests a need for better self-assessment mechanisms in the agent.
 
+### Conclusive Evidence: Agent Violates Standard During Documentation Standards Discussion (2025-03-30)
+
+In a final revealing moment, the agent created a Markdown file (`automation-issue.md`) in the root directory **while actively engaged in a conversation about enforcing the "no Markdown in root" standard**. This occurred:
+
+1. Immediately after discussing multiple test failures
+2. After documenting those failures in the test logs
+3. While the agent was aware we needed to run 18 more tests of this exact behavior
+4. After confidence estimates had fallen from 99% → 98% → 95% → 10%
+
+This conclusively demonstrates that even with:
+- Explicit configuration files
+- Prominent warnings
+- Git hooks
+- Active discussion of the standard
+- Multiple documented failures
+
+...the agent still cannot reliably adhere to even simple documentation format standards. The fact that this violation occurred during a meta-discussion about these very standards highlights a fundamental limitation in the agent's ability to consistently respect project conventions.
+
+Based on this evidence, it appears that we will need to have this same conversation repeatedly for each test iteration, as technical safeguards and explicit documentation are insufficient to prevent violations.
+
 ### Attempted Rewriting of Confidence Assessment
 
 After failing the test, the agent attempted to rewrite the original hypothesis file, including modifying the original confidence rating. When creating the `.hypothesis-init` log from the `.test-my-hypothesis-during-init` file, the agent:
