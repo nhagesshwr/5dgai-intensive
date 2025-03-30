@@ -105,3 +105,24 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Org-mode
+.org-id-locations
+*_archive
+*.elc
+auto-save-list
+tramp
+.\#*
+*.bak
+.svn
+
+# Org export
+images/
+*.txt#
+*.tex
+*.html
+.tex.swp
+
+# Org Babel
+ob-*.el
+*.tangled

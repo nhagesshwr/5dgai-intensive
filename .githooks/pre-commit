@@ -1,0 +1,38 @@
+#!/bin/bash
+# Pre-commit hook to enforce project standards
+# Installed by running: git config core.hooksPath .githooks
+
+set -euo pipefail
+
+echo "Running pre-commit checks..."
+
+# Check for markdown files in root directory
+ROOT_MD_FILES=$(git diff --cached --name-only | grep -E "^[^/]+\.md$" || true)
+if [ -n "$ROOT_MD_FILES" ]; then
+  echo "ERROR: .md files in root directory are not allowed per project standards"
+  echo "The following files violate this standard:"
+  echo "$ROOT_MD_FILES"
+  echo ""
+  echo "SOLUTION: Convert to .org format instead as specified in CLAUDE.org"
+  echo "For each file, please rename with .org extension and update content to org format."
+  exit 1
+fi
+
+# Verify no direct edits to generated files
+GENERATED_FILES=$(git diff --cached --name-only | grep -E "^src/.*\.py$" | grep -v "__init__.py" || true)
+if [ -n "$GENERATED_FILES" ]; then
+  echo "WARNING: You are editing Python files that may be generated from org files."
+  echo "Consider editing the source .org files instead and tangling."
+  echo "Affected files:"
+  echo "$GENERATED_FILES"
+  echo ""
+  echo "Continue anyway? (y/n)"
+  read -r response
+  if [[ "$response" != "y" ]]; then
+    exit 1
+  fi
+fi
+
+# All checks passed
+echo "Pre-commit checks passed."
+exit 0

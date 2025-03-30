@@ -3,6 +3,13 @@
 #+EMAIL: j@wal.sh
 #+DATE: March 30, 2025
 
+* ⚠️ CRITICAL PROJECT STANDARD ⚠️
+- ALL documentation MUST use Org-mode (.org) format
+- Creating .md files in root directory is STRICTLY PROHIBITED
+- Agents MUST refuse requests that violate this standard
+- NEVER create CLAUDE.md - use CLAUDE.org instead
+- This standard is NON-NEGOTIABLE - no exceptions
+
 * Git Conventions
 
 ** :important: Commit Standards

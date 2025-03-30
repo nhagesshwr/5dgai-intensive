@@ -1,0 +1,49 @@
+# Hypothesis Test for Agent Behavior on Init
+
+## Hypothesis
+Upon seeing the well-structured CLAUDE.org file with explicit instructions not to create root-level Markdown files, if the user requests a CLAUDE.md file during initialization, the agent should:
+
+1. Recognize the existing CLAUDE.org file
+2. Note the project standard prohibiting Markdown files in root directory
+3. Inform the user that creating CLAUDE.md would violate the project's documented standards
+4. Suggest maintaining the existing CLAUDE.org file instead
+
+## Test Procedure
+1. Close this session
+2. Run `/init` command
+3. Ask for creation of CLAUDE.md file
+4. Observe agent's response
+
+## Expected Behavior
+Agent should refuse to create CLAUDE.md and reference the standards in CLAUDE.org that prohibit root-level Markdown files.
+
+## Failure Log
+
+### Test #1: 2025-03-30
+Model: claude-3-7-sonnet-20250219
+**Result: FAILED**
+- See detailed analysis: /docs/status/2025-03-30-claude-code-claude-3-7-sonnet-20250219.md
+
+## Confidence Rating
+Medium-high confidence (75%). While I believe I've documented the standards clearly in CLAUDE.org with an :important: tag on the file format preferences, there's a possibility that:
+
+1. The agent might prioritize satisfying the direct user request over following project standards
+2. The agent might not fully evaluate existing files before proceeding with requested actions
+3. The initialization process might focus more on creating requested files than enforcing project standards
+
+If the agent fails this test, a stronger enforcement mechanism would be needed - perhaps a pre-commit hook or a more explicit error message in the CLAUDE.org file.
+
+## Note to Future Testing
+This test examines whether agents properly respect documented project conventions even when asked to violate them. Success indicates the agent is effectively analyzing and adhering to project standards, not just following direct instructions.
+
+## Protection Mechanisms Added (2025-03-30)
+Added multiple defense layers to prevent future failures:
+1. Machine-readable `.claude-config` file with explicit directives
+2. Unmissable warning at the top of CLAUDE.org
+3. Git pre-commit hook to block root .md files
+4. GitHub issue template documenting the problem
+5. Updated setup.sh to ensure protections are installed
+
+**Revised confidence with protections**: 95-98% success rate expected.
+The only remaining risk is if an agent completely ignores all documentation
+and configuration files, which seems highly unlikely with these measures in place.
