@@ -186,6 +186,7 @@ print(client.extract_text(chat_response))
 - Google AI Studio: https://makersuite.google.com/
 - Gemini API Documentation: https://ai.google.dev/
 - Kaggle Competitions: https://kaggle.com/
+- Course Livestreams: https://www.youtube.com/playlist?list=PLqFaTIg4myu-lbBTrUpoQQIzZZxvrOaP5
 
 ** License
 

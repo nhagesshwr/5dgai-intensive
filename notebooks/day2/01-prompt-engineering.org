@@ -9,6 +9,16 @@
 :VISIBILITY: all
 :END:
 
+** Day 2 Resources
+
+Key resources for Day 2 of the 5-Day Gen AI Intensive course:
+
+- Prompt Engineering: https://www.kaggle.com/whitepaper-prompt-engineering
+- Kaggle Codelabs:
+  - Prompting Fundamentals
+  - Evaluation and Structured Data
+- Course Livestreams: https://www.youtube.com/playlist?list=PLqFaTIg4myu-lbBTrUpoQQIzZZxvrOaP5
+
 ** What Makes a Good Prompt?
 
 Effective prompts for generative AI models consider several key factors:

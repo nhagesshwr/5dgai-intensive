@@ -11,6 +11,14 @@
 :VISIBILITY: all
 :END:
 
+** Day 1 Resources
+
+Key resources for Day 1 of the 5-Day Gen AI Intensive course:
+
+- Foundational LLM and Text Generation: https://www.kaggle.com/whitepaper-foundational-llm-and-text-generation
+- Prompt Engineering: https://www.kaggle.com/whitepaper-prompt-engineering
+- Course Livestreams: https://www.youtube.com/playlist?list=PLqFaTIg4myu-lbBTrUpoQQIzZZxvrOaP5
+
 ** What is Generative AI?
 
 Generative AI refers to artificial intelligence systems capable of generating new content - including text, images, code, and other media - that resembles human-created content.
