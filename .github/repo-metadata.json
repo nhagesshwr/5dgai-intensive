@@ -1,0 +1,28 @@
+{
+  "name": "5dgai-intensive",
+  "description": "Resources, utilities, and implementations for Google's 5-Day Generative AI Intensive course, featuring Gemini API integrations",
+  "homepage": "",
+  "private": false,
+  "has_issues": true,
+  "has_projects": true,
+  "has_wiki": true,
+  "has_downloads": true,
+  "is_template": false,
+  "default_branch": "main",
+  "allow_squash_merge": true,
+  "allow_merge_commit": true,
+  "allow_rebase_merge": true,
+  "delete_branch_on_merge": true,
+  "topics": [
+    "generative-ai",
+    "gemini-api",
+    "google-ai",
+    "machine-learning",
+    "python",
+    "jupyter-notebook",
+    "ai-education",
+    "llm",
+    "docker",
+    "poetry"
+  ]
+}

@@ -1,0 +1,57 @@
+# Test Google AI Gemini API
+# Replace YOUR_API_KEY with your actual API key or use environment variable
+
+# Variables
+:base_url = https://generativelanguage.googleapis.com/v1beta
+:model = gemini-2.0-flash
+
+### Basic content generation
+POST :base_url/models/:model:generateContent?key={{AI_STUDIO_API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [{
+    "parts":[{"text": "Explain how AI works"}]
+  }]
+}
+
+### Generate content with system instruction
+POST :base_url/models/:model:generateContent?key={{AI_STUDIO_API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "role": "user",
+      "parts": [{"text": "Write a haiku about machine learning"}]
+    }
+  ],
+  "systemInstruction": {
+    "parts": [
+      {
+        "text": "You are a creative writing assistant that specializes in haiku poetry."
+      }
+    ]
+  }
+}
+
+### Multi-turn conversation
+POST :base_url/models/:model:generateContent?key={{AI_STUDIO_API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "role": "user",
+      "parts": [{"text": "What are good resources for learning about neural networks?"}]
+    },
+    {
+      "role": "model",
+      "parts": [{"text": "There are many excellent resources for learning about neural networks! Here are some I recommend:\n\n1. **Books**:\n   - \"Deep Learning\" by Ian Goodfellow, Yoshua Bengio, and Aaron Courville\n   - \"Neural Networks and Deep Learning\" by Michael Nielsen (free online)\n   - \"Grokking Deep Learning\" by Andrew Trask\n\n2. **Online Courses**:\n   - Andrew Ng's Deep Learning Specialization on Coursera\n   - Fast.ai's Practical Deep Learning for Coders\n   - Stanford's CS231n (Convolutional Neural Networks)\n\n3. **Tutorials and Blogs**:\n   - TensorFlow and PyTorch tutorials\n   - Distill.pub for visualizations and explanations\n   - Towards Data Science articles on Medium\n\n4. **Videos**:\n   - 3Blue1Brown's neural network series on YouTube\n   - Lex Fridman's deep learning lectures from MIT\n\nIs there any specific aspect of neural networks you're interested in?"}]
+    },
+    {
+      "role": "user",
+      "parts": [{"text": "I'm specifically interested in computer vision applications"}]
+    }
+  ]
+}

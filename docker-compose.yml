@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  notebook:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python -m src.api
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+    env_file:
+      - .env
+    depends_on:
+      - notebook
+
+  org-emacs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: emacs -Q --daemon
+    volumes:
+      - .:/app
+      - ./init.el:/root/.emacs.d/init.el
+    environment:
+      - PYTHONPATH=/app
+    env_file:
+      - .env
