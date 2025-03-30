@@ -5,6 +5,9 @@
 
 * 5-Day Gen AI Intensive Course
 
+#+ATTR_HTML: :width 100% :alt 5-Day Generative AI Intensive Banner
+[[file:images/wip/splash/horizontal-banner-timeline.jpeg]]
+
 #+begin_html
 <p>
   <a href="https://python.org"><img src="https://img.shields.io/badge/python-3.11-blue.svg" alt="Python Version"></a>
@@ -138,7 +141,10 @@ print(client.extract_text(chat_response))
 
 ** Course Resources
 
-- Official Course Slides: See ~resources/~ directory
+#+ATTR_HTML: :width 100% :alt Generative AI Course Resources
+[[file:images/banner-subtle.jpg]]
+
+- Official Course Slides: See ~resources/~ directory  
 - Google AI Studio: https://makersuite.google.com/
 - Gemini API Documentation: https://ai.google.dev/
 - Kaggle Competitions: https://kaggle.com/
