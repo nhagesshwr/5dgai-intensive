@@ -27,6 +27,7 @@ ENV/
 .env
 .venv
 .envrc
+.envrc.el
 
 # Poetry
 poetry.lock

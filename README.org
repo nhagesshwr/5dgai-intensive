@@ -24,6 +24,11 @@ Welcome to the Google's 5-Day Generative AI Intensive course companion repositor
 - 📝 Keep your notes organized by course day
 - 🔍 Explore bonus examples beyond what's covered in the course
 
+*Note*: While the official course uses Python and Jupyter Notebooks, this repository 
+takes a different approach using *Hy* (a Lisp dialect that runs on Python) and *Org-mode* 
+for literate programming. The core functionality and concepts remain the same, but with 
+the elegance of Lisp syntax and the power of Org-mode's tangling capabilities.
+
 * What You'll Learn in the Course
 
 - *Day 1*: Foundations of Generative AI and Gemini models
