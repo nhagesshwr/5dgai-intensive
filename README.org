@@ -1,0 +1,209 @@
+#+TITLE: 5D-GAI Intensive
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+#+PROPERTY: header-args :mkdirp yes
+
+* Overview
+
+Resources, utilities, and implementations for Google's 5-Day Generative AI Intensive course.
+
+#+begin_html
+<p>
+  <a href="https://python.org"><img src="https://img.shields.io/badge/python-3.11-blue.svg" alt="Python Version"></a>
+  <a href="https://python-poetry.org/"><img src="https://img.shields.io/badge/poetry-managed-blueviolet" alt="Poetry"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+</p>
+#+end_html
+
+* About
+
+This repository contains materials and implementations related to Google's 5-Day Generative AI Intensive course, focused on working with Google's Gemini models and other generative AI tools. It includes:
+
+- 🤖 Gemini API client implementations
+- 📊 Jupyter notebooks for daily exercises
+- 🔧 Utility functions for AI model interaction
+- 🐳 Dockerized development environment
+- 📚 References and resources for the course
+
+* Features
+
+- *Gemini API Client*: Clean Python interface to Google's Gemini API
+- *Environment Management*: Poetry-based dependency management
+- *Dockerized Setup*: Containerized environment for consistent development
+- *Structured Layout*: Organized directories for notebooks, source code, and resources
+- *Jupyter Integration*: Ready-to-use Jupyter environment for experimentation
+
+* Project Structure
+:PROPERTIES:
+:header-args: :tangle project_structure.org :mkdirp yes
+:END:
+
+#+begin_src plantuml :file images/project_structure.png
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title 5-Day Gen AI Intensive - Project Structure
+
+Enterprise_Boundary(b0, "5-Day Gen AI Intensive") {
+  System(notebooks, "Notebooks", "Jupyter notebooks for daily exercises")
+  System(papers, "Papers", "Research papers and references")
+  System(src, "Source Code", "Python modules and utilities")
+  System(api, "API", "API service for model endpoints")
+  System(config, "Config", "Configuration files and templates")
+  System(podcasts, "Podcasts", "Audio content and notes")
+  
+  Boundary(infra, "Infrastructure") {
+    System_Ext(docker, "Docker", "Containerized environment")
+    System_Ext(poetry, "Poetry", "Python dependency management")
+  }
+  
+  Boundary(resources, "Resources") {
+    System_Ext(kaggle, "Kaggle", "Competition platform")
+    System_Ext(aiStudio, "Google AI Studio", "Model APIs")
+    System_Ext(discord, "Discord", "Community discussions")
+  }
+  
+  BiRel(notebooks, src, "Uses")
+  Rel(notebooks, papers, "References")
+  Rel(src, api, "Implements")
+  Rel(src, config, "Uses configuration from")
+  Rel(infra, notebooks, "Hosts")
+  Rel(infra, api, "Runs")
+  Rel(notebooks, resources, "Connects to")
+  Rel(api, resources, "Integrates with")
+  Rel(podcasts, notebooks, "Provides content for")
+}
+@enduml
+#+end_src
+
+#+CAPTION: Project Structure Diagram
+#+ATTR_HTML: :width 800px
+[[file:images/project_structure.png]]
+
+Directory structure:
+
+#+begin_src
+5dgai-intensive/
+├── api/              # API endpoint definitions
+├── config/           # Configuration templates
+├── notebooks/        # Jupyter notebooks for exercises
+│   └── day1/         # Organized by course day
+├── papers/           # Research papers and references
+├── resources/        # Additional resources
+├── src/              # Source code
+│   └── gemini_client.py  # Gemini API client
+├── docker-compose.yml    # Docker configuration
+├── pyproject.toml        # Python project configuration
+└── README.org            # This file
+#+end_src
+
+* Setup
+** Prerequisites
+
+- Python 3.11+
+- Poetry (recommended) or pip
+- Docker (optional)
+
+** Installation
+:PROPERTIES:
+:header-args: :tangle setup.sh :shebang "#!/bin/bash"
+:END:
+
+Clone the repository:
+
+#+begin_src sh
+git clone https://github.com/aygp-dr/5dgai-intensive.git
+cd 5dgai-intensive
+#+end_src
+
+Install dependencies:
+
+#+begin_src sh
+# Install dependencies using Poetry
+poetry install
+#+end_src
+
+Set up environment variables:
+
+#+begin_src sh
+# Copy environment template
+cp config/.envrc.template .env
+# Edit .env to add your API keys
+#+end_src
+
+Activate environment:
+
+#+begin_src sh
+# Activate Poetry shell
+poetry shell
+#+end_src
+
+** Docker Setup
+
+Alternatively, use Docker:
+
+#+begin_src sh
+# Run Jupyter notebook server
+docker-compose up notebook
+#+end_src
+
+Then access Jupyter at http://localhost:8888
+
+* Usage
+:PROPERTIES:
+:header-args: :tangle examples/basic_usage.py
+:END:
+
+#+begin_src python
+from src.gemini_client import GeminiClient
+
+# Initialize client with API key
+client = GeminiClient()
+
+# Generate content
+response = client.generate_content("Explain generative AI in one paragraph.")
+print(client.extract_text(response))
+#+end_src
+
+* Development
+:PROPERTIES:
+:header-args: :tangle CONTRIBUTING.org
+:END:
+
+** Git Conventions
+
+- *Commits*: Use Conventional Commits format: ~<type>(<scope>): <description>~
+- *Types*: feat, fix, docs, style, refactor, test, chore
+- *Example*: ~feat(api): add Gemini client implementation~
+- *Attribution*: ALWAYS use ~--trailer~ flag for attribution, NOT inline in the message
+  #+begin_src bash
+  git commit -m "feat(client): add support for system instructions" \
+    --trailer "Co-authored-by: Claude <claude@anthropic.com>" \
+    --trailer "Signed-off-by: jwalsh <j@wal.sh>" \
+    --trailer "LLM-version: 3.7"
+  #+end_src
+
+** Code Style Guidelines
+
+- *Python*: Type annotations required for all functions
+- *Formatting*: Google-style docstrings with Args/Returns sections
+- *Imports*: Group in order: stdlib → third-party → local modules
+- *Error Handling*: Use try/except with specific exceptions
+- *Naming*: snake_case for variables/functions, PascalCase for classes
+- *Environment*: Use dotenv for loading environment variables
+- *API Keys*: Never hardcode - use environment variables
+- *Models*: Default to gemini-2.0-flash unless specified
+- *Testing*: Create test file with same name in tests/ directory
+
+** Docker Usage
+
+- Build environment: ~docker-compose build~
+- Run notebooks: ~docker-compose up notebook~
+- Run API service: ~docker-compose up api~
+- Access Jupyter: http://localhost:8888
+
+* License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

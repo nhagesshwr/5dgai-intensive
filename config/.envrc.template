@@ -1,0 +1,13 @@
+# API Keys
+AI_STUDIO_API_KEY=""
+KAGGLE_USERNAME=""
+KAGGLE_KEY=""
+OPENAI_API_KEY=""
+ANTHROPIC_API_KEY=""
+
+# Google Cloud (optional)
+GOOGLE_CLOUD_PROJECT=""
+COMPUTE_REGION="us-central1"
+
+# Pythonpath for project
+export PYTHONPATH="$PYTHONPATH:$(pwd)"

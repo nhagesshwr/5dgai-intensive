@@ -1,0 +1,217 @@
+#+TITLE: 5D-GAI Intensive Development Guide
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+
+* Development Guide
+:PROPERTIES:
+:VISIBILITY: all
+:END:
+
+** :important: Git Conventions
+:PROPERTIES:
+:CUSTOM_ID: git-conventions
+:END:
+
+- *Commits*: Use Conventional Commits format: ~<type>(<scope>): <description>~
+- *Types*: feat, fix, docs, style, refactor, test, chore
+- *Example*: ~feat(api): add Gemini client implementation~
+- *Attribution*: ALWAYS use ~--trailer~ flag for attribution, NOT inline in the message
+  #+begin_src bash
+  git commit -m "feat(client): add support for system instructions" \
+    --trailer "Co-authored-by: Claude <claude@anthropic.com>" \
+    --trailer "Signed-off-by: jwalsh <j@wal.sh>" \
+    --trailer "LLM-version: 3.7"
+  #+end_src
+
+** Build & Test Commands
+:PROPERTIES:
+:CUSTOM_ID: build-test
+:END:
+
+We use a Makefile to simplify common tasks. Run =make= without arguments to see available commands.
+
+#+begin_src bash
+# Show available commands
+make
+
+# Setup the environment
+make setup
+
+# Start development shell
+make dev
+
+# Run tests
+make test
+
+# Test API connectivity
+make api-test
+#+end_src
+
+Additional commands:
+
+- Setup environment: ~poetry install~ and ~poetry shell~
+- Run Python scripts: ~python src/script_name.py~
+- Run Jupyter: ~jupyter notebook~ or ~jupyter lab~
+- Import module: ~from src.gemini_client import GeminiClient~
+- Environment setup: ~source .env~ (create from config/.envrc.template)
+
+** Code Style Guidelines
+:PROPERTIES:
+:CUSTOM_ID: code-style
+:END:
+
+*** Python Coding Standards
+:PROPERTIES:
+:header-args: :tangle .style.yapf
+:END:
+
+#+begin_src ini
+[style]
+based_on_style = google
+indent_width = 4
+column_limit = 100
+#+end_src
+
+*** Type Annotations
+
+All functions must have proper type annotations:
+
+#+begin_src python
+from typing import Dict, List, Any, Optional
+
+def process_data(input_data: List[Dict[str, Any]], limit: Optional[int] = None) -> Dict[str, Any]:
+    """Process the input data and return results.
+    
+    Args:
+        input_data: List of data dictionaries to process
+        limit: Optional limit on number of results
+        
+    Returns:
+        Dictionary containing processed results
+    """
+    # Implementation
+    pass
+#+end_src
+
+*** Docstrings
+
+Use Google-style docstrings with Args/Returns sections:
+
+#+begin_src python
+def calculate_score(values: List[float], weights: Optional[List[float]] = None) -> float:
+    """Calculate weighted score from provided values.
+    
+    Args:
+        values: List of float values to score
+        weights: Optional weights to apply (defaults to equal weighting)
+        
+    Returns:
+        Float representing the calculated score
+        
+    Raises:
+        ValueError: If values is empty or weights length doesn't match values
+    """
+    # Implementation
+    pass
+#+end_src
+
+*** Imports
+
+Group imports in the following order, with a blank line between groups:
+
+#+begin_src python
+# Standard library
+import os
+import json
+from typing import Dict, List, Any
+
+# Third-party libraries
+import numpy as np
+import requests
+from dotenv import load_dotenv
+
+# Local modules
+from src.utils import format_response
+from src.constants import API_TIMEOUT
+#+end_src
+
+*** Error Handling
+
+Use specific exceptions and proper context managers:
+
+#+begin_src python
+try:
+    response = requests.get(url, timeout=5)
+    response.raise_for_status()
+    return response.json()
+except requests.exceptions.HTTPError as err:
+    logger.error(f"HTTP error: {err}")
+    raise
+except requests.exceptions.ConnectionError:
+    logger.error(f"Connection error for URL: {url}")
+    raise
+except requests.exceptions.Timeout:
+    logger.error("Request timed out")
+    raise
+except requests.exceptions.RequestException as err:
+    logger.error(f"Unexpected error: {err}")
+    raise
+#+end_src
+
+*** Naming Conventions
+
+- Variables and functions: ~snake_case~
+- Classes: ~PascalCase~
+- Constants: ~UPPER_CASE~
+- Private methods/variables: ~_leading_underscore~
+
+** Docker Usage
+:PROPERTIES:
+:CUSTOM_ID: docker
+:END:
+
+*** Building and Running
+:PROPERTIES:
+:header-args: :tangle docker-scripts/run.sh :shebang "#!/bin/bash"
+:END:
+
+#+begin_src bash
+# Build all containers
+docker-compose build
+
+# Run Jupyter notebook server
+docker-compose up notebook
+
+# Run API service
+docker-compose up api
+
+# Run both services
+docker-compose up
+#+end_src
+
+** Data Management
+:PROPERTIES:
+:CUSTOM_ID: data
+:END:
+
+*** Environment Variables
+:PROPERTIES:
+:header-args: :tangle config/.envrc.template
+:END:
+
+#+begin_src bash
+# API Keys
+AI_STUDIO_API_KEY=""
+KAGGLE_USERNAME=""
+KAGGLE_KEY=""
+OPENAI_API_KEY=""
+ANTHROPIC_API_KEY=""
+
+# Google Cloud (optional)
+GOOGLE_CLOUD_PROJECT=""
+COMPUTE_REGION="us-central1"
+
+# Pythonpath for project
+export PYTHONPATH="$PYTHONPATH:$(pwd)"
+#+end_src

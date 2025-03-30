@@ -1,0 +1,110 @@
+#+TITLE: 5-Day Gen AI Intensive Setup Tasks
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+#+TODO: TODO IN-PROGRESS | DONE CANCELED
+
+* Account Setup Tasks [1/4]
+:PROPERTIES:
+:COOKIE_DATA: todo recursive
+:END:
+
+** IN-PROGRESS Kaggle Setup [1/5]
+:PROPERTIES:
+:EFFORT: 0:30
+:END:
+
+1. [X] Create Kaggle account at https://kaggle.com
+2. [ ] Verify phone number in account settings
+3. [ ] Generate API token for programmatic access:
+   - Go to Account > API > Create New API Token
+   - Save kaggle.json file to ~/.kaggle/ directory
+   - Set permissions: ~chmod 600 ~/.kaggle/kaggle.json~
+4. [ ] Join the 5-Day Gen AI Intensive competition page
+5. [ ] Verify you can access course notebooks and resources
+
+** IN-PROGRESS Google AI Studio Setup [0/4]
+:PROPERTIES:
+:EFFORT: 0:30
+:END:
+
+1. [ ] Create AI Studio account at https://aistudio.google.com
+2. [ ] Set up API access:
+   - Go to API Keys > Create API Key
+   - Copy key to secure location
+   - Add to .env or .envrc file
+3. [ ] Try running a sample prompt in the interface
+4. [ ] Verify API access using the gemini.http REST client file
+
+** TODO Discord Integration [0/3]
+:PROPERTIES:
+:EFFORT: 0:15
+:END:
+
+1. [ ] Join Kaggle Discord server
+2. [ ] Link Kaggle account to Discord 
+3. [ ] Introduce yourself in the #5dgai-introductions channel
+
+** TODO Environment Setup [0/4]
+:PROPERTIES:
+:EFFORT: 0:45
+:END:
+
+1. [ ] Install Python 3.11+
+2. [ ] Install Poetry 
+3. [ ] Clone repository and install dependencies
+4. [ ] Configure environment variables
+
+* Course Tasks [0/5]
+
+** TODO Day 1 Preparation
+SCHEDULED: <2025-03-31 Mon 09:00>
+:PROPERTIES:
+:EFFORT: 2:00
+:END:
+
+1. [ ] Review welcome materials
+2. [ ] Set up Jupyter environment
+3. [ ] Complete introductory notebooks
+4. [ ] Prepare questions for first session
+
+** TODO Day 2 Preparation
+SCHEDULED: <2025-04-01 Tue 09:00>
+:PROPERTIES:
+:EFFORT: 2:00
+:END:
+
+** TODO Day 3 Preparation
+SCHEDULED: <2025-04-02 Wed 09:00>
+:PROPERTIES:
+:EFFORT: 2:00
+:END:
+
+** TODO Day 4 Preparation
+SCHEDULED: <2025-04-03 Thu 09:00>
+:PROPERTIES:
+:EFFORT: 2:00
+:END:
+
+** TODO Day 5 Preparation
+SCHEDULED: <2025-04-04 Fri 09:00>
+:PROPERTIES:
+:EFFORT: 2:00
+:END:
+
+* Project Ideas [0/3]
+
+** TODO Experiment with Fine-tuning
+:PROPERTIES:
+:EFFORT: 4:00
+:END:
+
+** TODO Build Interactive Demo
+:PROPERTIES:
+:EFFORT: 6:00
+:END:
+
+** TODO Research Integration Options
+:PROPERTIES:
+:EFFORT: 3:00
+:END:

@@ -1,0 +1,66 @@
+#+TITLE: Project Structure
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+
+* Project Structure
+
+#+begin_src plantuml :file images/project_structure.png
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title 5-Day Gen AI Intensive - Project Structure
+
+Enterprise_Boundary(b0, "5-Day Gen AI Intensive") {
+  System(notebooks, "Notebooks", "Jupyter notebooks for daily exercises")
+  System(papers, "Papers", "Research papers and references")
+  System(src, "Source Code", "Python modules and utilities")
+  System(api, "API", "API service for model endpoints")
+  System(config, "Config", "Configuration files and templates")
+  System(podcasts, "Podcasts", "Audio content and notes")
+  
+  Boundary(infra, "Infrastructure") {
+    System_Ext(docker, "Docker", "Containerized environment")
+    System_Ext(poetry, "Poetry", "Python dependency management")
+  }
+  
+  Boundary(resources, "Resources") {
+    System_Ext(kaggle, "Kaggle", "Competition platform")
+    System_Ext(aiStudio, "Google AI Studio", "Model APIs")
+    System_Ext(discord, "Discord", "Community discussions")
+  }
+  
+  BiRel(notebooks, src, "Uses")
+  Rel(notebooks, papers, "References")
+  Rel(src, api, "Implements")
+  Rel(src, config, "Uses configuration from")
+  Rel(infra, notebooks, "Hosts")
+  Rel(infra, api, "Runs")
+  Rel(notebooks, resources, "Connects to")
+  Rel(api, resources, "Integrates with")
+  Rel(podcasts, notebooks, "Provides content for")
+}
+@enduml
+#+end_src
+
+#+CAPTION: Project Structure Diagram
+#+ATTR_HTML: :width 800px
+[[file:images/project_structure.png]]
+
+Directory structure:
+
+#+begin_src
+5dgai-intensive/
+├── api/              # API endpoint definitions
+├── config/           # Configuration templates
+├── notebooks/        # Jupyter notebooks for exercises
+│   └── day1/         # Organized by course day
+├── papers/           # Research papers and references
+├── resources/        # Additional resources
+├── src/              # Source code
+│   └── gemini_client.py  # Gemini API client
+├── docker-compose.yml    # Docker configuration
+├── pyproject.toml        # Python project configuration
+└── README.org            # This file
+#+end_src

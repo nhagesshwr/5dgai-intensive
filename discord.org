@@ -1,0 +1,108 @@
+#+TITLE: Discord Server for 5-Day Gen AI Intensive
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+
+* Discord Server Information
+:PROPERTIES:
+:CUSTOM_ID: server-info
+:END:
+
+The course uses Discord for communication, questions, and community interaction.
+
+** Server Details
+
+| *Server Name* | Kaggle                                      |
+| *Link*        | https://discord.com/channels/1101210829807956100/ |
+| *Status*      | Successfully joined and completed onboarding |
+
+** Important Channels
+
+| Channel                | Purpose                                  |
+|------------------------+-----------------------------------------|
+| #5dgai-announcements   | Official course announcements and updates |
+| #5dgai-introductions   | Introduce yourself to other participants |
+| #5dgai-question-forum  | Ask questions about course content       |
+| #5dgai-general-chat    | General discussion about the course      |
+
+* Best Practices
+:PROPERTIES:
+:CUSTOM_ID: best-practices
+:END:
+
+** Effective Participation
+:PROPERTIES:
+:header-args: :tangle examples/discord_introduction.txt
+:END:
+
+#+begin_src text
+Hello everyone! 👋
+
+I'm Jason, joining from Boston. My background is in software engineering with 5+ years of experience building web applications and APIs.
+
+I've done some preliminary work with LLMs and fine-tuning, but I'm excited to dive deeper into generative AI and specifically how to effectively use Google's Gemini models for practical applications.
+
+I'm particularly interested in:
+- Prompt engineering techniques
+- Fine-tuning for domain-specific tasks
+- Building reliable systems with LLMs
+
+Looking forward to learning with all of you over the next 5 days!
+#+end_src
+
+** Engagement Tips
+
+1. *Set up notifications*: Configure your notification settings to ensure you don't miss important announcements
+2. *Search before asking*: Use Discord's search functionality to see if your question has already been answered
+3. *Use threads*: For longer discussions, create threads to keep the channels organized
+4. *Share your work*: Consider sharing your progress in appropriate channels
+5. *Be respectful*: Follow community guidelines and be respectful to other participants
+
+** Introduction Format
+
+When introducing yourself in the #5dgai-introductions channel, consider including:
+
+- Your name
+- Your background (technical/non-technical)
+- Your experience with AI/ML
+- What you hope to learn from the course
+- Any specific areas of interest in Gen AI
+
+* Discord Commands
+:PROPERTIES:
+:CUSTOM_ID: commands
+:END:
+
+#+begin_src
+/search [term]  # Search for messages containing specific terms
+/thread         # Create a new thread from a message
+/giphy          # Add GIFs to your messages
+/poll           # Create a simple poll
+#+end_src
+
+* Discord-Kaggle Account Linking
+:PROPERTIES:
+:CUSTOM_ID: account-linking
+:END:
+
+To fully participate in all Kaggle Discord channels, your Kaggle account needs to be linked to Discord:
+
+1. Visit: https://kaggle.com/discord/confirmation
+2. Review the permissions:
+   - Discord will be able to access:
+     - Your Kaggle username and display name
+     - Your progression tier
+     - Your signup date
+   - Discord will NOT have access to your Kaggle password
+   - You can revoke access anytime in Kaggle Account Settings
+3. Click "Link your account to Discord"
+4. Verify the connection by checking access to additional Discord channels
+
+#+begin_note
+This step can only be completed after your Kaggle phone verification is successful, as the account linking requires a verified Kaggle account.
+#+end_note
+
+Benefits of linking:
+- Access to all channels in the Kaggle Discord server
+- Ability to participate in community discussions beyond the course-specific channels
+- Your Kaggle achievements/progression will be visible in Discord

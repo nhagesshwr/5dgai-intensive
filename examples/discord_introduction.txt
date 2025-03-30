@@ -1,0 +1,12 @@
+Hello everyone! 👋
+
+I'm Jason, joining from Boston. My background is in software engineering with 5+ years of experience building web applications and APIs.
+
+I've done some preliminary work with LLMs and fine-tuning, but I'm excited to dive deeper into generative AI and specifically how to effectively use Google's Gemini models for practical applications.
+
+I'm particularly interested in:
+- Prompt engineering techniques
+- Fine-tuning for domain-specific tasks
+- Building reliable systems with LLMs
+
+Looking forward to learning with all of you over the next 5 days!
