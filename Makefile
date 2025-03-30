@@ -116,6 +116,12 @@ check-tools:
 lint: lint-py lint-sh lint-org lint-el
 	@echo "${GREEN}All linting complete!${RESET}"
 
+# Run all linters using the lint-all.sh script
+lint-all:
+	@echo "${BLUE}Running comprehensive linting with lint-all.sh...${RESET}"
+	@./scripts/lint-all.sh
+	@echo "${GREEN}Comprehensive linting complete!${RESET}"
+
 # Lint Python files
 lint-py:
 	@echo "${BLUE}Linting Python files...${RESET}"
