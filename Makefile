@@ -1,7 +1,7 @@
 # 5D-GAI Intensive Course - Makefile
 # Helper commands for project management
 
-.PHONY: help setup dev clean lint test api-test docker docker-jupyter docker-api
+.PHONY: help setup dev clean lint lint-py lint-sh lint-org lint-el format format-py format-sh test api-test docker docker-jupyter docker-api tangle tangle-all install-dev-tools
 
 # Colors for terminal output
 GREEN  := $(shell tput -Txterm setaf 2)
@@ -21,12 +21,26 @@ help:
 	@echo "  ${GREEN}setup${RESET}          Setup Python environment with Poetry"
 	@echo "  ${GREEN}dev${RESET}            Start Poetry shell for development"
 	@echo "  ${GREEN}clean${RESET}          Remove build artifacts and cache files"
-	@echo "  ${GREEN}lint${RESET}           Run code linting"
+	@echo "  ${YELLOW}Linting & Formatting:${RESET}"
+	@echo "  ${GREEN}lint${RESET}           Run all linters (Python, Shell, Org, Elisp)"
+	@echo "  ${GREEN}lint-py${RESET}        Lint Python files"
+	@echo "  ${GREEN}lint-sh${RESET}        Lint shell scripts"
+	@echo "  ${GREEN}lint-org${RESET}       Lint Org mode files"
+	@echo "  ${GREEN}lint-el${RESET}        Lint Emacs Lisp files"
+	@echo "  ${GREEN}format${RESET}         Format all code files"
+	@echo "  ${GREEN}format-py${RESET}      Format Python files with black and isort"
+	@echo "  ${GREEN}format-sh${RESET}      Format shell scripts with shfmt"
+	@echo "  ${YELLOW}Org-mode & Tangling:${RESET}"
+	@echo "  ${GREEN}tangle${RESET}         Tangle a specific org file (make tangle FILE=path/to/file.org)"
+	@echo "  ${GREEN}tangle-all${RESET}     Tangle all org files in the project"
+	@echo "  ${YELLOW}Testing & Docker:${RESET}"
 	@echo "  ${GREEN}test${RESET}           Run tests"
 	@echo "  ${GREEN}api-test${RESET}       Test API connectivity with Gemini"
 	@echo "  ${GREEN}docker${RESET}         Build all Docker containers"
 	@echo "  ${GREEN}docker-jupyter${RESET} Run Jupyter notebook server in Docker"
 	@echo "  ${GREEN}docker-api${RESET}     Run API service in Docker"
+	@echo "  ${YELLOW}Development Tools:${RESET}"
+	@echo "  ${GREEN}install-dev-tools${RESET} Install development tools (linters, formatters)"
 	@echo ""
 	@echo "${YELLOW}Examples:${RESET}"
 	@echo "  ${YELLOW}make setup${RESET}    # Install project dependencies"
@@ -77,13 +91,89 @@ clean:
 	@find . -type d -name "*htmlcov" -exec rm -rf {} +
 	@echo "${GREEN}Project cleaned!${RESET}"
 
-# Run code linting
-lint:
-	@echo "${BLUE}Running code linting...${RESET}"
-	@poetry run black src tests
-	@poetry run isort src tests
-	@poetry run flake8 src tests
-	@echo "${GREEN}Linting complete!${RESET}"
+# Install development tools
+install-dev-tools:
+	@echo "${BLUE}Installing development tools...${RESET}"
+	@poetry add --group dev black ruff isort flake8 mypy pytest
+	@if ! command -v shellcheck > /dev/null; then \
+		echo "${YELLOW}Installing shellcheck...${RESET}"; \
+		if command -v apt-get > /dev/null; then \
+			sudo apt-get update && sudo apt-get install -y shellcheck; \
+		elif command -v brew > /dev/null; then \
+			brew install shellcheck; \
+		else \
+			echo "${YELLOW}Please install shellcheck manually: https://github.com/koalaman/shellcheck${RESET}"; \
+		fi; \
+	fi
+	@if ! command -v shfmt > /dev/null; then \
+		echo "${YELLOW}Installing shfmt...${RESET}"; \
+		if command -v go > /dev/null; then \
+			go install mvdan.cc/sh/v3/cmd/shfmt@latest; \
+		elif command -v brew > /dev/null; then \
+			brew install shfmt; \
+		else \
+			echo "${YELLOW}Please install shfmt manually: https://github.com/mvdan/sh${RESET}"; \
+		fi; \
+	fi
+	@echo "${GREEN}Development tools installed!${RESET}"
+
+# Run all linters
+lint: lint-py lint-sh lint-org lint-el
+	@echo "${GREEN}All linting complete!${RESET}"
+
+# Lint Python files
+lint-py:
+	@echo "${BLUE}Linting Python files...${RESET}"
+	@poetry run ruff check src tests examples
+	@poetry run mypy src
+	@poetry run flake8 src tests examples
+	@echo "${GREEN}Python linting complete!${RESET}"
+
+# Lint shell scripts
+lint-sh:
+	@echo "${BLUE}Linting shell scripts...${RESET}"
+	@find . -name "*.sh" -type f -not -path "./.*" -not -path "*/node_modules/*" -exec shellcheck {} \;
+	@echo "${GREEN}Shell script linting complete!${RESET}"
+
+# Lint Org mode files
+lint-org:
+	@echo "${BLUE}Linting Org files...${RESET}"
+	@for file in $$(find . -name "*.org" -type f -not -path "./.*" -not -path "*/node_modules/*"); do \
+		echo "  Linting $${file}"; \
+		emacs --batch --load=.emacs.d/init.el --eval "(require 'org)" --visit="$${file}" --eval "(org-lint)" --kill || true; \
+	done
+	@echo "${GREEN}Org linting complete!${RESET}"
+
+# Lint Emacs Lisp files
+lint-el:
+	@echo "${BLUE}Linting Emacs Lisp files...${RESET}"
+	@for file in $$(find . -name "*.el" -type f -not -path "./.*" -not -path "*/node_modules/*"); do \
+		echo "  Linting $${file}"; \
+		emacs --batch --eval "(setq byte-compile-error-on-warn nil)" --eval "(byte-compile-file \"$${file}\")" || true; \
+		if [ -f "$${file}c" ]; then rm "$${file}c"; fi; \
+	done
+	@echo "${GREEN}Emacs Lisp linting complete!${RESET}"
+
+# Format all code files
+format: format-py format-sh
+	@echo "${GREEN}All formatting complete!${RESET}"
+
+# Format Python files
+format-py:
+	@echo "${BLUE}Formatting Python files...${RESET}"
+	@poetry run black src tests examples
+	@poetry run isort src tests examples
+	@echo "${GREEN}Python formatting complete!${RESET}"
+
+# Format shell scripts
+format-sh:
+	@echo "${BLUE}Formatting shell scripts...${RESET}"
+	@if command -v shfmt > /dev/null; then \
+		find . -name "*.sh" -type f -not -path "./.*" -not -path "*/node_modules/*" -exec shfmt -w -s -i 4 {} \; ; \
+		echo "${GREEN}Shell script formatting complete!${RESET}"; \
+	else \
+		echo "${YELLOW}shfmt not found. Run 'make install-dev-tools' to install it.${RESET}"; \
+	fi
 
 # Run tests
 test:
@@ -123,3 +213,32 @@ docker-api:
 	@echo "${BLUE}Starting API service in Docker...${RESET}"
 	@docker-compose up api
 	@echo "${GREEN}API service stopped.${RESET}"
+
+# Tangle a specific org file
+tangle:
+	@if [ -z "$(FILE)" ]; then \
+		echo "${YELLOW}Error: No file specified. Usage: make tangle FILE=path/to/file.org${RESET}"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(FILE)" ]; then \
+		echo "${YELLOW}Error: File $(FILE) not found${RESET}"; \
+		exit 1; \
+	fi
+	@echo "${BLUE}Tangling $(FILE)...${RESET}"
+	@emacs --batch \
+		--eval "(require 'org)" \
+		--eval "(setq org-confirm-babel-evaluate nil)" \
+		--eval "(org-babel-tangle-file \"$(FILE)\")"
+	@echo "${GREEN}Tangling complete!${RESET}"
+
+# Tangle all org files
+tangle-all:
+	@echo "${BLUE}Tangling all Org files...${RESET}"
+	@for file in $$(find . -name "*.org" -type f -not -path "./.*" -not -path "*/docs/*" -not -path "*/node_modules/*"); do \
+		echo "  Tangling $${file}"; \
+		emacs --batch \
+			--eval "(require 'org)" \
+			--eval "(setq org-confirm-babel-evaluate nil)" \
+			--eval "(org-babel-tangle-file \"$${file}\")"; \
+	done
+	@echo "${GREEN}All Org files tangled!${RESET}"
