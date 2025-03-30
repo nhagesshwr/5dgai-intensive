@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # Directory containing this script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 # Echo with color
 info() { echo -e "\033[0;34m$1\033[0m"; }
@@ -17,18 +17,18 @@ info "Setting up 5D-GAI Intensive environment..."
 
 # Setup git hooks
 if [ -d "$SCRIPT_DIR/.git" ]; then
-  info "Setting up git hooks..."
-  git config core.hooksPath .githooks
-  success "Git hooks configured."
+    info "Setting up git hooks..."
+    git config core.hooksPath .githooks
+    success "Git hooks configured."
 else
-  warning "Not a git repository. Skipping git hooks setup."
+    warning "Not a git repository. Skipping git hooks setup."
 fi
 
 # Check if Poetry is installed
-if ! command -v poetry &> /dev/null; then
-  warning "Poetry not found. Installing..."
-  curl -sSL https://install.python-poetry.org | python3 -
-  export PATH="$HOME/.poetry/bin:$PATH"
+if ! command -v poetry &>/dev/null; then
+    warning "Poetry not found. Installing..."
+    curl -sSL https://install.python-poetry.org | python3 -
+    export PATH="$HOME/.poetry/bin:$PATH"
 fi
 
 # Install dependencies
@@ -43,8 +43,8 @@ mkdir -p resources data config
 
 # Create .env file if it doesn't exist
 if [ ! -f "$SCRIPT_DIR/.env" ]; then
-  info "Creating .env file..."
-  cat > "$SCRIPT_DIR/.env" << EOF
+    info "Creating .env file..."
+    cat >"$SCRIPT_DIR/.env" <<EOF
 # API Keys - Required for course
 AI_STUDIO_API_KEY=""
 KAGGLE_USERNAME=""
@@ -52,19 +52,19 @@ KAGGLE_KEY=""
 OPENAI_API_KEY=""
 ANTHROPIC_API_KEY=""
 EOF
-  success "Created .env file template."
-  warning "Please edit .env and add your API keys."
+    success "Created .env file template."
+    warning "Please edit .env and add your API keys."
 else
-  success ".env file already exists."
+    success ".env file already exists."
 fi
 
 # Verify documentation standards
 info "Checking documentation standards enforcement..."
 if [ -f "$SCRIPT_DIR/.claude-config" ]; then
-  success "Documentation standards configuration found."
+    success "Documentation standards configuration found."
 else
-  warning "Creating documentation standards configuration..."
-  cat > "$SCRIPT_DIR/.claude-config" << EOF
+    warning "Creating documentation standards configuration..."
+    cat >"$SCRIPT_DIR/.claude-config" <<EOF
 # Machine-readable configuration for AI assistants
 # DO NOT MODIFY WITHOUT TEAM APPROVAL
 
@@ -87,7 +87,7 @@ POLICY_ESTABLISHED=2025-03-30
 POLICY_VIOLATIONS=1
 POLICY_ENFORCEMENT_MECHANISM=multiple
 EOF
-  success "Documentation standards configuration created."
+    success "Documentation standards configuration created."
 fi
 
 success "Setup complete! Next steps:"
