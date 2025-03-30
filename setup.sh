@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Setup script for 5D-GAI Intensive course environment
 # This script sets up your development environment and project structure
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Lint and format all files in the repository
 # Handles Python, Shell, Org mode and Elisp files
 

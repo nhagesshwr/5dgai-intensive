@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Setup script for Emacs environment for 5D-GAI Intensive
 # This script installs necessary Emacs packages and configures the environment
 
