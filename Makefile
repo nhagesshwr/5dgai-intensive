@@ -48,7 +48,7 @@ help:
 	@echo "  ${YELLOW}make api-test${RESET} # Verify Gemini API connectivity"
 
 # Setup Python environment
-setup:
+setup: check-tools
 	@echo "${BLUE}Setting up Python environment with Poetry...${RESET}"
 	@if ! command -v poetry > /dev/null; then \
 		echo "${YELLOW}Poetry not found. Installing...${RESET}"; \
@@ -105,11 +105,12 @@ install-dev-tools:
 # Check required tools
 check-tools:
 	@echo "${BLUE}Checking required tools...${RESET}"
-	@poetry run python -c "import black, ruff, isort" 2>/dev/null || (echo "${YELLOW}Missing Python tools. Run 'make install-dev-tools'${RESET}" && exit 1)
+	@poetry run python -c "import black, ruff, isort" 2>/dev/null || echo "${YELLOW}Missing Python tools. Run 'make install-dev-tools'${RESET}"
 	@command -v shellcheck >/dev/null 2>&1 || echo "${YELLOW}Warning: shellcheck not found${RESET}"
 	@command -v shfmt >/dev/null 2>&1 || echo "${YELLOW}Warning: shfmt not found${RESET}"
 	@command -v emacs >/dev/null 2>&1 || echo "${YELLOW}Warning: emacs not found${RESET}"
 	@echo "${GREEN}Tool check complete!${RESET}"
+	@touch .tools-checked
 
 # Run all linters
 lint: lint-py lint-sh lint-org lint-el
@@ -126,14 +127,12 @@ lint-py:
 # Lint shell scripts
 lint-sh:
 	@echo "${BLUE}Linting shell scripts...${RESET}"
-	@command -v shellcheck >/dev/null 2>&1 || (echo "${YELLOW}Warning: shellcheck not found${RESET}" && exit 1)
 	@shellcheck scripts/*.sh *.sh
 	@echo "${GREEN}Shell script linting complete!${RESET}"
 
 # Lint Org mode files
 lint-org:
 	@echo "${BLUE}Linting Org files...${RESET}"
-	@command -v emacs >/dev/null 2>&1 || (echo "${YELLOW}Warning: emacs not found${RESET}" && exit 1)
 	@emacs --batch --load=.emacs.d/init.el --eval "(require 'org)" \
 		--eval "(dolist (file (directory-files-recursively \".\" \"\\.org$$\" t)) \
 			(unless (or (string-match-p \"/\\.\" file) (string-match-p \"/node_modules/\" file)) \
@@ -145,7 +144,6 @@ lint-org:
 # Lint Emacs Lisp files
 lint-el:
 	@echo "${BLUE}Linting Emacs Lisp files...${RESET}"
-	@command -v emacs >/dev/null 2>&1 || (echo "${YELLOW}Warning: emacs not found${RESET}" && exit 1)
 	@emacs --batch --eval "(dolist (file (directory-files-recursively \".\" \"\\.el$$\" t)) \
 		(unless (or (string-match-p \"/\\.\" file) (string-match-p \"/node_modules/\" file)) \
 			(byte-compile-file file t)))" \
@@ -166,7 +164,6 @@ format-py:
 # Format shell scripts
 format-sh:
 	@echo "${BLUE}Formatting shell scripts...${RESET}"
-	@command -v shfmt >/dev/null 2>&1 || (echo "${YELLOW}Warning: shfmt not found${RESET}" && exit 1)
 	@shfmt -w -s -i 4 scripts/*.sh *.sh
 	@echo "${GREEN}Shell script formatting complete!${RESET}"
 
@@ -229,7 +226,6 @@ tangle:
 # Tangle all org files
 tangle-all:
 	@echo "${BLUE}Tangling all Org files...${RESET}"
-	@command -v emacs >/dev/null 2>&1 || (echo "${YELLOW}Warning: emacs not found${RESET}" && exit 1)
 	@emacs --batch \
 		--eval "(require 'org)" \
 		--eval "(setq org-confirm-babel-evaluate nil)" \
