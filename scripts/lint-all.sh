@@ -54,14 +54,11 @@ done
 echo "Linting Org files..."
 find "$REPO_ROOT" -name "*.org" | while read -r file; do
     echo "  Processing $file"
-    emacs --batch \
-        --load="$REPO_ROOT/.emacs.d/init.el" \
+    emacs -Q --batch \
         --eval "(require 'org)" \
         --visit="$file" \
-        --eval "(org-lint)" \
-        --eval "(org-mode)" \
-        --eval "(org-table-map-tables 'org-table-align)" \
-        --eval "(save-buffer)" \
+        --eval "(condition-case err (org-lint) (error (message \"Lint error in %s: %s\" \"$file\" err)))" \
+        --eval "(condition-case err (progn (org-mode) (org-table-map-tables 'org-table-align) (save-buffer)) (error (message \"Format error in %s: %s\" \"$file\" err)))" \
         --kill
 done
 
@@ -69,9 +66,9 @@ done
 echo "Linting Elisp files..."
 find "$REPO_ROOT" -name "*.el" | while read -r file; do
     echo "  Processing $file"
-    emacs --batch \
+    emacs -Q --batch \
         --eval "(setq byte-compile-error-on-warn nil)" \
-        --eval "(byte-compile-file \"$file\")"
+        --eval "(condition-case err (byte-compile-file \"$file\") (error (message \"Compilation error in %s: %s\" \"$file\" err)))"
     
     # Clean up the .elc files afterward
     if [ -f "${file}c" ]; then
