@@ -1,9 +1,7 @@
-#+TITLE: 5D-GAI Intensive Course Resources
+#+TITLE: 5-Day Gen AI Intensive Course
 #+AUTHOR: Jason Walsh
 #+EMAIL: j@wal.sh
 #+DATE: March 30, 2025
-
-* 5-Day Gen AI Intensive Course
 
 #+ATTR_HTML: :width 100% :alt 5-Day Generative AI Intensive Banner
 [[file:images/gemini/course-banners/course-timeline-banner-gemini.jpeg]]
@@ -16,7 +14,7 @@
 </p>
 #+end_html
 
-** Course Overview
+* Course Overview
 
 Welcome to the Google's 5-Day Generative AI Intensive course companion repository! This toolkit helps you:
 
@@ -26,7 +24,7 @@ Welcome to the Google's 5-Day Generative AI Intensive course companion repositor
 - 📝 Keep your notes organized by course day
 - 🔍 Explore bonus examples beyond what's covered in the course
 
-** What You'll Learn in the Course
+* What You'll Learn in the Course
 
 - *Day 1*: Foundations of Generative AI and Gemini models
 - *Day 2*: Prompt engineering techniques and best practices
@@ -34,9 +32,9 @@ Welcome to the Google's 5-Day Generative AI Intensive course companion repositor
 - *Day 4*: Multimodal applications and responsible AI
 - *Day 5*: Production deployment and advanced use cases
 
-** Quick Start Guide
+* Quick Start Guide
 
-1. *Setup your environment*:
+** Setup your environment
    #+begin_src sh
    # Using the setup script (recommended)
    ./setup.sh
@@ -46,7 +44,7 @@ Welcome to the Google's 5-Day Generative AI Intensive course companion repositor
    poetry shell
    #+end_src
 
-2. *Configure your API keys*:
+** Configure your API keys
    Edit the ~.env~ file to add your API keys:
    #+begin_src sh
    AI_STUDIO_API_KEY="your-key-here"
@@ -57,30 +55,35 @@ Welcome to the Google's 5-Day Generative AI Intensive course companion repositor
    ANTHROPIC_API_KEY=""
    #+end_src
 
-3. *Start Jupyter*:
+** Open Org-mode Notebooks
    #+begin_src sh
-   # Using local Python
-   jupyter notebook
+   # Using Emacs (recommended)
+   emacs notebooks/day1/01-introduction.org
    
-   # Or using Docker
-   docker-compose up notebook
+   # Or view with any text editor
+   less notebooks/day1/01-introduction.org
+   
+   # To tangle code from notebooks
+   make tangle FILE=notebooks/day1/01-introduction.org
    #+end_src
 
-4. *Test your API connectivity*:
+** Test your API connectivity
    #+begin_src sh
    # Quick validation of your Gemini API setup
    make api-test
    #+end_src
 
-** Repository Tools & Features
+* Repository Tools & Features
 
-- *Gemini API Client*: Ready-to-use Python interface to Google's Gemini models
-- *Structured Notebooks*: Organized by course day for easy following
+- *Gemini API Client*: Ready-to-use Hy/Python interface to Google's Gemini models
+- *Org-mode Notebooks*: Organized by course day for easy learning & tangling
+- *Restclient Integration*: Direct API testing in Org-mode with ob-restclient
+- *IPython Support*: Enhanced REPL experience for both Python and Hy
 - *Resource Collection*: Papers, references, and supplementary materials
 - *Docker Integration*: Containerized environment to avoid compatibility issues
 - *Automated Testing*: Verify API connectivity with a single command
 
-** Core Features Demonstrated
+* Core Features Demonstrated
 
 - Text generation with Gemini
 - Chat conversations and context management
@@ -89,9 +92,32 @@ Welcome to the Google's 5-Day Generative AI Intensive course companion repositor
 - Multimodal inputs (coming in day 4)
 - RAG implementation examples
 
-** Using the Gemini Client
+* Using the Gemini Client
 
-Our simplified client makes it easy to interact with Gemini models:
+Our simplified client makes it easy to interact with Gemini models in both Hy and Python:
+
+#+begin_src hy
+(import [src.gemini-client [GeminiClient]])
+
+;; Initialize with API key from .env file
+(setv client (GeminiClient))
+
+;; Simple text generation
+(setv response (.generate-content client 
+    "Explain the concept of attention in transformer models."))
+(print (.extract-text client response))
+
+;; Chat conversation
+(setv messages [
+    {"role" "user" "content" "What are three applications of generative AI?"}
+    {"role" "model" "content" "1. Content creation\n2. Code generation\n3. Data augmentation"}
+    {"role" "user" "content" "Elaborate on code generation use cases."}
+])
+(setv chat-response (.chat client messages))
+(print (.extract-text client chat-response))
+#+end_src
+
+Python version for reference:
 
 #+begin_src python
 from src.gemini_client import GeminiClient
@@ -115,13 +141,25 @@ chat_response = client.chat(messages)
 print(client.extract_text(chat_response))
 #+end_src
 
-** Course Day-by-Day Navigation
+* Course Day-by-Day Navigation
 
-- ~notebooks/day1/~ - Foundation concepts and initial exercises
-- ~notebooks/day2/~ - Prompt engineering deep dives
-- ~notebooks/day3/~ - Building with the API
-- ~notebooks/day4/~ - Multimodal applications
-- ~notebooks/day5/~ - Advanced techniques and production deployment
+**  ~notebooks/day1/~
+
+- Foundation concepts and initial exercises
+**  ~notebooks/day2/~
+
+- Prompt engineering deep dives
+
+
+**  ~notebooks/day3/~ -
+- Building with the API
+** ~notebooks/day4/~
+
+- Multimodal applications
+
+** ~notebooks/day5/~
+
+- Advanced techniques and production deployment
 
 ** Get Help & Community
 

@@ -1,0 +1,37 @@
+#+TITLE: Day 5: Production Deployment and Advanced Use Cases
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+#+PROPERTY: header-args:hy :session day5 :results output :exports both
+
+* Production Deployment
+:PROPERTIES:
+:VISIBILITY: all
+:END:
+
+** Deployment Considerations
+
+Moving AI applications to production requires addressing:
+
+- Scalability and performance optimization
+- Monitoring and observability
+- CI/CD pipelines for AI applications
+- Cost management and optimization
+
+#+begin_src hy
+(print "Welcome to Day 5: Production Deployment")
+#+end_src
+
+* Advanced Use Cases
+
+** Specialized Applications
+
+- Retrieval-Augmented Generation (RAG)
+- Fine-tuning for domain specialization
+- Agent frameworks and autonomous systems
+- Hybrid human-AI workflows
+
+#+begin_src hy
+;; Example implementation coming soon
+(print "This notebook will be implemented with Hy examples")
+#+end_src

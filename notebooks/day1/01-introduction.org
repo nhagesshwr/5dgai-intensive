@@ -1,0 +1,217 @@
+#+TITLE: Day 1: Introduction to Generative AI and Gemini
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+#+PROPERTY: header-args:hy :session day1 :results output :exports both
+#+PROPERTY: header-args:python :session day1-py :results output :exports both :eval no-export
+#+PROPERTY: header-args:restclient :results value code :exports both
+
+* Introduction to Generative AI
+:PROPERTIES:
+:VISIBILITY: all
+:END:
+
+** What is Generative AI?
+
+Generative AI refers to artificial intelligence systems capable of generating new content - including text, images, code, and other media - that resembles human-created content.
+
+#+begin_src hy
+(print "Hello from Hy! This is our first notebook.")
+#+end_src
+
+** Core Concepts
+
+- *Foundation models*: Large pre-trained models that can be adapted to many tasks
+- *Transformer architecture*: Key neural network design enabling modern LLMs
+- *Tokens*: Basic units of text processing in LLMs
+- *Context window*: How much information a model can consider at once
+- *Inference*: The process of generating outputs from the model
+
+* Gemini Model Architecture
+
+** Understanding the Gemini Family
+
+- *Gemini 1.0 vs 2.0*: Evolution and improvements
+- *Model sizes*: Ultra, Pro, Flash - tradeoffs and use cases
+- *Multimodal capabilities*: Working with text, images, and other data types
+
+#+begin_src hy
+(import [dataclasses [dataclass field]]
+        [typing [List Dict Any]])
+
+(defclass/a [dataclass] ModelComparison []
+  (setv model str
+        params (field :default None :type (List float))
+        capabilities (field :default None :type (Dict str bool))))
+
+(setv models [(ModelComparison :model "Gemini 2.0 Flash"
+                              :params [1.5]
+                              :capabilities {"text" True, "images" True, "code" True})
+              (ModelComparison :model "Gemini 2.0 Pro"
+                              :params [10.0]
+                              :capabilities {"text" True, "images" True, "code" True})
+              (ModelComparison :model "Gemini 2.0 Ultra"
+                              :params [140.0]
+                              :capabilities {"text" True, "images" True, "code" True, "reasoning" True})])
+
+(for [model models]
+  (print f"Model: {model.model}")
+  (print f"  Parameters: {model.params[0]} billion")
+  (print f"  Capabilities: {', '.join((.keys model.capabilities))}")
+  (print))
+#+end_src
+
+* Setting Up Your Environment
+
+** API Keys and Authentication
+
+- Creating Google AI Studio account
+- Generating and securing API keys
+- Environment variables for key management
+
+#+begin_src hy
+(import os
+        [dotenv [load-dotenv]])
+
+;; This is a demonstration - actual API key loading happens in client
+(load-dotenv)
+
+(defn show-env-status []
+  (setv required-keys ["AI_STUDIO_API_KEY"])
+  (setv optional-keys ["OPENAI_API_KEY" "ANTHROPIC_API_KEY"])
+  
+  (print "Environment status:")
+  (for [key required-keys]
+    (setv status (if (os.getenv key) "✓ Set" "✗ Missing"))
+    (print f"  {key}: {status}"))
+  
+  (print "\nOptional keys:")
+  (for [key optional-keys]
+    (setv status (if (os.getenv key) "✓ Set" "✗ Missing"))
+    (print f"  {key}: {status}")))
+
+(show-env-status)
+#+end_src
+
+* First Steps with the Gemini API
+
+** Basic Text Generation
+
+Let's explore simple text generation with the Gemini API:
+
+#+begin_src hy
+(import [src.gemini-client [GeminiClient]])
+
+;; Create a client instance
+(try
+  (setv client (GeminiClient))
+  
+  ;; Generate a simple response
+  (setv prompt "Explain the concept of generative AI in 2-3 sentences.")
+  (setv response (.generate-content client prompt))
+  (print "Generated response:")
+  (print "===================")
+  (print (.extract-text client response))
+  
+  (except [e [Exception]]
+    (print f"Error: {e}")
+    (print "\nNote: This code requires a valid API key to run.")))
+#+end_src
+
+* Exercise: Exploring Different Prompts
+
+** Try Different Types of Prompts
+
+Experiment with these different prompt types:
+
+#+begin_src hy
+(defn test-prompt [client prompt]
+  (print f"Prompt: {prompt}")
+  (try
+    (setv response (.generate-content client prompt))
+    (print "Response:")
+    (print (.extract-text client response))
+    (except [e [Exception]]
+      (print f"Error: {e}")))
+  (print "\n---\n"))
+
+(try
+  (setv client (GeminiClient))
+  
+  ;; Test different prompt types
+  (setv prompts
+    ["What are three benefits of using generative AI in education?"
+     "Write a short poem about artificial intelligence."
+     "Explain how transformers work in machine learning."
+     "List 5 ethical considerations when deploying AI systems."])
+  
+  (for [prompt prompts]
+    (test-prompt client prompt))
+    
+  (except [e [Exception]]
+    (print f"Error setting up client: {e}")))
+#+end_src
+
+* API Testing with Restclient
+
+** Direct API Interaction
+
+We can also interact directly with the API using restclient:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "Explain the concept of attention in transformer models in 2-3 sentences."
+        }
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.7,
+    "maxOutputTokens": 1024
+  }
+}
+#+end_src
+
+** Testing Different Models
+
+Compare models by changing the endpoint:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "Compare and contrast different approaches to implementing attention mechanisms in transformers."
+        }
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.2,
+    "maxOutputTokens": 1024
+  }
+}
+#+end_src
+
+* Conclusion and Next Steps
+
+** Key Takeaways from Day 1
+
+- Understanding of foundation models and the Gemini family
+- Basic API interaction with Gemini using Python, Hy, and direct REST calls
+- Simple prompt engineering concepts
+
+** Preview of Day 2
+
+Tomorrow we'll dive deeper into prompt engineering techniques and best practices for getting optimal results from Gemini models.

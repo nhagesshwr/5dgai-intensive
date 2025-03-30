@@ -1,0 +1,206 @@
+#+TITLE: Gemini API Testing with Restclient
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+#+PROPERTY: header-args:restclient :results value code :exports both
+
+* Gemini API Testing
+:PROPERTIES:
+:VISIBILITY: all
+:END:
+
+This document provides examples of interacting with the Gemini API using restclient.el in Emacs.
+
+** Setup
+
+First, ensure your API key is set in your .env file:
+
+#+begin_src shell
+echo "AI_STUDIO_API_KEY=your-key-here" > .env
+#+end_src
+
+** Basic Text Generation
+
+Generate simple text content using the Gemini API:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "Explain the concept of generative AI in 2-3 sentences."
+        }
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.7,
+    "maxOutputTokens": 1024
+  }
+}
+#+end_src
+
+** Chat Conversation
+
+Create a chat conversation with the model:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "What are three applications of generative AI?"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "1. Content creation\n2. Code generation\n3. Data augmentation"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Elaborate on code generation use cases."
+        }
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.7,
+    "maxOutputTokens": 1024
+  }
+}
+#+end_src
+
+** Using System Instructions
+
+Add system instructions to guide the model's responses:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "Write a poem about artificial intelligence."
+        }
+      ]
+    }
+  ],
+  "systemInstruction": {
+    "parts": [
+      {
+        "text": "You are a professional poet who specializes in technical subjects. Write in a concise, elegant style with vivid imagery."
+      }
+    ]
+  },
+  "generationConfig": {
+    "temperature": 0.9,
+    "maxOutputTokens": 1024
+  }
+}
+#+end_src
+
+** Using the Pro Model
+
+For more complex tasks, use the Pro model:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "Explain how transformers work in machine learning, including key components like attention mechanisms and the self-attention operation."
+        }
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.2,
+    "maxOutputTokens": 2048
+  }
+}
+#+end_src
+
+** Adjusting Generation Parameters
+
+Experiment with different parameters:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "Generate a short story about a robot learning to feel emotions."
+        }
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 1.0,
+    "topK": 40,
+    "topP": 0.95,
+    "maxOutputTokens": 2048,
+    "stopSequences": ["THE END"]
+  }
+}
+#+end_src
+
+* Using Variables in Restclient
+
+You can set variables to make your requests more reusable:
+
+#+begin_src restclient
+:api-url = https://generativelanguage.googleapis.com/v1beta
+:model = gemini-2.0-flash
+:key = {{API_KEY}}
+
+# Now use these variables in requests
+POST :api-url/models/:model:generateContent?key=:key
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "List 5 best practices for prompt engineering."
+        }
+      ]
+    }
+  ]
+}
+#+end_src
+
+* Notes on Usage
+
+- API keys should never be committed to version control
+- Use the load-dotenv-file function to load the key from .env
+- Press C-c C-c to execute the request under cursor
+- Use C-c C-k to insert your API key when needed
+- For bulk API testing, consider creating dedicated API test scripts

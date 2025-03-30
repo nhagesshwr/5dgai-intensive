@@ -1,0 +1,37 @@
+#+TITLE: Day 4: Multimodal Applications and Responsible AI
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+#+PROPERTY: header-args:hy :session day4 :results output :exports both
+
+* Multimodal AI Applications
+:PROPERTIES:
+:VISIBILITY: all
+:END:
+
+** Working with Multiple Modalities
+
+Multimodal AI can process and generate content across different types:
+
+- Text and natural language
+- Images and visual content
+- Code generation and analysis
+- Data analysis and visualization
+
+#+begin_src hy
+(print "Welcome to Day 4: Multimodal Applications")
+#+end_src
+
+* Responsible AI Considerations
+
+** Ethical AI Development
+
+- Safety measures and content filtering
+- Bias detection and mitigation
+- Transparency and explainability
+- Privacy considerations
+
+#+begin_src hy
+;; Example implementation coming soon
+(print "This notebook will be implemented with Hy examples")
+#+end_src

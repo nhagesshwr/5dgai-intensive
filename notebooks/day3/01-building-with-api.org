@@ -1,0 +1,37 @@
+#+TITLE: Day 3: Building with the Gemini API
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+#+PROPERTY: header-args:hy :session day3 :results output :exports both
+
+* Building Applications with Gemini API
+:PROPERTIES:
+:VISIBILITY: all
+:END:
+
+** API Integration Patterns
+
+Integrating Gemini API into applications follows several common patterns:
+
+- Direct API calls for simple applications
+- Async processing for responsiveness
+- Streaming for real-time interactions
+- Caching strategies for efficiency
+
+#+begin_src hy
+(print "Welcome to Day 3: Building with the Gemini API")
+#+end_src
+
+* System Instructions and Parameter Tuning
+
+** Optimizing API Requests
+
+- Temperature and other generation parameters
+- System instructions to guide model behavior
+- Response formatting options
+- Error handling and retry strategies
+
+#+begin_src hy
+;; Example implementation coming soon
+(print "This notebook will be implemented with Hy examples")
+#+end_src

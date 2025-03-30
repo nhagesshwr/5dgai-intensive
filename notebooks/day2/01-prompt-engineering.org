@@ -1,0 +1,37 @@
+#+TITLE: Day 2: Prompt Engineering Techniques and Best Practices
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+#+PROPERTY: header-args:hy :session day2 :results output :exports both
+
+* Advanced Prompt Engineering
+:PROPERTIES:
+:VISIBILITY: all
+:END:
+
+** What Makes a Good Prompt?
+
+Effective prompts for generative AI models consider several key factors:
+
+- *Clarity*: Clear, specific instructions yield better results
+- *Context*: Providing relevant background information
+- *Format*: Specifying the desired output format
+- *Examples*: Including examples of desired outputs (few-shot learning)
+
+#+begin_src hy
+(print "Welcome to Day 2: Prompt Engineering")
+#+end_src
+
+* Prompt Design Patterns
+
+** Structured Prompting Techniques
+
+- Role-based prompting
+- Chain-of-thought prompting
+- Step-by-step instructions
+- Output format specification
+
+#+begin_src hy
+;; Example implementation coming soon
+(print "This notebook will be implemented with Hy examples")
+#+end_src
