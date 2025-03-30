@@ -40,6 +40,25 @@
 - Tangle specific file: ~make tangle FILE=path/to/file.org~
 - Tangle all org files: ~make tangle-all~
 
+* Documentation Guidelines
+
+** :important: File Format Preferences
+- Use Org-mode (~.org~) for ALL documentation files
+- NEVER use Markdown (~.md~) files in the root directory
+- Markdown files should be limited to:
+  - ~.github/~ directory (for GitHub-specific files)
+  - Generated documentation (when unavoidable)
+- Convert any Markdown files to Org-mode when encountered
+
+** Reasons for Org-mode Preference
+- Built-in tangling capabilities
+- Superior structural editing
+- Better table support
+- Native diagram generation
+- Executable code blocks
+- Richer metadata with PROPERTIES drawers
+- Standardizes on one documentation format
+
 * Code Style Guidelines
 
 ** Python
