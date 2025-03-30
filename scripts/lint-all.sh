@@ -5,14 +5,14 @@
 set -euo pipefail
 
 # Directory containing this script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." &> /dev/null && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." &>/dev/null && pwd)"
 
 echo "Linting all files in $REPO_ROOT..."
 
 # Function to check if a command exists
 command_exists() {
-    command -v "$1" &> /dev/null
+    command -v "$1" &>/dev/null
 }
 
 # Check if required tools are installed
@@ -69,7 +69,7 @@ find "$REPO_ROOT" -name "*.el" | while read -r file; do
     emacs -Q --batch \
         --eval "(setq byte-compile-error-on-warn nil)" \
         --eval "(condition-case err (byte-compile-file \"$file\") (error (message \"Compilation error in %s: %s\" \"$file\" err)))"
-    
+
     # Clean up the .elc files afterward
     if [ -f "${file}c" ]; then
         rm "${file}c"

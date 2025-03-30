@@ -7,10 +7,10 @@ set -euo pipefail
 echo "Setting up Emacs environment for 5D-GAI Intensive course..."
 
 # Install required system packages
-if command -v apt-get > /dev/null; then
+if command -v apt-get >/dev/null; then
     sudo apt-get update
     sudo apt-get install -y emacs plantuml graphviz
-elif command -v brew > /dev/null; then
+elif command -v brew >/dev/null; then
     brew install emacs plantuml graphviz
 else
     echo "Unable to determine package manager. Please install Emacs, PlantUML, and Graphviz manually."
@@ -28,7 +28,7 @@ if [ ! -f "$HOME/.emacs.d/straight/repos/straight.el/straight.el" ]; then
 fi
 
 # Generate example PlantUML diagram
-cat > docs/example-diagram.org << 'EOF'
+cat >docs/example-diagram.org <<'EOF'
 #+TITLE: Example Diagram
 #+AUTHOR: Jason Walsh
 #+EMAIL: j@wal.sh
@@ -69,7 +69,7 @@ Here is the rendered diagram:
 EOF
 
 # Create Emacs package installation script
-cat > scripts/install-emacs-packages.el << 'EOF'
+cat >scripts/install-emacs-packages.el <<'EOF'
 ;; Script to install required Emacs packages for 5D-GAI Intensive
 
 ;; Initialize package system
