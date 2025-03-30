@@ -1,3 +1,11 @@
+---
+name: Documentation Standards Testing Automation
+about: Proposal to automate testing of agent adherence to documentation standards
+title: "🤖 Automated Testing for Documentation Standards"
+labels: automation, testing, enhancement
+assignees: jwalsh
+---
+
 # Automation for Documentation Standards Testing
 
 ## Problem Statement
