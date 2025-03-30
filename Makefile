@@ -1,7 +1,7 @@
 # 5D-GAI Intensive Course - Makefile
 # Helper commands for project management
 
-.PHONY: help setup dev clean lint lint-py lint-sh lint-org lint-el format format-py format-sh test api-test docker docker-jupyter docker-api tangle tangle-all install-dev-tools
+.PHONY: help setup dev clean lint lint-py lint-sh lint-org lint-el format format-py format-sh test api-test docker docker-jupyter docker-api tangle tangle-all install-dev-tools check-tools
 
 # Colors for terminal output
 GREEN  := $(shell tput -Txterm setaf 2)
@@ -41,6 +41,7 @@ help:
 	@echo "  ${GREEN}docker-api${RESET}     Run API service in Docker"
 	@echo "  ${YELLOW}Development Tools:${RESET}"
 	@echo "  ${GREEN}install-dev-tools${RESET} Install development tools (linters, formatters)"
+	@echo "  ${GREEN}check-tools${RESET}     Check if required development tools are installed"
 	@echo ""
 	@echo "${YELLOW}Examples:${RESET}"
 	@echo "  ${YELLOW}make setup${RESET}    # Install project dependencies"
@@ -95,27 +96,20 @@ clean:
 install-dev-tools:
 	@echo "${BLUE}Installing development tools...${RESET}"
 	@poetry add --group dev black ruff isort flake8 mypy pytest
-	@if ! command -v shellcheck > /dev/null; then \
-		echo "${YELLOW}Installing shellcheck...${RESET}"; \
-		if command -v apt-get > /dev/null; then \
-			sudo apt-get update && sudo apt-get install -y shellcheck; \
-		elif command -v brew > /dev/null; then \
-			brew install shellcheck; \
-		else \
-			echo "${YELLOW}Please install shellcheck manually: https://github.com/koalaman/shellcheck${RESET}"; \
-		fi; \
-	fi
-	@if ! command -v shfmt > /dev/null; then \
-		echo "${YELLOW}Installing shfmt...${RESET}"; \
-		if command -v go > /dev/null; then \
-			go install mvdan.cc/sh/v3/cmd/shfmt@latest; \
-		elif command -v brew > /dev/null; then \
-			brew install shfmt; \
-		else \
-			echo "${YELLOW}Please install shfmt manually: https://github.com/mvdan/sh${RESET}"; \
-		fi; \
-	fi
-	@echo "${GREEN}Development tools installed!${RESET}"
+	@echo "${YELLOW}Please install the following system tools if not already available:${RESET}"
+	@echo "  - shellcheck: Shell script static analysis"
+	@echo "  - shfmt: Shell script formatter"
+	@echo "  - emacs: Required for org-mode operations"
+	@echo "${GREEN}Python development tools installed!${RESET}"
+
+# Check required tools
+check-tools:
+	@echo "${BLUE}Checking required tools...${RESET}"
+	@poetry run python -c "import black, ruff, isort" 2>/dev/null || (echo "${YELLOW}Missing Python tools. Run 'make install-dev-tools'${RESET}" && exit 1)
+	@command -v shellcheck >/dev/null 2>&1 || echo "${YELLOW}Warning: shellcheck not found${RESET}"
+	@command -v shfmt >/dev/null 2>&1 || echo "${YELLOW}Warning: shfmt not found${RESET}"
+	@command -v emacs >/dev/null 2>&1 || echo "${YELLOW}Warning: emacs not found${RESET}"
+	@echo "${GREEN}Tool check complete!${RESET}"
 
 # Run all linters
 lint: lint-py lint-sh lint-org lint-el
@@ -132,26 +126,30 @@ lint-py:
 # Lint shell scripts
 lint-sh:
 	@echo "${BLUE}Linting shell scripts...${RESET}"
-	@find . -name "*.sh" -type f -not -path "./.*" -not -path "*/node_modules/*" -exec shellcheck {} \;
+	@command -v shellcheck >/dev/null 2>&1 || (echo "${YELLOW}Warning: shellcheck not found${RESET}" && exit 1)
+	@shellcheck scripts/*.sh *.sh
 	@echo "${GREEN}Shell script linting complete!${RESET}"
 
 # Lint Org mode files
 lint-org:
 	@echo "${BLUE}Linting Org files...${RESET}"
-	@for file in $$(find . -name "*.org" -type f -not -path "./.*" -not -path "*/node_modules/*"); do \
-		echo "  Linting $${file}"; \
-		emacs --batch --load=.emacs.d/init.el --eval "(require 'org)" --visit="$${file}" --eval "(org-lint)" --kill || true; \
-	done
+	@command -v emacs >/dev/null 2>&1 || (echo "${YELLOW}Warning: emacs not found${RESET}" && exit 1)
+	@emacs --batch --load=.emacs.d/init.el --eval "(require 'org)" \
+		--eval "(dolist (file (directory-files-recursively \".\" \"\\.org$$\" t)) \
+			(unless (or (string-match-p \"/\\.\" file) (string-match-p \"/node_modules/\" file)) \
+				(with-current-buffer (find-file-noselect file) \
+					(org-lint))))" \
+		--kill
 	@echo "${GREEN}Org linting complete!${RESET}"
 
 # Lint Emacs Lisp files
 lint-el:
 	@echo "${BLUE}Linting Emacs Lisp files...${RESET}"
-	@for file in $$(find . -name "*.el" -type f -not -path "./.*" -not -path "*/node_modules/*"); do \
-		echo "  Linting $${file}"; \
-		emacs --batch --eval "(setq byte-compile-error-on-warn nil)" --eval "(byte-compile-file \"$${file}\")" || true; \
-		if [ -f "$${file}c" ]; then rm "$${file}c"; fi; \
-	done
+	@command -v emacs >/dev/null 2>&1 || (echo "${YELLOW}Warning: emacs not found${RESET}" && exit 1)
+	@emacs --batch --eval "(dolist (file (directory-files-recursively \".\" \"\\.el$$\" t)) \
+		(unless (or (string-match-p \"/\\.\" file) (string-match-p \"/node_modules/\" file)) \
+			(byte-compile-file file t)))" \
+		--eval "(dolist (file (directory-files \".\" t \"\\.elc$$\")) (delete-file file))"
 	@echo "${GREEN}Emacs Lisp linting complete!${RESET}"
 
 # Format all code files
@@ -168,12 +166,9 @@ format-py:
 # Format shell scripts
 format-sh:
 	@echo "${BLUE}Formatting shell scripts...${RESET}"
-	@if command -v shfmt > /dev/null; then \
-		find . -name "*.sh" -type f -not -path "./.*" -not -path "*/node_modules/*" -exec shfmt -w -s -i 4 {} \; ; \
-		echo "${GREEN}Shell script formatting complete!${RESET}"; \
-	else \
-		echo "${YELLOW}shfmt not found. Run 'make install-dev-tools' to install it.${RESET}"; \
-	fi
+	@command -v shfmt >/dev/null 2>&1 || (echo "${YELLOW}Warning: shfmt not found${RESET}" && exit 1)
+	@shfmt -w -s -i 4 scripts/*.sh *.sh
+	@echo "${GREEN}Shell script formatting complete!${RESET}"
 
 # Run tests
 test:
@@ -234,11 +229,14 @@ tangle:
 # Tangle all org files
 tangle-all:
 	@echo "${BLUE}Tangling all Org files...${RESET}"
-	@for file in $$(find . -name "*.org" -type f -not -path "./.*" -not -path "*/docs/*" -not -path "*/node_modules/*"); do \
-		echo "  Tangling $${file}"; \
-		emacs --batch \
-			--eval "(require 'org)" \
-			--eval "(setq org-confirm-babel-evaluate nil)" \
-			--eval "(org-babel-tangle-file \"$${file}\")"; \
-	done
+	@command -v emacs >/dev/null 2>&1 || (echo "${YELLOW}Warning: emacs not found${RESET}" && exit 1)
+	@emacs --batch \
+		--eval "(require 'org)" \
+		--eval "(setq org-confirm-babel-evaluate nil)" \
+		--eval "(dolist (file (directory-files-recursively \".\" \"\\.org$\" t)) \
+			(unless (or (string-match-p \"/\\.\" file) \
+					(string-match-p \"/docs/\" file) \
+					(string-match-p \"/node_modules/\" file)) \
+				(message \"Tangling %s...\" file) \
+				(org-babel-tangle-file file)))"
 	@echo "${GREEN}All Org files tangled!${RESET}"

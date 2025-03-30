@@ -1,0 +1,18 @@
+# Required development tools for 5D-GAI Intensive
+# This file lists all required tools for development
+
+# Python tools (installed via poetry)
+black
+ruff
+isort
+flake8
+mypy
+pytest
+
+# System tools
+shellcheck  # Shell script static analysis
+shfmt       # Shell script formatter
+emacs       # Required for org-mode operations
+
+# Command to check if tools are installed:
+# make check-tools
