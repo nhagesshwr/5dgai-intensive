@@ -127,4 +127,4 @@ tramp
 
 # Org Babel
 ob-*.el
-*.tangled
+*.tangled.envrc.el

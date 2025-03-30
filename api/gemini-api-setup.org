@@ -1,0 +1,315 @@
+#+TITLE: Gemini API Setup and Testing
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+#+PROPERTY: header-args:restclient :results value code :exports both
+
+* Gemini API Setup and Testing
+:PROPERTIES:
+:VISIBILITY: all
+:END:
+
+This document provides detailed instructions for setting up and testing the Gemini API, which is the primary model we'll use throughout the 5-Day Gen AI Intensive course.
+
+** Obtaining Your API Key
+
+1. Go to [[https://makersuite.google.com/]]
+2. Sign in with your Google account
+3. Navigate to "API Keys" section
+4. Click "Create API Key"
+5. Copy your new API key
+
+** Setting Up Your Environment
+
+Add your API key to the .env file in the project root:
+
+#+begin_src sh
+echo "AI_STUDIO_API_KEY=your-key-here" >> .env
+#+end_src
+
+** Testing Your API Connection
+
+*** Basic Text Generation
+
+Test basic text generation capabilities:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "Hello, Gemini! Respond with a short greeting."
+        }
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.7,
+    "maxOutputTokens": 256
+  }
+}
+#+end_src
+
+*** API Response Structure
+
+The Gemini API returns responses in this structure:
+
+#+begin_src json
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "Hello! I'm Gemini, a large language model by Google. How can I assist you today?"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0,
+      "safetyRatings": [
+        {
+          "category": "HARM_CATEGORY_HARASSMENT",
+          "probability": "NEGLIGIBLE"
+        },
+        ...
+      ]
+    }
+  ],
+  "promptFeedback": {
+    "safetyRatings": [
+      {
+        "category": "HARM_CATEGORY_HARASSMENT",
+        "probability": "NEGLIGIBLE"
+      },
+      ...
+    ]
+  }
+}
+#+end_src
+
+** Available Models
+
+The Gemini family includes several model variants, each with different capabilities and price points:
+
+| Model Name            | Description                              | Use Cases                     |
+|-----------------------+------------------------------------------+-------------------------------|
+| gemini-2.0-pro        | Advanced reasoning, instruction following | Complex tasks, longer context |
+| gemini-2.0-flash      | Fast, efficient, cost-effective          | Simple tasks, quick responses |
+| gemini-2.0-vision     | Multimodal with image understanding      | Image analysis, visual tasks  |
+
+** Key API Parameters
+
+*** Temperature
+
+Controls randomness in generation (0.0 to 1.0):
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "Write a short poem about artificial intelligence."
+        }
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 1.0,  // Higher value = more creative, varied responses
+    "maxOutputTokens": 256
+  }
+}
+#+end_src
+
+*** Top-K and Top-P
+
+Fine-tune token selection during generation:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "Generate five creative uses for artificial intelligence in education."
+        }
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.7,
+    "topK": 40,          // Consider only top 40 tokens at each step
+    "topP": 0.95,        // Consider tokens comprising top 95% probability mass
+    "maxOutputTokens": 512
+  }
+}
+#+end_src
+
+*** System Instructions
+
+Guide model behavior with system-level instructions:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "What are the key components of a transformer architecture?"
+        }
+      ]
+    }
+  ],
+  "systemInstruction": {
+    "parts": [
+      {
+        "text": "You are a helpful AI teaching assistant specializing in machine learning. Provide concise, accurate explanations suitable for graduate CS students. Use technical language where appropriate."
+      }
+    ]
+  },
+  "generationConfig": {
+    "temperature": 0.2,
+    "maxOutputTokens": 1024
+  }
+}
+#+end_src
+
+** Chat Conversations
+
+Using the model in conversation mode:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "What are the main differences between traditional ML and deep learning?"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Traditional machine learning and deep learning differ in several key ways:\n\n1. Feature engineering: Traditional ML requires manual feature extraction, while deep learning automatically learns features from raw data.\n\n2. Data requirements: Deep learning typically needs much more data than traditional ML methods.\n\n3. Computational resources: Deep learning requires significant computational power and often GPUs, while traditional ML can run on standard hardware.\n\n4. Model complexity: Deep learning models have many more parameters and layers than traditional ML models.\n\n5. Interpretability: Traditional ML models are often more interpretable than deep learning \"black boxes.\"\n\nWhich aspect would you like me to elaborate on?"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Please elaborate on the interpretability differences."
+        }
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.2,
+    "maxOutputTokens": 1024
+  }
+}
+#+end_src
+
+** Safety Settings
+
+Control content filtering and safety thresholds:
+
+#+begin_src restclient
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{API_KEY}}
+Content-Type: application/json
+
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "What are the ethical considerations when deploying AI systems?"
+        }
+      ]
+    }
+  ],
+  "safetySettings": [
+    {
+      "category": "HARM_CATEGORY_HARASSMENT",
+      "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    },
+    {
+      "category": "HARM_CATEGORY_HATE_SPEECH",
+      "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    },
+    {
+      "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+      "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    },
+    {
+      "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+      "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.4,
+    "maxOutputTokens": 1024
+  }
+}
+#+end_src
+
+** API Quotas and Limits
+
+Be aware of these limits when using the Gemini API:
+
+- Daily quota limits depend on your account type
+- Rate limits: 60 requests per minute (may vary)
+- Token limits: 
+  - Max input tokens: ~30,000 (varies by model)
+  - Max output tokens: Configurable, up to model maximum
+
+** Troubleshooting Common Issues
+
+*** 400 Bad Request
+- Check JSON formatting
+- Verify parameter values are within acceptable ranges
+
+*** 401 Unauthorized
+- API key is missing or invalid
+- Check that your key is correctly set in the request
+
+*** 403 Forbidden
+- API key doesn't have permission for the requested model
+- Request may have triggered safety filters
+
+*** 429 Too Many Requests
+- You've exceeded rate limits
+- Implement exponential backoff and retry logic
+
+*** 500/503 Server Errors
+- Temporary service issues
+- Wait and retry with backoff
+
+** Next Steps
+
+Once your API is working properly:
+1. Complete Day 1 exercises using the Gemini client
+2. Experiment with different parameter settings
+3. Try both Flash and Pro models for comparison
+4. Prepare for Day 2's deep dive into prompt engineering
