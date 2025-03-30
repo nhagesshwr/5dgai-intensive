@@ -1,0 +1,37 @@
+# Environment configuration for 5D-GAI Intensive
+# Copy this file to .envrc and fill in your values
+# You can use direnv to automatically load these variables
+
+# API Keys
+export AI_STUDIO_API_KEY=""   # Google AI Studio API key
+export KAGGLE_USERNAME=""     # Kaggle username 
+export KAGGLE_KEY=""          # Kaggle API key
+export OPENAI_API_KEY=""      # OpenAI API key (optional)
+export ANTHROPIC_API_KEY=""   # Anthropic API key (optional)
+
+# Google Cloud (optional)
+export GOOGLE_CLOUD_PROJECT=""
+export COMPUTE_REGION="us-central1"
+
+# Python configuration
+export PYTHONPATH="$PYTHONPATH:$(pwd)/src:$(pwd)"
+
+# Docker configuration (optional)
+export DOCKER_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=1
+
+# Emacs configuration (optional)
+export EMACS_SERVER_FILE="$HOME/.emacs.d/server/server"
+export EDITOR="emacsclient -c"
+export VISUAL="emacsclient -c"
+
+# Project-specific configuration
+export PROJECT_ROOT="$(pwd)"
+export DATA_DIR="$PROJECT_ROOT/data"
+export CONFIG_DIR="$PROJECT_ROOT/config"
+export NOTEBOOK_DIR="$PROJECT_ROOT/notebooks"
+
+# Load local overrides if they exist
+if [ -f .envrc.local ]; then
+  source_env .envrc.local
+fi

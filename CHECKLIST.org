@@ -1,0 +1,135 @@
+#+TITLE: 5D-GAI Intensive Development Checklist
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+#+PROPERTY: header-args :mkdirp yes
+
+* Repository Structure Checklist [1/10]
+:PROPERTIES:
+:CUSTOM_ID: repo-structure
+:END:
+
+Based on analysis of existing projects and style preferences:
+
+- [X] No .md files in root directory (convert to .org)
+- [ ] All scripts in scripts/ directory, not in root
+- [ ] All documentation in .org format with proper tangling
+- [ ] No unnecessary files in root directory 
+- [ ] .emacs.d/init.el for Emacs configuration
+- [ ] Project-specific .dir-locals.el
+- [ ] Proper .gitignore configuration
+- [ ] Directory structure follows org-based project layout
+- [ ] Executable scripts have proper permissions
+- [ ] Root directory clean with minimal files
+
+* File Organization [0/6]
+:PROPERTIES:
+:CUSTOM_ID: file-organization
+:END:
+
+- [ ] *src/*: Source code files (.py, .js, etc.)
+- [ ] *scripts/*: Utility scripts and tools
+- [ ] *docs/*: Documentation files (all in .org format)
+- [ ] *examples/*: Example code snippets
+- [ ] *tests/*: Test files
+- [ ] *resources/*: Static resources and assets
+
+* Documentation Standards [0/5]
+:PROPERTIES:
+:CUSTOM_ID: documentation
+:END:
+
+- [ ] README.org as main project documentation
+- [ ] DEVELOPMENT.org for development setup and workflows
+- [ ] All documentation using org-mode format
+- [ ] Diagrams generated from org source blocks
+- [ ] Documentation tangled to implementation files
+
+* Emacs Configuration [0/7]
+:PROPERTIES:
+:CUSTOM_ID: emacs-config
+:END:
+
+- [ ] Install required Emacs packages:
+  - org-mode
+  - ox-hugo (for export)
+  - jupyter
+  - org-babel
+  - plantuml-mode
+  - python-mode
+- [ ] Configure org-babel for language support
+- [ ] Setup auto-tangling on save
+- [ ] Configure org-publish for documentation
+- [ ] Setup ox-hugo for documentation export
+- [ ] Jupyter notebook integration
+- [ ] Proper syntax highlighting for code blocks
+
+* Development Workflow [0/7]
+:PROPERTIES:
+:CUSTOM_ID: development
+:END:
+
+- [ ] Git commit using conventional commits
+- [ ] Always use --trailer for attribution
+- [ ] ALWAYS run make lint before commit
+- [ ] Use org-babel for all code development
+- [ ] Tangle code from org files
+- [ ] Run tests via make test
+- [ ] Document all new features in org files
+
+* Project-Specific Tools [0/6]
+:PROPERTIES:
+:CUSTOM_ID: tools
+:END:
+
+- [ ] Poetry for Python dependency management
+- [ ] Makefile for common tasks (with help as default)
+- [ ] Docker for containerization
+- [ ] Pre-commit hooks for code quality
+- [ ] Continuous integration setup
+- [ ] Documentation generation pipeline
+
+* Research Interests 
+:PROPERTIES:
+:CUSTOM_ID: research
+:END:
+
+Based on directory analysis, key research interests include:
+
+** Programming Languages & Systems
+- Clojure (clojure-brain-teasers-review, CortexIntelligence)
+- Lisp variants (Hy - hy-algorithms)
+- Functional programming (Clojure, Erlang)
+- Low-level systems (bigsets, Path64, zpl)
+
+** AI & Machine Learning
+- Generative AI (5dgai-intensive, agent-towers)
+- LLM applications (audio-insights-pipeline)
+- Bedrock & AI deployment (aif-c01)
+- Memory-augmented LLMs (MemGPT)
+
+** Knowledge Management
+- Org-mode based knowledge systems (athenaeum.wal.sh, drill.wal.sh)
+- Technical documentation (repolens)
+- Research organization (le-club-des-lecteurs)
+
+** API Development
+- REST APIs (mcp-server-qrcode)
+- LLM integrations (anthropic-quickstarts)
+- Emacs tooling (mcp.el)
+
+* Interaction Checklist [0/8]
+:PROPERTIES:
+:CUSTOM_ID: interactions
+:END:
+
+When working with this repository:
+
+- [ ] *Editing*: Use Emacs with org-mode for all content creation
+- [ ] *Documentation*: Write all documentation in org format with proper tangling
+- [ ] *Development*: Develop code within org-mode source blocks
+- [ ] *Testing*: Run tests via make commands
+- [ ] *Building*: Use Makefile for all build operations 
+- [ ] *Committing*: Use conventional commits with trailers
+- [ ] *Publishing*: Generate documentation with org-publish
+- [ ] *Diagrams*: Create diagrams with plantuml or mermaid in org source blocks
