@@ -6,7 +6,7 @@
 * 5-Day Gen AI Intensive Course
 
 #+ATTR_HTML: :width 100% :alt 5-Day Generative AI Intensive Banner
-[[file:images/wip/splash/horizontal-banner-timeline.jpeg]]
+[[file:images/gemini/course-banners/course-timeline-banner-gemini.jpeg]]
 
 #+begin_html
 <p>
@@ -142,7 +142,7 @@ print(client.extract_text(chat_response))
 ** Course Resources
 
 #+ATTR_HTML: :width 100% :alt Generative AI Course Resources
-[[file:images/banner-subtle.jpg]]
+[[file:images/gemini/network-visualizations/wave-pattern-blue-purple-gemini.jpeg]]
 
 - Official Course Slides: See ~resources/~ directory  
 - Google AI Studio: https://makersuite.google.com/

@@ -117,8 +117,9 @@ tramp
 .svn
 
 # Org export
-images/
-!images/headers/
+# Allowing all images now
+# images/
+# !images/headers/
 *.txt#
 *.tex
 *.html
