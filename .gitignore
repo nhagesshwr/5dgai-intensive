@@ -118,6 +118,7 @@ tramp
 
 # Org export
 images/
+!images/headers/
 *.txt#
 *.tex
 *.html
