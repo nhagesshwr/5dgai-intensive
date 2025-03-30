@@ -189,3 +189,56 @@ The ~config/.envrc.template~ file defines the required environment variables:
 - PYTHONPATH configuration
 
 Copy this template to create your ~.env~ file in the project root.
+
+** Contributing
+:PROPERTIES:
+:CUSTOM_ID: contributing
+:END:
+
+*** Getting Started
+
+1. Fork the repository
+2. Clone your fork: ~git clone https://github.com/yourusername/5dgai-intensive.git~
+3. Set up the environment: ~make setup~
+4. Create a new branch: ~git checkout -b feature/your-feature-name~
+5. Make your changes
+6. Run linters and tests: ~make lint~ and ~make test~
+7. Commit with appropriate format (see [[#git-conventions][Git Conventions]])
+8. Push to your fork and submit a pull request
+
+*** Development Workflow
+
+1. Use [[file:CLAUDE.org][CLAUDE.org]] for guidance on repository standards
+2. Follow proper Org-mode documentation practices
+3. Create test files for any new functionality
+4. Document changes in appropriate Org files
+5. Run ~make lint-all~ before submitting changes
+6. Ensure Docker containers still build properly
+
+*** Full Command Reference
+
+| Command             | Description                                      |
+|---------------------+--------------------------------------------------|
+| ~make setup~        | Setup Python environment with Poetry             |
+| ~make dev~          | Start Poetry shell for development               |
+| ~make api-test~     | Test API connectivity with Gemini                |
+| ~make lint~         | Run all linters (Python, Shell, Org, Elisp)      |
+| ~make lint-py~      | Lint Python files specifically                   |
+| ~make lint-sh~      | Lint shell scripts specifically                  |
+| ~make lint-org~     | Lint Org mode files                              |
+| ~make lint-el~      | Lint Emacs Lisp files                            |
+| ~make format~       | Format all code files                            |
+| ~make format-py~    | Format Python files with black and isort         |
+| ~make format-sh~    | Format shell scripts with shfmt                  |
+| ~make tangle~       | Tangle a specific org file                       |
+| ~make tangle-all~   | Tangle all org files in the project              |
+| ~make lint-all~     | Run comprehensive linting with lint-all.sh       |
+| ~make test~         | Run tests                                        |
+| ~make docker~       | Build all Docker containers                      |
+| ~make docker-jupyter~ | Run Jupyter notebook server in Docker          |
+| ~make docker-api~   | Run API service in Docker                        |
+
+*** Technology Migration Plans
+
+The repository is currently in Python but planning to migrate to Hy (Lisp dialect that runs on Python runtime).
+See existing GitHub issues for progress updates on this migration.

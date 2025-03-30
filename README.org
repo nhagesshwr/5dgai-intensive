@@ -120,12 +120,12 @@ print(client.extract_text(chat_response))
 - ~notebooks/day4/~ - Multimodal applications
 - ~notebooks/day5/~ - Advanced techniques and production deployment
 
-** Get Help & Contribute
+** Get Help & Community
 
 - Join the course Discord for live discussions
-- Check the ~examples/~ directory for additional code samples
+- Check the [[file:examples/][examples/]] directory for additional code samples 
+- For contributors: see [[file:DEVELOPMENT.org][Development Guide]]
 - Submit issues if you find bugs or have enhancement ideas
-- Share your own examples with pull requests
 
 ** Helpful Commands
 
@@ -134,8 +134,6 @@ print(client.extract_text(chat_response))
 | ~make setup~       | Setup Python environment with Poetry     |
 | ~make dev~         | Start Poetry shell for development       |
 | ~make api-test~    | Test API connectivity with Gemini        |
-| ~make lint~        | Run code linters                         |
-| ~make docker~      | Build all Docker containers              |
 | ~make help~        | Show all available make commands         |
 
 ** Course Resources

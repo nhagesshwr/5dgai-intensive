@@ -31,6 +31,10 @@ gradio = "^4.19.2"
 python-dotenv = "^1.0.1"
 requests = "^2.31.0"
 tqdm = "^4.66.2"
+hy = "^1.0"
+click = "^8.1.7"
+pydantic = "^2.6.3"
+typing-extensions = "^4.9.0"
 
 [build-system]
 requires = ["poetry-core"]

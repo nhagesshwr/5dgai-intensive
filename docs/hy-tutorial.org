@@ -1,0 +1,462 @@
+#+TITLE: Hy Programming Tutorial
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: March 30, 2025
+
+* Introduction to Hy
+
+Hy is a Lisp dialect that embeds in Python, providing the elegance of Lisp with full access to Python's ecosystem. This tutorial focuses on Hy 1.0, which includes significant changes from earlier versions.
+
+** Why Hy?
+
+- Lisp-style macros for metaprogramming
+- Full Python interoperability
+- Elegant functional programming
+- Seamless integration with Python libraries
+- Consistent with our Org-mode structured approach
+
+* Getting Started with Hy 1.0
+
+** Installation
+
+Hy is already included in this project's dependencies:
+
+#+begin_src bash
+# Activate the poetry environment
+poetry shell
+
+# Verify Hy installation
+hy --version
+#+end_src
+
+** Interactive REPL
+
+The Hy REPL provides an interactive environment for exploring and testing:
+
+#+begin_src bash
+# Start the Hy REPL
+hy
+#+end_src
+
+Example REPL session:
+#+begin_src hy
+=> (print "Hello from Hy!")
+Hello from Hy!
+=> (+ 1 2 3 4 5)
+15
+=> (list-comp (* x 2) [x (range 5)])
+[0, 2, 4, 6, 8]
+#+end_src
+
+* Hy Syntax Basics
+
+** Basic Syntax
+
+| Python                      | Hy                           |
+|-----------------------------+------------------------------|
+| ~x = 10~                    | ~(setv x 10)~                |
+| ~a + b~                     | ~(+ a b)~                    |
+| ~x = [1, 2, 3]~             | ~(setv x [1 2 3])~           |
+| ~def foo(x): return x * 2~  | ~(defn foo [x] (* x 2))~     |
+| ~if x > 5: print("Big")~    | ~(when (> x 5) (print "Big"))~ |
+
+** Defining Functions
+
+#+begin_src hy
+;; Simple function
+(defn square [x]
+  (* x x))
+
+;; Function with optional arguments
+(defn greet [name &optional [greeting "Hello"]]
+  (print f"{greeting}, {name}!"))
+
+;; Function with keyword arguments
+(defn build-person [name age &kwargs options]
+  {"name" name
+   "age" age
+   "options" options})
+#+end_src
+
+** Data Structures
+
+#+begin_src hy
+;; Lists
+(setv my-list [1 2 3 4 5])
+(.append my-list 6)
+
+;; Dictionaries
+(setv person {"name" "Alice" "age" 30})
+(setv (get person "job") "Engineer")
+
+;; Sets
+(setv unique-numbers (set [1 2 2 3 3 3]))
+#+end_src
+
+* Hy 1.0 Changes from Previous Versions
+
+** Major Syntax Changes
+
+1. *Symbol Naming*: Dashes now translate to underscores
+   - ~some-func~ in Hy becomes ~some_func~ in Python
+   - ~some_func~ from Python becomes ~some-func~ in Hy
+
+2. *Keyword Arguments*: Use ~&kwargs~ instead of ~**~
+   #+begin_src hy
+   ;; Old (pre 1.0)
+   (defn func [x #** kwargs] ...)
+   
+   ;; New (Hy 1.0)
+   (defn func [x &kwargs kwargs] ...)
+   #+end_src
+
+3. *Function Definition*: ~defun~ is now ~defn~
+
+4. *Optional Arguments*: Use ~&optional~ instead of ~/~
+   #+begin_src hy
+   ;; Old (pre 1.0)
+   (defn func [x /optional [y 10]] ...)
+   
+   ;; New (Hy 1.0)
+   (defn func [x &optional [y 10]] ...)
+   #+end_src
+
+5. *Import Syntax*: More consistent
+   #+begin_src hy
+   ;; Importing modules
+   (import os sys [datetime [date time]])
+   
+   ;; From imports
+   (import [os [path]])
+   #+end_src
+
+** Macros in Hy 1.0
+
+Macros work differently in Hy 1.0:
+
+#+begin_src hy
+;; Define a simple macro
+(defmacro unless [condition &rest body]
+  `(when (not ~condition)
+     ~@body))
+
+;; Using the macro
+(unless (empty? items)
+  (print "Items exist!")
+  (process-items items))
+#+end_src
+
+* Integrating Python and Hy
+
+** Importing Python from Hy
+
+#+begin_src hy
+;; Import Python standard libraries
+(import os
+        json
+        [sys [argv]])
+
+;; Import project modules
+(import [src.gemini-client [GeminiClient]])
+#+end_src
+
+** Calling Python Functions
+
+#+begin_src hy
+;; Use Python's JSON module
+(setv data (json.loads "{\"name\": \"Alice\"}"))
+
+;; Call methods on Python objects
+(setv client (GeminiClient))
+(setv response (.generate-content client "Hello, Gemini!"))
+#+end_src
+
+* CLI Applications with Click
+
+** Basic Click Usage in Hy
+
+#+begin_src hy
+(import click)
+
+(defn/a [click.command]
+  greeting [&optional [name "World"] &kwonly [caps False]]
+  "Simple greeting program"
+  (setv message f"Hello, {name}!")
+  (when caps
+    (setv message (.upper message)))
+  (print message))
+
+;; Run with: hy script.hy --caps
+#+end_src
+
+** Full CLI Example
+
+#+begin_src hy
+;; cli.hy
+(import click
+        [src.gemini-client [GeminiClient]])
+
+(defn/a [click.group]
+  cli []
+  "Gemini CLI tool")
+
+(defn/a [cli.command "generate"]
+  [prompt &optional [model "gemini-2.0-flash"] &kwonly [system None]]
+  "Generate content with Gemini"
+  (setv client (GeminiClient))
+  (setv response (.generate-content client prompt model system))
+  (print (.extract-text client response)))
+
+(defn/a [cli.command "chat"]
+  [message &kwonly [model "gemini-2.0-flash"] [history-file None]]
+  "Start or continue a chat"
+  (setv client (GeminiClient))
+  (setv messages [{"role" "user" "content" message}])
+  
+  (when history-file
+    (try
+      (with [f (open history-file "r")]
+        (setv history (json.load f))
+        (setv messages (+ history messages)))
+      (except [e [FileNotFoundError]]
+        (print f"Creating new chat history in {history-file}"))))
+  
+  (setv response (.chat client messages model))
+  (setv result (.extract-text client response))
+  (print result)
+  
+  (when history-file
+    (.append messages {"role" "model" "content" result})
+    (with [f (open history-file "w")]
+      (json.dump messages f))))
+
+(when (= __name__ "__main__")
+  (cli))
+#+end_src
+
+* Using Pydantic with Hy
+
+** Basic Models
+
+#+begin_src hy
+(import [pydantic [BaseModel]])
+(import [typing [List Optional]])
+
+(defclass/a [BaseModel] User []
+  (setv username str
+        email str
+        active bool
+        tags (List str)
+        profile (Optional dict) None))
+
+(setv user (User :username "jwalsh" 
+                 :email "j@wal.sh"
+                 :active True
+                 :tags ["python" "hy" "lisp"]))
+
+(print (. user model-dump))
+#+end_src
+
+** LLM Response Models
+
+#+begin_src hy
+(import [pydantic [BaseModel Field]])
+(import [typing [List Dict Any]])
+
+(defclass/a [BaseModel] TextContent []
+  (setv text str))
+
+(defclass/a [BaseModel] ContentPart []
+  (setv text (Field ... :description "The text content")))
+
+(defclass/a [BaseModel] MessageContent []
+  (setv parts (List ContentPart)))
+
+(defclass/a [BaseModel] GeminiMessage []
+  (setv role str
+        content MessageContent))
+
+(defclass/a [BaseModel] GeminiResponse []
+  (setv candidates (List Dict)
+        
+        (defn get-text [self]
+          (try
+            (get-in self ["candidates" 0 "content" "parts" 0 "text"])
+            (except [e [KeyError IndexError]]
+              "No text content found")))))
+#+end_src
+
+* Testing in Hy
+
+** Unit Tests
+
+#+begin_src hy
+;; test_gemini.hy
+(import unittest
+        [unittest.mock [patch MagicMock]])
+(import [src.gemini-client [GeminiClient]])
+
+(defclass TestGeminiClient [unittest.TestCase] []
+  
+  (defn test-init [self]
+    "Test client initialization"
+    (setv client (GeminiClient :api-key "test-key"))
+    (self.assertEqual "test-key" client.api-key))
+  
+  (defn/a [patch "requests.post"]
+    test-generate-content [self mock-post]
+    "Test content generation"
+    ;; Setup mock response
+    (setv mock-response (MagicMock))
+    (setv mock-post.return-value mock-response)
+    (setv mock-response.json.return-value 
+      {"candidates" [{"content" {"parts" [{"text" "Test response"}]}}]})
+    
+    ;; Test the client
+    (setv client (GeminiClient))
+    (setv response (.generate-content client "Test prompt"))
+    (setv result (.extract-text client response))
+    
+    ;; Assertions
+    (self.assertEqual "Test response" result)))
+
+(when (= __name__ "__main__")
+  (unittest.main))
+#+end_src
+
+* Best Practices for Hy in this Project
+
+** Project Structure
+
+- Place Hy files in the same directories as Python files
+- Use ~.hy~ extension for all Hy files
+- Keep imports consistent between Hy and Python
+
+** Naming Conventions
+
+- Use kebab-case for Hy function and variable names
+  - ~gemini-client.hy~ instead of ~gemini_client.hy~
+  - ~process-response~ instead of ~process_response~
+- Remember that Python's snake_case gets converted to kebab-case in Hy
+
+** Documentation
+
+- Include docstrings in all Hy functions
+- Add type hints using Python's notation
+
+#+begin_src hy
+(defn process-data [data]
+  "Process the input data and return results.
+  
+  Args:
+      data: The data to process
+      
+  Returns:
+      Processed data dictionary"
+  ;; Implementation
+  )
+#+end_src
+
+** Error Handling
+
+#+begin_src hy
+(try
+  (some-risky-function)
+  (except [e [TypeError ValueError]]
+    (print f"Error: {e}"))
+  (except [e [Exception]]
+    (print "Unexpected error")
+    (raise))
+  (finally
+    (cleanup-resources)))
+#+end_src
+
+* Integration with Org-mode
+
+Org-mode supports Hy code blocks:
+
+#+begin_src org
+,#+begin_src hy
+(defn factorial [n]
+  (if (= n 0)
+      1
+      (* n (factorial (- n 1)))))
+
+(print (factorial 5))
+,#+end_src
+#+end_src
+
+You can also tangle Hy code from Org files:
+
+#+begin_src org
+,#+begin_src hy :tangle src/example.hy
+(defn main []
+  (print "Hello from tangled Hy code!"))
+
+(when (= __name__ "__main__")
+  (main))
+,#+end_src
+#+end_src
+
+* Migrating from Python to Hy
+
+** Basic Translation Patterns
+
+| Python Pattern                | Hy Pattern                           |
+|------------------------------+--------------------------------------|
+| ~if/elif/else~               | ~(cond [(test1) expr1] [(test2) expr2] [True expr3])~ |
+| ~for x in collection:~       | ~(for [x collection] ...)~           |
+| ~with open() as f:~          | ~(with [f (open ...)] ...)~          |
+| ~lambda x: x * 2~            | ~(fn [x] (* x 2))~                   |
+| ~[x*2 for x in range(5)]~    | ~(list-comp (* x 2) [x (range 5)])~  |
+| ~try/except/finally~         | ~(try ... (except ...) (finally ...))~ |
+
+** Step-by-Step Migration
+
+1. Start with simple, self-contained functions
+2. Write tests before migrating complex code
+3. Use Hy's REPL to validate transformations
+4. Remember that Python functions can call Hy functions and vice-versa
+
+** Example: Converting gemini_client.py
+
+Original Python:
+#+begin_src python
+def extract_text(self, response):
+    """
+    Extract text content from API response.
+    
+    Args:
+        response: The API response dictionary
+        
+    Returns:
+        Extracted text content
+    """
+    try:
+        return response['candidates'][0]['content']['parts'][0]['text']
+    except (KeyError, IndexError):
+        return "No text content found in response"
+#+end_src
+
+Converted to Hy:
+#+begin_src hy
+(defn extract-text [self response]
+  "Extract text content from API response.
+  
+  Args:
+      response: The API response dictionary
+      
+  Returns:
+      Extracted text content"
+  (try
+    (get-in response ["candidates" 0 "content" "parts" 0 "text"])
+    (except [e [KeyError IndexError]]
+      "No text content found in response")))
+#+end_src
+
+* Resources
+
+- [[https://docs.hylang.org/en/latest/][Official Hy Documentation]]
+- [[https://github.com/hylang/hy/tree/master/docs/cheatsheet.rst][Hy Cheatsheet]]
+- [[https://github.com/hylang/hy/blob/master/NEWS.rst][Hy 1.0 Release Notes]]
+- [[https://github.com/hylang/hy/wiki][Hy Community Wiki]]
