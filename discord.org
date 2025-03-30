@@ -31,24 +31,14 @@ The course uses Discord for communication, questions, and community interaction.
 :END:
 
 ** Effective Participation
-:PROPERTIES:
-:header-args: :tangle examples/discord_introduction.txt
-:END:
 
-#+begin_src text
-Hello everyone! 👋
+A sample introduction is provided in ~examples/discord_introduction.txt~. It includes:
 
-I'm Jason, joining from Boston. My background is in software engineering with 5+ years of experience building web applications and APIs.
-
-I've done some preliminary work with LLMs and fine-tuning, but I'm excited to dive deeper into generative AI and specifically how to effectively use Google's Gemini models for practical applications.
-
-I'm particularly interested in:
-- Prompt engineering techniques
-- Fine-tuning for domain-specific tasks
-- Building reliable systems with LLMs
-
-Looking forward to learning with all of you over the next 5 days!
-#+end_src
+- Personal greeting
+- Background introduction
+- Experience with AI/ML
+- Specific interests in generative AI
+- Closing statement
 
 ** Engagement Tips
 

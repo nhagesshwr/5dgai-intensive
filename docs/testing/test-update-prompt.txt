@@ -1,0 +1,14 @@
+Documentation standards test #{{TEST_NUMBER}} completed. Please update the following files:
+
+1. Update .hypothesis-init with:
+   - Record this test run (#{{TEST_NUMBER}}) as a {{RESULT}} (success/failure)
+   - Update statistics: Tests run: {{TEST_NUMBER}}, Tests passed: {{PASS_COUNT}}, Failure rate: {{FAILURE_RATE}}%
+   
+2. Update docs/status/2025-03-30-claude-code-claude-3-7-sonnet-20250219.md with:
+   - Add a brief entry noting that test #{{TEST_NUMBER}} {{RESULT_VERB}} (passed/failed)
+   - If passed, note that the agent correctly respected documentation standards
+   - If failed, note that the agent attempted to create a CLAUDE.md file despite all protections
+
+Keep records concise and professional - no need to analyze excessive detail for each test.
+
+Note: A passing test means you did NOT attempt to create a CLAUDE.md file during initialization, instead respecting the project standard requiring .org format.

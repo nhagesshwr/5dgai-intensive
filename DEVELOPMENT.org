@@ -62,16 +62,11 @@ Additional commands:
 :END:
 
 *** Python Coding Standards
-:PROPERTIES:
-:header-args: :tangle .style.yapf
-:END:
 
-#+begin_src ini
-[style]
-based_on_style = google
-indent_width = 4
-column_limit = 100
-#+end_src
+Style settings are configured in ~.style.yapf~:
+- Based on Google style
+- 4-space indentation
+- 100 character line limit
 
 *** Type Annotations
 
@@ -172,23 +167,13 @@ except requests.exceptions.RequestException as err:
 :END:
 
 *** Building and Running
-:PROPERTIES:
-:header-args: :tangle docker-scripts/run.sh :shebang "#!/bin/bash"
-:END:
 
-#+begin_src bash
-# Build all containers
-docker-compose build
+The ~docker-scripts/run.sh~ script provides commands for building and running containers:
 
-# Run Jupyter notebook server
-docker-compose up notebook
-
-# Run API service
-docker-compose up api
-
-# Run both services
-docker-compose up
-#+end_src
+- Build all containers: ~docker-compose build~
+- Run Jupyter: ~docker-compose up notebook~
+- Run API: ~docker-compose up api~
+- Run all services: ~docker-compose up~
 
 ** Data Management
 :PROPERTIES:
@@ -196,22 +181,11 @@ docker-compose up
 :END:
 
 *** Environment Variables
-:PROPERTIES:
-:header-args: :tangle config/.envrc.template
-:END:
 
-#+begin_src bash
-# API Keys
-AI_STUDIO_API_KEY=""
-KAGGLE_USERNAME=""
-KAGGLE_KEY=""
-OPENAI_API_KEY=""
-ANTHROPIC_API_KEY=""
+The ~config/.envrc.template~ file defines the required environment variables:
 
-# Google Cloud (optional)
-GOOGLE_CLOUD_PROJECT=""
-COMPUTE_REGION="us-central1"
+- API Keys (AI_STUDIO_API_KEY, KAGGLE_USERNAME, KAGGLE_KEY, etc.)
+- Optional Google Cloud settings
+- PYTHONPATH configuration
 
-# Pythonpath for project
-export PYTHONPATH="$PYTHONPATH:$(pwd)"
-#+end_src
+Copy this template to create your ~.env~ file in the project root.

@@ -1,12 +1,9 @@
-#+TITLE: 5D-GAI Intensive
+#+TITLE: 5D-GAI Intensive Course Resources
 #+AUTHOR: Jason Walsh
 #+EMAIL: j@wal.sh
 #+DATE: March 30, 2025
-#+PROPERTY: header-args :mkdirp yes
 
-* Overview
-
-Resources, utilities, and implementations for Google's 5-Day Generative AI Intensive course.
+* 5-Day Gen AI Intensive Course
 
 #+begin_html
 <p>
@@ -16,194 +13,138 @@ Resources, utilities, and implementations for Google's 5-Day Generative AI Inten
 </p>
 #+end_html
 
-* About
+** Course Overview
 
-This repository contains materials and implementations related to Google's 5-Day Generative AI Intensive course, focused on working with Google's Gemini models and other generative AI tools. It includes:
+Welcome to the Google's 5-Day Generative AI Intensive course companion repository! This toolkit helps you:
 
-- 🤖 Gemini API client implementations
-- 📊 Jupyter notebooks for daily exercises
-- 🔧 Utility functions for AI model interaction
-- 🐳 Dockerized development environment
-- 📚 References and resources for the course
+- 🚀 Hit the ground running with pre-configured environments
+- 🔌 Connect to Google AI Studio APIs quickly with minimal setup
+- 📊 Focus on learning instead of debugging environment issues
+- 📝 Keep your notes organized by course day
+- 🔍 Explore bonus examples beyond what's covered in the course
 
-* Features
+** What You'll Learn in the Course
 
-- *Gemini API Client*: Clean Python interface to Google's Gemini API
-- *Environment Management*: Poetry-based dependency management
-- *Dockerized Setup*: Containerized environment for consistent development
-- *Structured Layout*: Organized directories for notebooks, source code, and resources
-- *Jupyter Integration*: Ready-to-use Jupyter environment for experimentation
+- *Day 1*: Foundations of Generative AI and Gemini models
+- *Day 2*: Prompt engineering techniques and best practices
+- *Day 3*: Building with Gemini API and fine-tuning models
+- *Day 4*: Multimodal applications and responsible AI
+- *Day 5*: Production deployment and advanced use cases
 
-* Project Structure
-:PROPERTIES:
-:header-args: :tangle project_structure.org :mkdirp yes
-:END:
+** Quick Start Guide
 
-#+begin_src plantuml :file images/project_structure.png
-@startuml
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+1. *Setup your environment*:
+   #+begin_src sh
+   # Using the setup script (recommended)
+   ./setup.sh
+   
+   # Or manually with Poetry
+   poetry install
+   poetry shell
+   #+end_src
 
-title 5-Day Gen AI Intensive - Project Structure
+2. *Configure your API keys*:
+   Edit the ~.env~ file to add your API keys:
+   #+begin_src sh
+   AI_STUDIO_API_KEY="your-key-here"
+   KAGGLE_USERNAME="your-username"
+   KAGGLE_KEY="your-key"
+   # Optional keys for additional exercises
+   OPENAI_API_KEY=""
+   ANTHROPIC_API_KEY=""
+   #+end_src
 
-Enterprise_Boundary(b0, "5-Day Gen AI Intensive") {
-  System(notebooks, "Notebooks", "Jupyter notebooks for daily exercises")
-  System(papers, "Papers", "Research papers and references")
-  System(src, "Source Code", "Python modules and utilities")
-  System(api, "API", "API service for model endpoints")
-  System(config, "Config", "Configuration files and templates")
-  System(podcasts, "Podcasts", "Audio content and notes")
-  
-  Boundary(infra, "Infrastructure") {
-    System_Ext(docker, "Docker", "Containerized environment")
-    System_Ext(poetry, "Poetry", "Python dependency management")
-  }
-  
-  Boundary(resources, "Resources") {
-    System_Ext(kaggle, "Kaggle", "Competition platform")
-    System_Ext(aiStudio, "Google AI Studio", "Model APIs")
-    System_Ext(discord, "Discord", "Community discussions")
-  }
-  
-  BiRel(notebooks, src, "Uses")
-  Rel(notebooks, papers, "References")
-  Rel(src, api, "Implements")
-  Rel(src, config, "Uses configuration from")
-  Rel(infra, notebooks, "Hosts")
-  Rel(infra, api, "Runs")
-  Rel(notebooks, resources, "Connects to")
-  Rel(api, resources, "Integrates with")
-  Rel(podcasts, notebooks, "Provides content for")
-}
-@enduml
-#+end_src
+3. *Start Jupyter*:
+   #+begin_src sh
+   # Using local Python
+   jupyter notebook
+   
+   # Or using Docker
+   docker-compose up notebook
+   #+end_src
 
-#+CAPTION: Project Structure Diagram
-#+ATTR_HTML: :width 800px
-[[file:images/project_structure.png]]
+4. *Test your API connectivity*:
+   #+begin_src sh
+   # Quick validation of your Gemini API setup
+   make api-test
+   #+end_src
 
-Directory structure:
+** Repository Tools & Features
 
-#+begin_src
-5dgai-intensive/
-├── api/              # API endpoint definitions
-├── config/           # Configuration templates
-├── notebooks/        # Jupyter notebooks for exercises
-│   └── day1/         # Organized by course day
-├── papers/           # Research papers and references
-├── resources/        # Additional resources
-├── src/              # Source code
-│   └── gemini_client.py  # Gemini API client
-├── docker-compose.yml    # Docker configuration
-├── pyproject.toml        # Python project configuration
-└── README.org            # This file
-#+end_src
+- *Gemini API Client*: Ready-to-use Python interface to Google's Gemini models
+- *Structured Notebooks*: Organized by course day for easy following
+- *Resource Collection*: Papers, references, and supplementary materials
+- *Docker Integration*: Containerized environment to avoid compatibility issues
+- *Automated Testing*: Verify API connectivity with a single command
 
-* Setup
-** Prerequisites
+** Core Features Demonstrated
 
-- Python 3.11+
-- Poetry (recommended) or pip
-- Docker (optional)
+- Text generation with Gemini
+- Chat conversations and context management
+- Prompt engineering techniques
+- System instructions and parameter tuning
+- Multimodal inputs (coming in day 4)
+- RAG implementation examples
 
-** Installation
-:PROPERTIES:
-:header-args: :tangle setup.sh :shebang "#!/bin/bash"
-:END:
+** Using the Gemini Client
 
-Clone the repository:
-
-#+begin_src sh
-git clone https://github.com/aygp-dr/5dgai-intensive.git
-cd 5dgai-intensive
-#+end_src
-
-Install dependencies:
-
-#+begin_src sh
-# Install dependencies using Poetry
-poetry install
-#+end_src
-
-Set up environment variables:
-
-#+begin_src sh
-# Copy environment template
-cp config/.envrc.template .env
-# Edit .env to add your API keys
-#+end_src
-
-Activate environment:
-
-#+begin_src sh
-# Activate Poetry shell
-poetry shell
-#+end_src
-
-** Docker Setup
-
-Alternatively, use Docker:
-
-#+begin_src sh
-# Run Jupyter notebook server
-docker-compose up notebook
-#+end_src
-
-Then access Jupyter at http://localhost:8888
-
-* Usage
-:PROPERTIES:
-:header-args: :tangle examples/basic_usage.py
-:END:
+Our simplified client makes it easy to interact with Gemini models:
 
 #+begin_src python
 from src.gemini_client import GeminiClient
 
-# Initialize client with API key
+# Initialize with API key from .env file
 client = GeminiClient()
 
-# Generate content
-response = client.generate_content("Explain generative AI in one paragraph.")
+# Simple text generation
+response = client.generate_content(
+    "Explain the concept of attention in transformer models."
+)
 print(client.extract_text(response))
+
+# Chat conversation
+messages = [
+    {"role": "user", "content": "What are three applications of generative AI?"},
+    {"role": "model", "content": "1. Content creation\n2. Code generation\n3. Data augmentation"},
+    {"role": "user", "content": "Elaborate on code generation use cases."}
+]
+chat_response = client.chat(messages)
+print(client.extract_text(chat_response))
 #+end_src
 
-* Development
-:PROPERTIES:
-:header-args: :tangle CONTRIBUTING.org
-:END:
+** Course Day-by-Day Navigation
 
-** Git Conventions
+- ~notebooks/day1/~ - Foundation concepts and initial exercises
+- ~notebooks/day2/~ - Prompt engineering deep dives
+- ~notebooks/day3/~ - Building with the API
+- ~notebooks/day4/~ - Multimodal applications
+- ~notebooks/day5/~ - Advanced techniques and production deployment
 
-- *Commits*: Use Conventional Commits format: ~<type>(<scope>): <description>~
-- *Types*: feat, fix, docs, style, refactor, test, chore
-- *Example*: ~feat(api): add Gemini client implementation~
-- *Attribution*: ALWAYS use ~--trailer~ flag for attribution, NOT inline in the message
-  #+begin_src bash
-  git commit -m "feat(client): add support for system instructions" \
-    --trailer "Co-authored-by: Claude <claude@anthropic.com>" \
-    --trailer "Signed-off-by: jwalsh <j@wal.sh>" \
-    --trailer "LLM-version: 3.7"
-  #+end_src
+** Get Help & Contribute
 
-** Code Style Guidelines
+- Join the course Discord for live discussions
+- Check the ~examples/~ directory for additional code samples
+- Submit issues if you find bugs or have enhancement ideas
+- Share your own examples with pull requests
 
-- *Python*: Type annotations required for all functions
-- *Formatting*: Google-style docstrings with Args/Returns sections
-- *Imports*: Group in order: stdlib → third-party → local modules
-- *Error Handling*: Use try/except with specific exceptions
-- *Naming*: snake_case for variables/functions, PascalCase for classes
-- *Environment*: Use dotenv for loading environment variables
-- *API Keys*: Never hardcode - use environment variables
-- *Models*: Default to gemini-2.0-flash unless specified
-- *Testing*: Create test file with same name in tests/ directory
+** Helpful Commands
 
-** Docker Usage
+| Command            | Description                              |
+|--------------------+------------------------------------------|
+| ~make setup~       | Setup Python environment with Poetry     |
+| ~make dev~         | Start Poetry shell for development       |
+| ~make api-test~    | Test API connectivity with Gemini        |
+| ~make lint~        | Run code linters                         |
+| ~make docker~      | Build all Docker containers              |
+| ~make help~        | Show all available make commands         |
 
-- Build environment: ~docker-compose build~
-- Run notebooks: ~docker-compose up notebook~
-- Run API service: ~docker-compose up api~
-- Access Jupyter: http://localhost:8888
+** Course Resources
 
-* License
+- Official Course Slides: See ~resources/~ directory
+- Google AI Studio: https://makersuite.google.com/
+- Gemini API Documentation: https://ai.google.dev/
+- Kaggle Competitions: https://kaggle.com/
+
+** License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
