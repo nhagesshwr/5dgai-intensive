@@ -15,7 +15,7 @@ if command -v poetry > /dev/null; then
     poetry init \
         --name "gen-ai-intensive" \
         --description "Google's 5-Day Gen AI Intensive Course" \
-        --author "Jason Walsh <jasonwalsh@gmail.com>" \
+        --author "Jason Walsh <j@wal.sh>" \
         --python "^3.11"
     
     poetry add \

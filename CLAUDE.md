@@ -1,5 +1,17 @@
 # 5D-GAI Intensive Development Guide
 
+## :important: Git Conventions
+- **Commits**: Use Conventional Commits format: `<type>(<scope>): <description>`
+- **Types**: feat, fix, docs, style, refactor, test, chore
+- **Example**: `feat(api): add Gemini client implementation`
+- **Attribution**: ALWAYS use `--trailer` flag for attribution, NOT inline in the message
+  ```bash
+  git commit -m "feat(client): add support for system instructions" \
+    --trailer "Co-authored-by: Claude <claude@anthropic.com>" \
+    --trailer "Signed-off-by: jwalsh <j@wal.sh>" \
+    --trailer "LLM-version: 3.7"
+  ```
+
 ## Build & Test Commands
 - Setup environment: `poetry install` and `poetry shell`
 - Run Python scripts: `python src/script_name.py`
@@ -17,20 +29,6 @@
 - **API Keys**: Never hardcode - use environment variables
 - **Models**: Default to gemini-2.0-flash unless specified
 - **Testing**: Create test file with same name in tests/ directory
-
-## Git Conventions
-- **Commits**: Use Conventional Commits format: `<type>(<scope>): <description>`
-- **Types**: feat, fix, docs, style, refactor, test, chore
-- **Example**: `feat(api): add Gemini client implementation`
-- **Attribution**: Use Git trailers instead of inline messages
-  ```
-  feat(client): add support for system instructions
-  
-  This commit adds support for system instructions to the GeminiClient class.
-  
-  Co-authored-by: Claude <claude@anthropic.com>
-  Signed-off-by: jwalsh <jasonwalsh@gmail.com>
-  ```
 
 ## Docker Usage
 - Build environment: `docker-compose build`

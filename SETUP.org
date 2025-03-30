@@ -285,7 +285,7 @@ This demo shows how to integrate Gemini API calls into your Org-mode workflow. U
 
 ;; RESTClient for API testing#+TITLE: 5-Day Gen AI Intensive Setup
 #+AUTHOR: Jason Walsh
-#+EMAIL: jasonwalsh@gmail.com
+#+EMAIL: j@wal.sh
 #+DATE: March 30, 2025
 #+PROPERTY: header-args :mkdirp yes
 
@@ -315,7 +315,7 @@ if command -v poetry > /dev/null; then
     poetry init \
         --name "gen-ai-intensive" \
         --description "Google's 5-Day Gen AI Intensive Course" \
-        --author "Jason Walsh <jasonwalsh@gmail.com>" \
+        --author "Jason Walsh <j@wal.sh>" \
         --python "^3.11"
     
     poetry add \
@@ -369,7 +369,7 @@ echo "4. Run 'direnv allow' to load the environment variables (if using direnv)"
 name = "gen-ai-intensive"
 version = "0.1.0"
 description = "Resources for Google's 5-Day Gen AI Intensive course"
-authors = ["Jason Walsh <jasonwalsh@gmail.com>"]
+authors = ["Jason Walsh <j@wal.sh>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

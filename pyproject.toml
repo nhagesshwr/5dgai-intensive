@@ -2,7 +2,7 @@
 name = "gen-ai-intensive"
 version = "0.1.0"
 description = "Resources for Google's 5-Day Gen AI Intensive course"
-authors = ["Jason Walsh <jasonwalsh@gmail.com>"]
+authors = ["Jason Walsh <j@wal.sh>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
