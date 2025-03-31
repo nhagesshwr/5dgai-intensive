@@ -365,3 +365,305 @@ Embeddings and vector stores provide powerful tools for building semantic applic
 1. Choose appropriate embedding models for your data and use case
 2. Select suitable vector databases based on operational requirements
 3. Consider combining with other techniques (like RAG for LLMs) to improve results
+
+* Endnotes
+
+#+begin_src sh
+#!/usr/bin/env bash
+# Ensure the papers directory exists
+PAPERS_DIR="../../papers"
+mkdir -p "$PAPERS_DIR"
+
+# Function to download a paper
+download_paper() {
+    local url="$1"
+    local filename="$2"
+    
+    # Check if file already exists
+    if [ -f "$PAPERS_DIR/$filename" ]; then
+        echo "SKIP: $filename (already exists)"
+        return
+    fi
+    
+    # Download the paper
+    echo "DOWNLOAD: $filename"
+    wget -q -O "$PAPERS_DIR/$filename" "$url"
+    
+    # Check download success
+    if [ $? -eq 0 ]; then
+        echo "SUCCESS: $filename"
+    else
+        echo "FAILED: $filename"
+    fi
+}
+
+# Print start message
+echo "Starting paper download for embeddings and vector stores..."
+
+# List of papers to download from the endnotes
+download_paper "https://arxiv.org/pdf/1602.02215.pdf" "shazeer-2016-swivel.pdf"
+download_paper "https://arxiv.org/pdf/1301.3781.pdf" "mikolov-2013-word2vec.pdf"
+download_paper "https://arxiv.org/pdf/1607.04606.pdf" "bojanowski-2016-fasttext.pdf"
+download_paper "https://arxiv.org/pdf/2210.07316.pdf" "muennighoff-2022-mteb.pdf"
+download_paper "https://arxiv.org/pdf/1405.4053.pdf" "le-2014-doc2vec.pdf"
+download_paper "https://arxiv.org/pdf/2104.08821.pdf" "gao-2021-simcse.pdf"
+download_paper "https://arxiv.org/pdf/2201.01279.pdf" "wang-2022-text-embeddings.pdf"
+download_paper "https://arxiv.org/pdf/2304.01982.pdf" "lee-2023-token-retrieval.pdf"
+download_paper "https://arxiv.org/pdf/1709.07604.pdf" "cai-2017-graph-embedding.pdf"
+download_paper "https://arxiv.org/pdf/2204.07120.pdf" "dong-2022-dual-encoder.pdf"
+download_paper "https://arxiv.org/pdf/1603.09320.pdf" "malkov-2016-hnsw.pdf"
+download_paper "https://arxiv.org/pdf/1908.10396.pdf" "guo-2020-anisotropic.pdf"
+download_paper "https://arxiv.org/pdf/2401.08281.pdf" "douze-2024-faiss.pdf"
+download_paper "https://arxiv.org/pdf/2403.20327.pdf" "lee-2024-gecko.pdf"
+download_paper "https://arxiv.org/pdf/2302.13971.pdf" "touvron-2023-llama.pdf"
+download_paper "https://arxiv.org/pdf/2502.06786.pdf" "nair-2025-matryoshka.pdf"
+download_paper "https://arxiv.org/pdf/2407.01449.pdf" "faysse-2024-colpali.pdf"
+
+# Additional important papers from Google
+download_paper "https://storage.googleapis.com/deepmind-media/gemini/gemini_1_report.pdf" "gemini-team-2023.pdf"
+
+# Print completion message
+echo "Embedding papers download script completed."
+#+end_src
+
+#+RESULTS:
+| Starting  | paper                         | download | for    | embeddings | and | vector | stores... |
+| DOWNLOAD: | shazeer-2016-swivel.pdf       |          |        |            |     |        |           |
+| SUCCESS:  | shazeer-2016-swivel.pdf       |          |        |            |     |        |           |
+| DOWNLOAD: | mikolov-2013-word2vec.pdf     |          |        |            |     |        |           |
+| SUCCESS:  | mikolov-2013-word2vec.pdf     |          |        |            |     |        |           |
+| DOWNLOAD: | bojanowski-2016-fasttext.pdf  |          |        |            |     |        |           |
+| SUCCESS:  | bojanowski-2016-fasttext.pdf  |          |        |            |     |        |           |
+| DOWNLOAD: | muennighoff-2022-mteb.pdf     |          |        |            |     |        |           |
+| SUCCESS:  | muennighoff-2022-mteb.pdf     |          |        |            |     |        |           |
+| DOWNLOAD: | le-2014-doc2vec.pdf           |          |        |            |     |        |           |
+| SUCCESS:  | le-2014-doc2vec.pdf           |          |        |            |     |        |           |
+| DOWNLOAD: | gao-2021-simcse.pdf           |          |        |            |     |        |           |
+| SUCCESS:  | gao-2021-simcse.pdf           |          |        |            |     |        |           |
+| DOWNLOAD: | wang-2022-text-embeddings.pdf |          |        |            |     |        |           |
+| SUCCESS:  | wang-2022-text-embeddings.pdf |          |        |            |     |        |           |
+| DOWNLOAD: | lee-2023-token-retrieval.pdf  |          |        |            |     |        |           |
+| SUCCESS:  | lee-2023-token-retrieval.pdf  |          |        |            |     |        |           |
+| DOWNLOAD: | cai-2017-graph-embedding.pdf  |          |        |            |     |        |           |
+| SUCCESS:  | cai-2017-graph-embedding.pdf  |          |        |            |     |        |           |
+| DOWNLOAD: | dong-2022-dual-encoder.pdf    |          |        |            |     |        |           |
+| SUCCESS:  | dong-2022-dual-encoder.pdf    |          |        |            |     |        |           |
+| DOWNLOAD: | malkov-2016-hnsw.pdf          |          |        |            |     |        |           |
+| SUCCESS:  | malkov-2016-hnsw.pdf          |          |        |            |     |        |           |
+| DOWNLOAD: | guo-2020-anisotropic.pdf      |          |        |            |     |        |           |
+| SUCCESS:  | guo-2020-anisotropic.pdf      |          |        |            |     |        |           |
+| DOWNLOAD: | douze-2024-faiss.pdf          |          |        |            |     |        |           |
+| SUCCESS:  | douze-2024-faiss.pdf          |          |        |            |     |        |           |
+| DOWNLOAD: | lee-2024-gecko.pdf            |          |        |            |     |        |           |
+| SUCCESS:  | lee-2024-gecko.pdf            |          |        |            |     |        |           |
+| DOWNLOAD: | touvron-2023-llama.pdf        |          |        |            |     |        |           |
+| SUCCESS:  | touvron-2023-llama.pdf        |          |        |            |     |        |           |
+| DOWNLOAD: | nair-2025-matryoshka.pdf      |          |        |            |     |        |           |
+| SUCCESS:  | nair-2025-matryoshka.pdf      |          |        |            |     |        |           |
+| DOWNLOAD: | faysse-2024-colpali.pdf       |          |        |            |     |        |           |
+| SUCCESS:  | faysse-2024-colpali.pdf       |          |        |            |     |        |           |
+| DOWNLOAD: | gemini-team-2023.pdf          |          |        |            |     |        |           |
+| SUCCESS:  | gemini-team-2023.pdf          |          |        |            |     |        |           |
+| Embedding | papers                        | download | script | completed. |     |        |           |
+
+*** Rai, A., 2020, Study of various methods for tokenization. In Advances in Natural Language Processing.
+Available at: https://doi.org/10.1007/978-981-15-6198-6_18
+
+*** Pennington, J., Socher, R. & Manning, C., 2014, GloVe: Global Vectors for Word Representation. [online]
+Available at: https://nlp.stanford.edu/pubs/glove.pdf.
+
+*** Shazeer, N., Mirhoseini, A., Maziarz, K., Davis, A., Le, Q. V. & Hinton, G., 2016, Swivel: Improving embeddings
+by noticing what's missing. ArXiv, abs/1602.02215. Available at: https://arxiv.org/abs/1602.02215.
+
+*** Mikolov, T., Sutskever, I., Chen, K., Corrado, G. & Dean, J., 2013, Efficient estimation of word representations
+in vector space. ArXiv, abs/1301.3781. Available at: https://arxiv.org/pdf/1301.3781.pdf.
+
+*** Rehurek, R., 2021, Gensim: open source python library for word and document embeddings. Available
+at: https://radimrehurek.com/gensim/intro.html.
+
+*** Bojanowski, P., Grave, E., Joulin, A. & Mikolov, T., 2016, Enriching word vectors with subword information.
+ArXiv, abs/1607.04606. Available at: https://arxiv.org/abs/1607.04606.
+
+*** Deerwester, S., Dumais, S. T., Furnas, G. W., Landauer, T. K., & Harshman, R., 1990, Indexing by latent
+semantic analysis. Journal of the American Society for Information Science, 41(6), pp. 391-407.
+
+*** Blei, D. M., Ng, A. Y., & Jordan, M. I., 2001, Latent Dirichlet allocation. In T. G. Dietterich, S. Becker, & Z.
+Ghahramani (Eds.), Advances in Neural Information Processing Systems 14. MIT Press, pp. 601-608. Available
+at: https://proceedings.neurips.cc/paper/2001/hash/296472c9542ad4d4788d543508116cbc-Abstract.html.
+
+*** Muennighoff, N., Tazi, N., Magne, L., & Reimers, N., 2022, Mteb: Massive text embedding benchmark. ArXiv,
+abs/2210.07316. Available at: https://arxiv.org/abs/2210.07316.
+
+*** Le, Q. V., Mikolov, T., 2014, Distributed representations of sentences and documents. ArXiv, abs/1405.4053.
+Available at: https://arxiv.org/abs/1405.4053.
+
+*** Devlin, J., Chang, M. W., Lee, K., & Toutanova, K., 2019, BERT: Pre-training deep Bidirectional Transformers
+for Language Understanding. In Proceedings of the 2019 Conference of the North American Chapter of the
+Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers),
+pp. 4171-4186. Available at: https://www.aclweb.org/anthology/N19-1423/.
+
+*** Reimers, N. & Gurevych, I., 2020, Making monolingual sentence embeddings multilingual using knowledge
+distillation. In Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing
+(EMNLP), pp. 254-265. Available at: https://www.aclweb.org/anthology/2020.emnlp-main.21/.
+
+*** Gao, T., Yao, X. & Chen, D., 2021, Simcse: Simple contrastive learning of sentence embeddings. ArXiv,
+abs/2104.08821. Available at: https://arxiv.org/abs/2104.08821.
+
+*** Wang, L., Yang, N., Huang, X., Jiao, B., Yang, L., Jiang, D., Majumder, R. & Wei, F., 2022, Text embeddings by
+weakly supervised contrastive pre-training. ArXiv. Available at: https://arxiv.org/abs/2201.01279.
+
+*** Khattab, O. & Zaharia, M., 2020, colBERT: Efficient and effective passage search via contextualized late
+interaction over BERT. In Proceedings of the 43rd International ACM SIGIR Conference on Research and
+Development in Information Retrieval, pp. 39-48. Available at: https://dl.acm.org/doi/10.1145/3397271.3401025.
+
+*** Lee, J., Dai, Z., Duddu, S. M. K., Lei, T., Naim, I., Chang, M. W. & Zhao, V. Y., 2023, Rethinking the role of token
+retrieval in multi-vector retrieval. ArXiv, abs/2304.01982. Available at: https://arxiv.org/abs/2304.01982.
+
+*** TensorFlow, 2021, TensorFlow hub, a model zoo with several easy to use pre-trained models. Available
+at: https://tfhub.dev/.
+
+*** Zhang, W., Xiong, C., & Zhao, H., 2023, Introducing BigQuery text embeddings for NLP tasks.
+Google Cloud Blog. Available at: https://cloud.google.com/blog/products/data-analytics/introducing
+-bigquery-text-embeddings.
+
+*** Google Cloud, 2024, Get multimodal embeddings. Available at:
+https://cloud.google.com/vertex-ai/generative-ai/docs/embeddings/get-multimodal-embeddings.
+
+*** Pinecone, 2024, IT Threat Detection. [online] Available at: https://docs.pinecone.io/docs/it-threat-detection.
+
+*** Cai, H., Zheng, V. W., & Chang, K. C., 2020, A survey of algorithms and applications related with graph
+embedding. In Proceedings of the 29th ACM International Conference on Information & Knowledge
+Management. Available at: https://dl.acm.org/doi/10.1145/3444370.3444568.
+
+*** Cai, H., Zheng, V. W., & Chang, K. C., 2017, A comprehensive survey of graph embedding: problems,
+techniques and applications. ArXiv, abs/1709.07604. Available at: https://arxiv.org/pdf/1709.07604.pdf.
+
+*** Hamilton, W. L., Ying, R. & Leskovec, J., 2017, Inductive representation learning on large graphs.
+In Advances in Neural Information Processing Systems 30. Available at:
+https://cs.stanford.edu/people/jure/pubs/graphsage-nips17.pdf.
+
+*** Dong, Z., Ni, J., Bikel, D. M., Alfonseca, E., Wang, Y., Qu, C. & Zitouni, I., 2022, Exploring dual encoder
+architectures for question answering. ArXiv, abs/2204.07120. Available at: https://arxiv.org/abs/2204.07120.
+
+*** Google Cloud, 2021, Vertex AI Generative AI: Tune Embeddings. Available at:
+https://cloud.google.com/vertex-ai/docs/generative-ai/models/tune-embeddings.
+
+*** Matsui, Y., 2020, Survey on approximate nearest neighbor methods. ACM Computing Surveys (CSUR), 53(6),
+Article 123. Available at: https://wangzwhu.github.io/home/file/acmmm-t-part3-ann.pdf.
+
+*** Friedman, J. H., Bentley, J. L. & Finkel, R. A., 1977, An algorithm for finding best matches in logarithmic
+expected time. ACM Transactions on Mathematical Software (TOMS), 3(3), pp. 209-226. Available at:
+https://dl.acm.org/doi/pdf/10.1145/355744.355745.
+
+*** Scikit-learn, 2021, Scikit-learn, a library for unsupervised and supervised neighbors-based learning methods.
+Available at: https://scikit-learn.org/.
+
+*** lshashing, 2021, An open source python library to perform locality sensitive hashing. Available at:
+https://pypi.org/project/lshashing/.
+
+*** Malkov, Y. A., Yashunin, D. A., 2016, Efficient and robust approximate nearest neighbor search using
+hierarchical navigable small world graphs. ArXiv, abs/1603.09320. Available at:
+https://arxiv.org/pdf/1603.09320.pdf.
+
+*** Google Research, 2021, A library for fast ANN by Google using the ScaNN algorithm. Available at:
+https://github.com/google-research/google-research/tree/master/scann.
+
+*** Guo, R., Zhang, L., Hinton, G. & Zoph, B., 2020, Accelerating large-scale inference with anisotropic vector
+quantization. ArXiv, abs/1908.10396. Available at: https://arxiv.org/pdf/1908.10396.pdf.
+
+*** TensorFlow, 2021, TensorFlow Recommenders, an open source library for building ranking & recommender
+system models. Available at: https://www.tensorflow.org/recommenders.
+
+*** Google Cloud, 2021, Vertex AI Vector Search, Google Cloud's high-scale low latency vector database.
+Available at: https://cloud.google.com/vertex-ai/docs/vector-search/overview.
+
+*** Elasticsearch, 2021, Elasticsearch: a RESTful search and analytics engine. Available at:
+https://www.elastic.co/elasticsearch/.
+
+*** Pinecone, 2021, Pinecone, a commercial fully managed vector database. Available at:
+https://www.pinecone.io.
+
+*** pgvector, 2021, Open Source vector similarity search for Postgres. Available at:
+https://github.com/pgvector/pgvector.
+
+*** Weaviate, 2021, Weaviate, an open source vector database. Available at: https://weaviate.io/.
+
+*** ChromaDB, 2021, ChromaDB, an open source vector database. Available at: https://www.trychroma.com/.
+
+*** LangChain, 2021.,LangChain, an open source framework for developing applications powered by language
+model. Available at: https://langchain.com.
+
+*** Thakur, N., Reimers, N., Ruckl'e, A., Srivastava, A., & Gurevych, I. (2021). BEIR: A Heterogenous Benchmark for
+Zero-shot Evaluation of Information Retrieval Models. ArXiv, abs/2104.08663.
+Available at: https://github.com/beir-cellar/beir
+
+*** Niklas Muennighoff, Nouamane Tazi, Loic Magne, and Nils Reimers. 2023. MTEB: Massive Text Embedding
+Benchmark. In Proceedings of the 17th Conference of the European Chapter of the Association for
+Computational Linguistics, pages 2014–2037, Dubrovnik, Croatia. Association for Computational Linguistics.
+Available at: https://github.com/embeddings-benchmark/mteb
+
+*** Chris Buckley. trec_eval IR evaluation package. Available from https://github.com/usnistgov/trec_eval
+
+*** Christophe Van Gysel and Maarten de Rijke. 2018. Pytrec_eval: An Extremely Fast Python Interface to trec_
+eval. In The 41st International ACM SIGIR Conference on Research & Development in Information Retrieval (SIGIR
+'18). Association for Computing Machinery, New York, NY, USA, 873–876.
+Availalbe at: https://doi.org/10.1145/3209978.3210065
+
+*** Boteva, Vera & Gholipour Ghalandari, Demian & Sokolov, Artem & Riezler, Stefan. (2016). A Full-Text Learning
+to Rank Dataset for Medical Information Retrieval. 9626. 716-722. 10.1007/978-3-319-30671-1_58. Available
+at https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/
+
+*** Douze, M., Guzhva, A., Deng, C., Johnson, J., Szilvasy, G., Mazaré, P.E., Lomeli, M., Hosseini, L. and Jégou, H.,
+2024. The Faiss library. arXiv preprint arXiv:2401.08281. Available at https://arxiv.org/abs/2401.08281
+
+*** Lee, J., Dai, Z., Ren, X., Chen, B., Cer, D., Cole, J.R., Hui, K., Boratko, M., Kapadia, R., Ding, W. and Luan, Y.,
+2024. Gecko: Versatile text embeddings distilled from large language models. arXiv preprint arXiv:2403.20327.
+Available at: https://arxiv.org/abs/2403.20327
+
+*** Okapi BM25: a non-binary model" Christopher D. Manning, Prabhakar Raghavan, Hinrich Schütze. An
+Introduction to Information Retrieval, Cambridge University Press, 2009, p. 232.
+
+*** Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei
+Li, and Peter J. Liu. 2020. Exploring the limits of transfer learning with a unified text-to-text transformer. J. Mach.
+Learn. Res. 21, 1, Article 140 (January 2020), 67 pages.
+Available at https://dl.acm.org/doi/abs/10.5555/3455716.3455856
+
+*** Aakanksha Chowdhery, Sharan Narang, Jacob Devlin, Maarten Bosma, Gaurav Mishra, Adam Roberts,
+Paul Barham, Hyung Won Chung, Charles Sutton, Sebastian Gehrmann, Parker Schuh, Kensen Shi, Sashank
+Tsvyashchenko, Joshua Maynez, Abhishek Rao, Parker Barnes, Yi Tay, Noam Shazeer, Vinodkumar Prabhakaran,
+Emily Reif, Nan Du, Ben Hutchinson, James Bradbury, Jacob Austin, Michael Isard, Guy Gur-Ari, Pengcheng Yin,
+Toju Duke, Anselm Levskaya, Sanjay Ghemawat, Sunipa Dev, Henryk Michalewski, Xavier Garcia, Vedant Misra,
+Kevin Robinson, Liam Fedus, Denny Zhou, Daphne Ippolito, David Luan, Hyeontaek Lim, Barret Zoph, Alexander
+Spiridonov, Ryan Sepassi, David Dohan, Shivani Agrawal, Mark Omernick, Andrew M. Dai, Thanumalayan
+Sankaranarayana Pillai, Marie Pellat, Aitor Lewkowycz, Erica Moreira, Rewon Child, Oleksandr Polozov,
+Katherine Lee, Zongwei Zhou, Xuezhi Wang, Brennan Saeta, Mark Diaz, Orhan Firat, Michele Catasta, Jason Wei,
+Kathy Meier-Hellstern, Douglas Eck, Jeff Dean, Slav Petrov, and Noah Fiedel. 2023. PaLM: scaling language
+modeling with pathways. J. Mach. Learn. Res. 24, 1, Article 240 (January 2023), 113 pages.
+Available at https://dl.acm.org/doi/10.5555/3648699.3648939
+
+*** Gemini: A Family of Highly Capable Multimodal Models, Gemini Team, Dec 2023.
+Available at: https://storage.googleapis.com/deepmind-media/gemini/gemini_1_report.pdf
+
+*** Radford, Alec and Karthik Narasimhan. "Improving Language Understanding by Generative Pre-Training."
+(2018). Available at:
+https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf
+
+*** Touvron, H., Lavril, T., Izacard, G., Martinet, X., Lachaux, M.A., Lacroix, T., Rozière, B., Goyal, N., Hambro,
+E., Azhar, F. and Rodriguez, A., 2023. Llama: Open and efficient foundation language models. arXiv preprint
+arXiv:2302.13971. Available at: https://arxiv.org/abs/2302.13971
+
+*** Kusupati, A., Bhatt, G., Rege, A., Wallingford, M., Sinha, A., Ramanujan, V., Howard-Snyder, W., Chen, K.,
+Kakade, S., Jain, P. and Farhadi, A., 2022. Matryoshka representation learning. Advances in Neural Information
+Processing Systems, 35, pp.30233-30249. Available at:
+https://proceedings.neurips.cc/paper_files/paper/2022/file/c32319f4868da7613d78af9993100e42-Paper-
+-Conference.pdf
+
+*** Nair, P., Datta, P., Dean, J., Jain, P. and Kusupati, A., 2025. Matryoshka Quantization. arXiv preprint
+arXiv:2502.06786. Available at: https://arxiv.org/abs/2502.06786
+
+*** Faysse, M., Sibille, H., Wu, T., Omrani, B., Viaud, G., Hudelot, C. and Colombo, P., 2024. Colpali: Efficient
+document retrieval with vision language models. arXiv preprint arXiv:2407.01449.
+Available at: https://arxiv.org/abs/2407.01449
+
+*** Aumüller, M., Bernhardsson, E. and Faithfull, A., 2020. ANN-Benchmarks: A benchmarking tool for
+approximate nearest neighbor algorithms. Information Systems, 87, p.101374.
