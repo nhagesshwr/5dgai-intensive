@@ -1,0 +1,304 @@
+* Tasks 
+
+** Snippet 1. SFT fine tuning on Google cloud
+#+begin_src python 
+import os
+import click
+import vertexai
+from vertexai.generative_models import GenerativeModel
+from vertexai.preview.tuning import sft
+
+# Project Configuration
+# Use environment variables or replace with your actual values
+PROJECT_ID = os.environ.get('GOOGLE_CLOUD_PROJECT', '<project_id>')
+REGION = os.environ.get('GOOGLE_CLOUD_REGION', '<region>')
+
+# Initialize Vertex AI
+vertexai.init(project=PROJECT_ID, location=REGION)
+
+# Fine-tuning Configuration
+TRAINING_DATASET = 'gs://cloud-samples-data/vertex-ai/model-evaluation/peft_train_sample.jsonl'
+BASE_MODEL = 'gemini-1.5-pro-002'
+TUNED_MODEL_DISPLAY_NAME = 'gemini-fine-tuning-v1'
+
+def main():
+    """
+    Perform supervised fine-tuning (SFT) on a Vertex AI generative model.
+    
+    This script demonstrates the process of fine-tuning a base model 
+    using a specified training dataset.
+    """
+    # Perform supervised fine-tuning
+    try:
+        sft_tuning_job = sft.train(
+            source_model=BASE_MODEL,
+            train_dataset=TRAINING_DATASET,
+            tuned_model_display_name=TUNED_MODEL_DISPLAY_NAME,
+        )
+        
+        # Print job details
+        print("Fine-tuning job details:")
+        print(sft_tuning_job.to_dict())
+        
+        # Get the tuned model endpoint
+        tuned_model_endpoint_name = sft_tuning_job.tuned_model_endpoint_name
+        
+        # Create a GenerativeModel with the tuned model
+        tuned_genai_model = GenerativeModel(tuned_model_endpoint_name)
+        
+        # Generate content using the tuned model
+        response = tuned_genai_model.generate_content(contents='What is a LLM?')
+        print("\nModel Response:")
+        print(response)
+    
+    except Exception as e:
+        print(f"An error occurred during model fine-tuning: {e}")
+
+@click.command()
+def cli():
+    """Command-line interface for running the fine-tuning script."""
+    main()
+
+if __name__ == '__main__':
+    cli()
+#+end_src
+
+** Snippet 2. Using Vertex AI and Google AI studio SDKs for unimodal text generation
+
+#+begin_src python 
+import os
+import sys
+
+# Google Colab authentication
+if "google.colab" in sys.modules:
+    from google.colab import auth
+    auth.authenticate_user()
+
+from IPython.display import HTML, Markdown, display
+from google import genai
+from google.genai.types import (
+    FunctionDeclaration,
+    GenerateContentConfig,
+    GoogleSearch,
+    HarmBlockThreshold,
+    HarmCategory,
+    MediaResolution,
+    Part,
+    Retrieval,
+    SafetySetting,
+    Tool,
+    ToolCodeExecution,
+    VertexAISearch,
+)
+
+# Project configuration
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "[your-project-id]")
+LOCATION = os.environ.get("GOOGLE_CLOUD_REGION", "us-central1")
+
+# Validate PROJECT_ID
+if not PROJECT_ID or PROJECT_ID == "[your-project-id]":
+    raise ValueError("Please set a valid PROJECT_ID via environment variable or directly in the script")
+
+# Initialize GenAI client
+client = genai.Client(vertexai=True, project=PROJECT_ID, location=LOCATION)
+
+# Model selection
+MODEL_ID = "gemini-2.0-flash-001"
+
+# Generate content
+response = client.models.generate_content(
+    model=MODEL_ID, 
+    contents="What's the largest planet in our solar system?"
+)
+
+# Display response
+display(Markdown(response.text))
+#+end_src
+
+* Endnotes
+
+#+begin_src bash :results raw
+#!/usr/bin/env bash
+# Ensure the papers directory exists
+PAPERS_DIR="../../papers"
+mkdir -p "$PAPERS_DIR"
+
+# Function to download a paper
+download_paper() {
+    local url="$1"
+    local filename="$2"
+    
+    # Check if file already exists
+    if [ -f "$PAPERS_DIR/$filename" ]; then
+        echo "SKIP: $filename (already exists)"
+        return
+    fi
+    
+    # Download the paper
+    echo "DOWNLOAD: $filename"
+    wget -q -O "$PAPERS_DIR/$filename" "$url"
+    
+    # Check download success
+    if [ $? -eq 0 ]; then
+        echo "SUCCESS: $filename"
+    else
+        echo "FAILED: $filename"
+    fi
+}
+
+# Print start message
+echo "Starting paper download..."
+
+# List of papers to download with URLs
+download_paper "https://arxiv.org/pdf/2111.00396.pdf" "gu-2021-structured-state-spaces.pdf"
+download_paper "https://arxiv.org/pdf/1607.06450.pdf" "ba-2016-layer-normalization.pdf"
+download_paper "https://arxiv.org/pdf/1808.06226.pdf" "kudo-2018-sentencepiece.pdf"
+download_paper "https://arxiv.org/pdf/1810.04805.pdf" "devlin-2018-bert.pdf"
+download_paper "https://arxiv.org/pdf/2303.08774.pdf" "openai-2023-gpt4-report.pdf"
+download_paper "https://arxiv.org/pdf/2201.08239.pdf" "thoppilan-2022-lamda.pdf"
+download_paper "https://arxiv.org/pdf/2112.11446.pdf" "rae-2021-scaling-llms.pdf"
+download_paper "https://arxiv.org/pdf/2001.08361.pdf" "kaplan-2020-scaling-laws.pdf"
+download_paper "https://arxiv.org/pdf/2203.15556.pdf" "hoffmann-2022-compute-optimal.pdf"
+download_paper "https://arxiv.org/pdf/1909.08053.pdf" "shoeybi-2019-megatron-lm.pdf"
+download_paper "https://arxiv.org/pdf/2305.16264.pdf" "muennighoff-2023-scaling-data.pdf"
+download_paper "https://arxiv.org/pdf/2305.10403.pdf" "anil-2023-palm2-report.pdf"
+download_paper "https://storage.googleapis.com/deepmind-media/gemini/gemini_1_report.pdf" "deepmind-2023-gemini-report.pdf"
+download_paper "https://storage.googleapis.com/deepmind-media/gemini/gemini_v1_5_report.pdf" "deepmind-2024-gemini-1.5-report.pdf"
+download_paper "https://arxiv.org/pdf/2307.09288.pdf" "touvron-2023-llama2.pdf"
+download_paper "https://arxiv.org/pdf/2401.04088.pdf" "jiang-2024-mixtral.pdf"
+download_paper "https://arxiv.org/pdf/2403.04652.pdf" "young-2024-yi-models.pdf"
+download_paper "https://arxiv.org/pdf/2310.13650.pdf" "duan-2023-botchat.pdf"
+download_paper "https://arxiv.org/pdf/2212.08073.pdf" "bai-2022-constitutional-ai.pdf"
+download_paper "https://arxiv.org/pdf/2305.18290.pdf" "rafailov-2023-direct-preference.pdf"
+download_paper "https://arxiv.org/pdf/2106.09685.pdf" "hu-2021-lora.pdf"
+download_paper "https://arxiv.org/pdf/2305.14314.pdf" "dettmers-2023-qlora.pdf"
+download_paper "https://arxiv.org/pdf/2104.08691.pdf" "lester-2021-prompt-tuning.pdf"
+download_paper "https://arxiv.org/pdf/2111.00396.pdf" "gu-2021-long-sequences.pdf"
+download_paper "https://arxiv.org/pdf/1609.07061.pdf" "hubara-2016-quantized-networks.pdf"
+download_paper "https://arxiv.org/pdf/1712.05877.pdf" "jacob-2017-quantization.pdf"
+download_paper "https://www.cs.cornell.edu/~caruana/compression.kdd06.pdf" "bucila-2006-model-compression.pdf"
+download_paper "https://arxiv.org/pdf/1503.02531.pdf" "hinton-2015-knowledge-distillation.pdf"
+download_paper "https://arxiv.org/pdf/2310.04836.pdf" "zhang-2023-dual-quantisation.pdf"
+download_paper "https://arxiv.org/pdf/2306.13649.pdf" "agarwal-2024-on-policy-distillation.pdf"
+download_paper "https://arxiv.org/pdf/1701.06538.pdf" "shazeer-2017-mixture-of-experts.pdf"
+download_paper "https://arxiv.org/pdf/2207.07061.pdf" "schuster-2022-adaptive-modeling.pdf"
+download_paper "https://arxiv.org/pdf/2205.14135.pdf" "dao-flashattention.pdf"
+download_paper "https://arxiv.org/pdf/2211.17192.pdf" "leviathan-2022-speculative-decoding.pdf"
+download_paper "https://arxiv.org/pdf/1301.3781.pdf" "mikolov-2013-word-representations.pdf"
+download_paper "https://arxiv.org/pdf/2406.07791.pdf" "shi-2024-llm-as-judge.pdf"
+
+# Print completion message
+echo "Paper download script completed."
+#+end_src
+
+#+RESULTS:
+Starting paper download...
+SKIP: gu-2021-structured-state-spaces.pdf (already exists)
+SKIP: ba-2016-layer-normalization.pdf (already exists)
+SKIP: kudo-2018-sentencepiece.pdf (already exists)
+SKIP: devlin-2018-bert.pdf (already exists)
+SKIP: openai-2023-gpt4-report.pdf (already exists)
+SKIP: thoppilan-2022-lamda.pdf (already exists)
+SKIP: rae-2021-scaling-llms.pdf (already exists)
+SKIP: kaplan-2020-scaling-laws.pdf (already exists)
+SKIP: hoffmann-2022-compute-optimal.pdf (already exists)
+SKIP: shoeybi-2019-megatron-lm.pdf (already exists)
+SKIP: muennighoff-2023-scaling-data.pdf (already exists)
+SKIP: anil-2023-palm2-report.pdf (already exists)
+SKIP: deepmind-2023-gemini-report.pdf (already exists)
+SKIP: deepmind-2024-gemini-1.5-report.pdf (already exists)
+SKIP: touvron-2023-llama2.pdf (already exists)
+SKIP: jiang-2024-mixtral.pdf (already exists)
+SKIP: young-2024-yi-models.pdf (already exists)
+SKIP: duan-2023-botchat.pdf (already exists)
+SKIP: bai-2022-constitutional-ai.pdf (already exists)
+SKIP: rafailov-2023-direct-preference.pdf (already exists)
+SKIP: hu-2021-lora.pdf (already exists)
+SKIP: dettmers-2023-qlora.pdf (already exists)
+SKIP: lester-2021-prompt-tuning.pdf (already exists)
+SKIP: gu-2021-long-sequences.pdf (already exists)
+SKIP: hubara-2016-quantized-networks.pdf (already exists)
+SKIP: jacob-2017-quantization.pdf (already exists)
+SKIP: bucila-2006-model-compression.pdf (already exists)
+SKIP: hinton-2015-knowledge-distillation.pdf (already exists)
+SKIP: zhang-2023-dual-quantisation.pdf (already exists)
+SKIP: agarwal-2024-on-policy-distillation.pdf (already exists)
+SKIP: shazeer-2017-mixture-of-experts.pdf (already exists)
+SKIP: schuster-2022-adaptive-modeling.pdf (already exists)
+SKIP: dao-flashattention.pdf (already exists)
+SKIP: leviathan-2022-speculative-decoding.pdf (already exists)
+SKIP: mikolov-2013-word-representations.pdf (already exists)
+SKIP: shi-2024-llm-as-judge.pdf (already exists)
+Paper download script completed.
+
+
+** Papers and References
+*** Vaswani et al. (2017) - Attention is all you need. Advances in Neural Information Processing Systems, 30.
+*** [[https://en.wikipedia.org/wiki/Word_n-gram_language_model][Wikipedia (2024) - Word n-gram language model]]
+*** Sutskever et al. (2014) - Sequence to sequence learning with neural networks. Advances in Neural Information Processing Systems, 27.
+*** [[https://arxiv.org/abs/2111.00396][Gu et al. (2021) - Efficiently modeling long sequences with structured state spaces]]
+*** [[https://jalammar.github.io/illustrated-transformer/][Jalammar (n.d.) - The illustrated transformer]]
+*** [[https://arxiv.org/abs/1607.06450][Ba et al. (2016) - Layer normalization]]
+*** He et al. (2016) - Deep residual learning for image recognition. Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition.
+*** [[https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt][HuggingFace (2024) - Byte Pair Encoding]]
+*** [[https://arxiv.org/abs/1808.06226][Kudo & Richardson (2018) - Sentencepiece: A simple and language independent subword tokenizer]]
+*** [[https://huggingface.co/learn/nlp-course/chapter6/7?fw=pt][HuggingFace (2024) - Unigram tokenization]]
+*** [[http://www.deeplearningbook.org][Goodfellow et al. (2016) - Deep Learning]]
+*** Radford et al. (2019) - Language models are unsupervised multitask learners
+*** Brown et al. (2020) - Language models are few-shot learners. Advances in Neural Information Processing Systems, 33, 1877-1901.
+*** [[https://arxiv.org/abs/1810.04805][Devlin et al. (2018) - BERT: Pre-training of deep bidirectional transformers]]
+*** Radford & Narasimhan (2018) - Improving language understanding by generative pre-training
+*** Dai & Le (2015) - Semi-supervised sequence learning. Advances in Neural Information Processing Systems
+*** Ouyang et al. (2022) - Training language models to follow instructions with human feedback
+*** [[https://platform.openai.com/docs/models/gpt-3-5][OpenAI (2023) - GPT-3.5]]
+*** [[https://arxiv.org/abs/2303.08774][OpenAI (2023) - GPT-4 Technical Report]]
+*** [[https://arxiv.org/abs/2201.08239][Thoppilan et al. (2022) - Lamda: Language models for dialog applications]]
+*** [[https://ai.meta.com/blog/llama-3-2-connect-2024-vision-edge-mobile-devices/][Llama 3.2: Revolutionizing edge AI and vision with open, customizable models]]
+*** [[https://arxiv.org/pdf/2112.11446.pdf][Rae et al. (2021) - Scaling language models: Methods, analysis & insights]]
+*** Du et al. (2022) - GLAM: Efficient scaling of language models with mixture-of-experts
+*** [[https://arxiv.org/abs/2001.08361][Kaplan et al. (2020) - Scaling laws for neural language models]]
+*** [[https://arxiv.org/abs/2203.15556][Hoffmann et al. (2022) - Training compute-optimal large language models]]
+*** [[https://arxiv.org/abs/1909.08053][Shoeybi et al. (2019) - Megatron-LM: Training multi-billion parameter language models]]
+*** [[https://arxiv.org/abs/2305.16264][Muennighoff et al. (2023) - Scaling data-constrained language models]]
+*** Chowdhery et al. (2023) - Palm: Scaling language modeling with pathways
+*** Wang et al. (2019) - SuperGLUE: A stickier benchmark for general-purpose language understanding systems
+*** [[https://arxiv.org/abs/2305.10403][Anil et al. (2023) - Palm 2 technical report]]
+*** [[https://storage.googleapis.com/deepmind-media/gemini/gemini_1_report.pdf][DeepMind (2023) - Gemini: A family of highly capable multimodal models]]
+*** [[https://storage.googleapis.com/deepmind-media/gemini/gemini_v1_5_report.pdf][DeepMind (2024) - Gemini 1.5: Unlocking multimodal understanding]]
+*** [[https://developers.googleblog.com/en/gemma-family-and-toolkit-expansion-io-2024/][Google Developers (2024) - Introducing PaLi-Gemma, Gemma 2, and upgraded AI toolkit]]
+*** [[https://arxiv.org/abs/2307.09288][Touvron et al. (2023) - Llama 2: Open foundation and fine-tuned chat models]]
+*** [[https://arxiv.org/abs/2401.04088][Jiang (2024) - Mixtral of experts]]
+*** [[https://qwenlm.github.io/blog/qwen1.5/][Qwen (2024) - Introducing Qwen1.5]]
+*** [[https://arxiv.org/abs/2403.04652][Young (2024) - Yi: Open foundation models by 01.AI]]
+*** [[https://github.com/xai-org/grok-1][Grok-1 (2024)]]
+*** [[https://arxiv.org/abs/2310.13650][Duan et al. (2023) - BotChat: Evaluating LLMs' capabilities of multi-turn dialogues]]
+*** [[https://cloud.google.com/vertex-ai/generative-ai/docs/models/tune-text-models-rlhf][Google Cloud (2024) - Tune text models with reinforcement learning from human feedback]]
+*** [[https://arxiv.org/abs/2212.08073][Bai et al. (2022) - Constitutional AI: Harmlessness from AI feedback]]
+*** [[https://en.wikipedia.org/wiki/Likert_scale][Wikipedia (2024) - Likert scale]]
+*** Sutton & Barto (2018) - Reinforcement learning: An introduction. MIT Press
+*** [[https://arxiv.org/abs/2305.18290][Rafailov et al. (2023) - Direct preference optimization]]
+*** Houlsby et al. (2019) - Parameter-efficient transfer learning for NLP
+*** [[https://arxiv.org/abs/2106.09685][Hu et al. (2021) - LoRA: Low-rank adaptation of large language models]]
+*** [[https://arxiv.org/abs/2305.14314][Dettmers et al. (2023) - QLoRA: Efficient finetuning of quantized LLMs]]
+*** [[https://arxiv.org/abs/2104.08691][Lester et al. (2021) - The power of scale for parameter-efficient prompt tuning]]
+*** [[https://huggingface.co/blog/how-to-generate][HuggingFace (2020) - How to generate text?]]
+*** [[https://ai.google.dev/gemini-api/docs/caching?lang=python][Google AI Studio Context caching]]
+*** [[https://cloud.google.com/vertex-ai/generative-ai/docs/context-cache/context-cache-overview][Vertex AI Context caching overview]]
+*** [[https://arxiv.org/abs/2111.00396][Gu et al. (2021) - Efficiently modeling long sequences with structured state spaces]]
+*** [[https://arxiv.org/abs/1609.07061][Hubara et al. (2016) - Quantized neural networks]]
+*** [[https://arxiv.org/abs/1712.05877][Jacob et al. (2017) - Quantization and training of neural networks]]
+*** [[https://www.cs.cornell.edu/~caruana/compression.kdd06.pdf][Bucila et al. (2006) - Model compression]]
+*** [[https://arxiv.org/abs/1503.02531][Hinton et al. (2015) - Distilling the knowledge in a neural network]]
+*** [[https://arxiv.org/abs/2310.04836][Zhang et al. (2023) - Dual Grained Quantisation]]
+*** [[https://arxiv.org/abs/2306.13649][Agarwal et al. (2024) - On-Policy Distillation of Language Models]]
+*** [[https://arxiv.org/abs/1701.06538][Shazeer et al. (2017) - Outrageously large neural networks]]
+*** [[https://arxiv.org/abs/2207.07061][Schuster et al. (2022) - Confident adaptive language modeling]]
+*** [[https://arxiv.org/abs/2205.14135][Dao et al. - FlashAttention]]
+*** [[https://arxiv.org/abs/2211.17192][Leviathan et al. (2022) - Fast inference from transformers via speculative decoding]]
+*** Li et al. (2022) - Competition-level code generation with AlphaCode. Science, 378
+*** Romera-Paredes et al. (2023) - Mathematical discoveries from program search with large language models. Nature
+*** [[https://en.wikipedia.org/wiki/Cap_set][Wikipedia (2024) - Cap set]]
+*** Trinh et al. (2024) - Solving olympiad geometry without human demonstrations. Nature, 625
+*** [[https://arxiv.org/pdf/1301.3781][Mikolov et al. (2013) - Efficient Estimation of Word Representations]]
+*** [[https://arxiv.org/abs/2406.07791][Shi et al. (2024) - Judging the Judges: A Systematic Study of Position Bias in LLM-as-a-Judge]]
+*** [[https://www.datacamp.com/blog/mixture-of-experts-moe][Pandit (2024) - What Is Mixture of Experts (MoE)?]]

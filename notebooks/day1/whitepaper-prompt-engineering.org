@@ -1,0 +1,478 @@
+* Prompt Engineering
+
+** Table 4. An example of system prompting with JSON format
+
+#+begin_src python
+import os
+import json
+import click
+import vertexai
+from vertexai.generative_models import GenerativeModel, GenerationConfig
+
+def initialize_gemini_model(project_id=None, location='us-central1'):
+    """
+    Initialize Vertex AI Gemini model.
+    
+    :param project_id: Google Cloud Project ID
+    :param location: Google Cloud region
+    :return: Configured Gemini model and generation config
+    """
+    # Use environment variable or provided project ID
+    project_id = project_id or os.environ.get('GOOGLE_CLOUD_PROJECT')
+    
+    # Validate project ID
+    if not project_id:
+        raise ValueError("Google Cloud Project ID must be set either as an argument or in GOOGLE_CLOUD_PROJECT environment variable")
+    
+    # Initialize Vertex AI
+    vertexai.init(project=project_id, location=location)
+    
+    # Initialize Gemini model
+    model = GenerativeModel("gemini-pro")
+    
+    # Default generation configuration
+    generation_config = GenerationConfig(
+        temperature=1.0,
+        max_output_tokens=1024,
+        top_k=40,
+        top_p=0.8
+    )
+    
+    return model, generation_config
+
+def classify_reviews(model, generation_config, reviews):
+    """
+    Classify movie reviews using Gemini.
+    
+    :param model: Gemini model
+    :param generation_config: Generation configuration
+    :param reviews: List of movie reviews
+    :return: Parsed JSON of review classifications
+    """
+    # Construct the prompt
+    prompt = """Classify each movie review as POSITIVE, NEGATIVE, or NEUTRAL. 
+    Return a valid JSON following this schema:
+    {
+        "movie_reviews": [
+            {
+                "name": "Movie Title",
+                "sentiment": "POSITIVE|NEGATIVE|NEUTRAL"
+            }
+        ]
+    }
+    
+    Here are the reviews to classify:
+    """ + "\n".join(reviews)
+    
+    # Generate classification
+    response = model.generate_content(
+        prompt,
+        generation_config=generation_config
+    )
+    
+    # Extract and parse JSON
+    try:
+        # Extract JSON from response text
+        json_start = response.text.find('{')
+        json_end = response.text.rfind('}') + 1
+        json_str = response.text[json_start:json_end]
+        
+        # Parse JSON
+        return json.loads(json_str)
+    except (ValueError, json.JSONDecodeError) as e:
+        print(f"Error parsing JSON: {e}")
+        print("Raw response:", response.text)
+        return None
+
+@click.command()
+@click.option('--review', '-r', multiple=True, help='Movie review to classify')
+@click.option('--project-id', help='Google Cloud Project ID')
+def main(review, project_id):
+    """
+    Classify movie reviews using Gemini.
+    
+    Example:
+    python script.py -r "Her is a disturbing movie" -r "Incredible film!"
+    """
+    # Validate input
+    if not review:
+        click.echo("Please provide at least one review using --review or -r")
+        return
+    
+    # Initialize model
+    model, generation_config = initialize_gemini_model(project_id)
+    
+    # Classify reviews
+    result = classify_reviews(model, generation_config, review)
+    
+    # Output results
+    if result:
+        click.echo(json.dumps(result, indent=2))
+
+if __name__ == '__main__':
+    main()
+#+end_src
+
+
+#+begin_src python
+"""
+System Prompting with Pydantic and JSON Format
+
+Demonstrates advanced prompt engineering using Pydantic models 
+for input validation and schema generation.
+"""
+
+import os
+import json
+from enum import Enum
+from typing import Optional, List, Dict, Any
+
+import click
+import vertexai
+from pydantic import BaseModel, Field, ConfigDict
+from vertexai.generative_models import GenerativeModel, GenerationConfig
+
+class SentimentEnum(str, Enum):
+    """Enumeration of possible sentiment values."""
+    POSITIVE = "POSITIVE"
+    NEGATIVE = "NEGATIVE"
+    NEUTRAL = "NEUTRAL"
+
+class SentimentAnalysisInput(BaseModel):
+    """
+    Input model for sentiment analysis.
+    
+    Represents the structure of input data for sentiment analysis.
+    """
+    text: str = Field(
+        ..., 
+        description="Text to be analyzed for sentiment",
+        min_length=1,
+        max_length=1000
+    )
+    language: Optional[str] = Field(
+        default=None, 
+        description="Optional language of the text"
+    )
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "text": "This movie was absolutely incredible!",
+                "language": "en"
+            }
+        }
+    )
+
+class SentimentAnalysisOutput(BaseModel):
+    """
+    Output model for sentiment analysis.
+    
+    Represents the structured response from sentiment analysis.
+    """
+    sentiment: SentimentEnum = Field(
+        ..., 
+        description="Classified sentiment of the text"
+    )
+    confidence: float = Field(
+        ..., 
+        description="Confidence score of the sentiment",
+        ge=0.0,
+        le=1.0
+    )
+    explanation: Optional[str] = Field(
+        default=None, 
+        description="Brief explanation of the sentiment classification"
+    )
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "sentiment": "POSITIVE",
+                "confidence": 0.95,
+                "explanation": "Strong positive language used"
+            }
+        }
+    )
+
+def create_system_prompt(
+    task_description: str, 
+    input_model: Optional[type[BaseModel]] = None, 
+    output_model: Optional[type[BaseModel]] = None
+) -> str:
+    """
+    Create a structured system prompt using Pydantic models.
+
+    Args:
+        task_description: Overall description of the task
+        input_model: Pydantic model for input schema
+        output_model: Pydantic model for output schema
+
+    Returns:
+        Formatted system prompt as a JSON string
+    """
+    prompt_details = {
+        "task": task_description,
+        "input_schema": json.loads(input_model.model_json_schema()) if input_model else {},
+        "output_schema": json.loads(output_model.model_json_schema()) if output_model else {},
+        "instructions": [
+            "Carefully follow the specified task and schemas",
+            "Ensure all outputs are valid JSON",
+            "Be precise and concise",
+            "Use the provided Pydantic models as a strict guide"
+        ]
+    }
+
+    return json.dumps(prompt_details, indent=2)
+
+def generate_response(
+    model: GenerativeModel, 
+    system_prompt: str, 
+    user_prompt: str, 
+    generation_config: Optional[GenerationConfig] = None
+) -> Optional[str]:
+    """
+    Generate a response using the specified system and user prompts.
+
+    Args:
+        model: Vertex AI generative model
+        system_prompt: System prompt instructing the model
+        user_prompt: User's specific query or input
+        generation_config: Model generation parameters
+
+    Returns:
+        Generated response or None if an error occurs
+    """
+    # Use default config if not provided
+    if generation_config is None:
+        generation_config = GenerationConfig(
+            temperature=0.7,
+            max_output_tokens=1024,
+            top_p=0.8
+        )
+
+    # Combine system and user prompts
+    try:
+        response = model.generate_content(
+            contents=[
+                {"role": "system", "parts": [system_prompt]},
+                {"role": "user", "parts": [user_prompt]}
+            ],
+            generation_config=generation_config
+        )
+        return response.text
+    except Exception as e:
+        print(f"Error generating response: {e}")
+        return None
+
+@click.command()
+@click.option('--task', '-t', required=True, help='Description of the task to perform')
+@click.option('--input', '-i', help='Input text to analyze')
+@click.option('--project-id', help='Google Cloud Project ID')
+def main(task: str, input: Optional[str], project_id: Optional[str]):
+    """
+    Demonstrate system prompting with Pydantic models and JSON format.
+
+    Example:
+    python sentiment_analysis.py -t "Analyze sentiment of movie review" \
+    -i "This movie was absolutely incredible and mind-blowing!"
+    """
+    # Initialize Vertex AI
+    project_id = project_id or os.environ.get('GOOGLE_CLOUD_PROJECT')
+    if not project_id:
+        click.echo("Error: Project ID not provided. Set GOOGLE_CLOUD_PROJECT or use --project-id")
+        return
+
+    vertexai.init(project=project_id)
+
+    # Create system prompt with Pydantic models
+    system_prompt = create_system_prompt(
+        task_description=task,
+        input_model=SentimentAnalysisInput,
+        output_model=SentimentAnalysisOutput
+    )
+
+    # Initialize model
+    model = GenerativeModel("gemini-pro")
+
+    # Get input if not provided
+    if not input:
+        input = click.prompt("Enter text to analyze")
+
+    # Validate input
+    try:
+        validated_input = SentimentAnalysisInput(text=input)
+    except Exception as e:
+        click.echo(f"Input validation error: {e}")
+        return
+
+    # Generate response
+    response = generate_response(
+        model, 
+        system_prompt, 
+        validated_input.model_dump_json()
+    )
+
+    # Display results
+    if response:
+        click.echo("System Prompt:")
+        click.echo(system_prompt)
+        click.echo("\nModel Response:")
+        click.echo(response)
+
+        # Optional: Attempt to parse and validate output
+        try:
+            parsed_output = SentimentAnalysisOutput.model_validate_json(response)
+            click.echo("\nParsed Output:")
+            click.echo(parsed_output.model_dump_json(indent=2))
+        except Exception as e:
+            click.echo(f"\nWarning: Could not validate output: {e}")
+
+if __name__ == '__main__':
+    main()
+
+#+end_src
+
+** Snippet 1. Creating a ReAct Agent with LangChain and VertexAI
+
+#+begin_src python 
+import os
+import click
+from langchain_google_vertexai import VertexAI
+from langchain_community.tools import SerpAPIWrapper
+from langchain.agents import AgentExecutor, create_react_agent
+from langchain.prompts import PromptTemplate
+from langchain.tools import Tool
+
+def get_serpapi_key():
+    serpapi_key = os.environ.get('SERPAPI_API_KEY')
+    if not serpapi_key:
+        raise ValueError("SerpAPI key not found. Set SERPAPI_API_KEY.")
+    return serpapi_key
+
+def create_metallica_agent(verbose=False):
+    llm = VertexAI(
+        model_name="gemini-pro",
+        temperature=0.1,
+        max_output_tokens=1024
+    )
+    
+    search = SerpAPIWrapper(serpapi_api_key=get_serpapi_key())
+    
+    search_tool = Tool(
+        name="Search",
+        func=search.run,
+        description="Search the internet about Metallica band members"
+    )
+    
+    template = """Solve the task using the available tool:
+
+Question: {input}
+
+{agent_scratchpad}"""
+    
+    prompt = PromptTemplate.from_template(template)
+    
+    agent = create_react_agent(
+        llm=llm, 
+        tools=[search_tool], 
+        prompt=prompt
+    )
+    
+    return AgentExecutor(
+        agent=agent, 
+        tools=[search_tool], 
+        verbose=verbose,
+        max_iterations=5,
+        handle_parsing_errors=True
+    )
+
+@click.command()
+@click.option('--prompt', '-p', required=True, help='Query about Metallica')
+@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+def main(prompt, verbose):
+    try:
+        agent_executor = create_metallica_agent(verbose)
+        result = agent_executor.invoke({"input": prompt})
+        click.echo("\nResult:")
+        click.echo(result.get('output', 'No result found'))
+    
+    except Exception as e:
+        click.echo(f"Error: {e}")
+
+if __name__ == '__main__':
+    main()
+#+end_src
+
+* Endnotes
+
+#+begin_src bash
+#!/usr/bin/env bash
+
+# Ensure the papers directory exists
+PAPERS_DIR="../../papers"
+mkdir -p "$PAPERS_DIR"
+
+# Function to download a paper
+download_paper() {
+    local url="$1"
+    local filename="$2"
+    
+    # Check if file already exists
+    if [ -f "$PAPERS_DIR/$filename" ]; then
+        echo "SKIP: $filename (already exists)"
+        return
+    fi
+    
+    # Download the paper
+    echo "DOWNLOAD: $filename"
+    wget -q -O "$PAPERS_DIR/$filename" "$url"
+    
+    # Check download success
+    if [ $? -eq 0 ]; then
+        echo "SUCCESS: $filename"
+    else
+        echo "FAILED: $filename"
+    fi
+}
+
+# Print start message
+echo "Starting paper download..."
+
+# List of papers to download
+download_paper "https://arxiv.org/pdf/2109.01652.pdf" "wei-2023-zero-shot.pdf"
+download_paper "https://arxiv.org/pdf/2005.14165.pdf" "brown-2023-few-shot.pdf"
+download_paper "https://openreview.net/pdf?id=3bq3jsvcQ1" "zheng-2023-step-back.pdf"
+download_paper "https://arxiv.org/pdf/2201.11903.pdf" "wei-2023-chain-of-thought.pdf"
+download_paper "https://arxiv.org/pdf/2203.11171.pdf" "wang-2023-self-consistency.pdf"
+download_paper "https://arxiv.org/pdf/2305.10601.pdf" "yao-2023-tree-of-thoughts.pdf"
+download_paper "https://arxiv.org/pdf/2210.03629.pdf" "yao-2023-react.pdf"
+
+# Print completion message
+echo "Paper download script completed."
+#+end_src
+
+#+RESULTS:
+| Paper | wei-2023-zero-shot.pdf         | already | exists.    | Skipping. |
+| Paper | brown-2023-few-shot.pdf        | already | exists.    | Skipping. |
+| Paper | zheng-2023-step-back.pdf       | already | exists.    | Skipping. |
+| Paper | wei-2023-chain-of-thought.pdf  | already | exists.    | Skipping. |
+| Paper | wang-2023-self-consistency.pdf | already | exists.    | Skipping. |
+| Paper | yao-2023-tree-of-thoughts.pdf  | already | exists.    | Skipping. |
+| Paper | yao-2023-react.pdf             | already | exists.    | Skipping. |
+| Paper | download                       | script  | completed. |           |
+
+** References
+*** [[https://gemini.google.com][Google (2023) - Gemini by Google]]
+*** [[https://inthecloud.withgoogle.com/gemini-for-google-workspace-prompt-guide/dl-cd.html][Google (2024) - Gemini for Google Workspace Prompt Guide]]
+*** [[https://cloud.google.com/vertex-ai/generative-ai/docs/learn/prompts/introduction-prompt-design][Google Cloud (2023) - Introduction to Prompting]]
+*** [[https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text#request_body][Google Cloud (2023) - Text Model Request Body: Top-P & top-K sampling methods]]
+*** [[https://arxiv.org/pdf/2109.01652.pdf][Wei et al. (2023) - Zero Shot - Fine Tuned language models are zero shot learners]]
+*** [[https://cloud.google.com/model-garden][Google Cloud (2023) - Google Cloud Model Garden]]
+*** [[https://arxiv.org/pdf/2005.14165.pdf][Brown et al. (2023) - Few Shot - Language Models are Few Shot learners]]
+*** [[https://openreview.net/pdf?id=3bq3jsvcQ1][Zheng et al. (2023) - Take a Step Back: Evoking Reasoning via Abstraction in Large Language Models]]
+*** [[https://arxiv.org/pdf/2201.11903.pdf][Wei et al. (2023) - Chain of Thought Prompting]]
+*** [[https://github.com/GoogleCloudPlatform/generative-ai/blob/main/language/prompts/examples/chain_of_thought_react.ipynb][Google Cloud Platform (2023) - Chain of Thought and React]]
+*** [[https://arxiv.org/pdf/2203.11171.pdf][Wang et al. (2023) - Self Consistency Improves Chain of Thought reasoning in language models]]
+*** [[https://arxiv.org/pdf/2305.10601.pdf][Yao et al. (2023) - Tree of Thoughts: Deliberate Problem Solving with Large Language Models]]
+*** [[https://arxiv.org/pdf/2210.03629.pdf][Yao et al. (2023) - ReAct: Synergizing Reasoning and Acting in Language Models]]
+*** [[https://github.com/GoogleCloudPlatform/applied-ai-engineering-samples/blob/main/genai-on-vertex-ai/advanced_prompting_training/cot_react.ipynb][Google Cloud Platform (2023) - Advance Prompting: Chain of Thought and React]]
+*** Zhou et al. (2023) - Automatic Prompt Engineering - Large Language Models

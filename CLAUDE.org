@@ -10,162 +10,58 @@
 - NEVER create CLAUDE.md - use CLAUDE.org instead
 - This standard is NON-NEGOTIABLE - no exceptions
 
-* Git Conventions
-
-** :important: Commit Standards
-- Use Conventional Commits format: ~<type>(<scope>): <description>~
-- Common types: feat, fix, docs, style, refactor, test, chore
-- Example: ~feat(api): add Gemini client implementation~
-- ALWAYS use ~--trailer~ flags for attribution, NEVER inline in message:
-  #+begin_src bash
-  git commit -m "feat(client): add support for system instructions" \
-    --trailer "Co-authored-by: Claude <claude@anthropic.com>" \
-    --trailer "Signed-off-by: jwalsh <j@wal.sh>" \
-    --trailer "LLM-version: 3.7"
-  #+end_src
-
-* Build & Test Commands
+* Build, Test, and Lint Commands
 
 ** Setup and Environment
 - Setup environment: ~make setup~
 - Start Poetry shell: ~make dev~
 - Run Python scripts: ~python src/script_name.py~
-- Run Jupyter: ~jupyter notebook~ or ~jupyter lab~
-- Import module: ~from src.gemini_client import GeminiClient~
 
 ** Testing
 - Run all tests: ~make test~
+- Run single test: ~pytest -xvs tests/path/to/test.py::test_function_name~
 - Test API connectivity: ~make api-test~
 
 ** Linting and Formatting
 - Run all linters: ~make lint~
 - Format all code: ~make format~
-- Lint specific types: ~make lint-py~, ~make lint-sh~, ~make lint-org~, ~make lint-el~
+- Lint specific types: ~make lint-py~, ~make lint-sh~, ~make lint-org~
 - Format specific types: ~make format-py~, ~make format-sh~
 
 ** Tangling
 - Tangle specific file: ~make tangle FILE=path/to/file.org~
 - Tangle all org files: ~make tangle-all~
 
-* Documentation Guidelines
-
-** :important: File Format Preferences
-- Use Org-mode (~.org~) for ALL documentation files
-- NEVER use Markdown (~.md~) files in the root directory
-- Markdown files should be limited to:
-  - ~.github/~ directory (for GitHub-specific files)
-  - Generated documentation (when unavoidable)
-- Convert any Markdown files to Org-mode when encountered
-
-** Reasons for Org-mode Preference
-- Built-in tangling capabilities
-- Superior structural editing
-- Better table support
-- Native diagram generation
-- Executable code blocks
-- Richer metadata with PROPERTIES drawers
-- Standardizes on one documentation format
-
 * Code Style Guidelines
 
-** Python
-- Type annotations required for all functions
+** Python Conventions
+- Type annotations REQUIRED for all functions
 - Google-style docstrings with Args/Returns sections
 - Group imports: stdlib → third-party → local modules
-- Use try/except with specific exceptions
+- Use specific exceptions in try/except blocks
 - snake_case for variables/functions, PascalCase for classes
-- Use dotenv for loading environment variables
-- Never hardcode API keys - use environment variables
+- 4-space indentation, 100 character line limit
 - Default model is gemini-2.0-flash unless specified
-- Create test file with same name in tests/ directory
+- Never hardcode API keys - use environment variables
+
+** Git Commit Format
+- Use Conventional Commits: ~<type>(<scope>): <description>~
+- Common types: feat, fix, docs, style, refactor, test, chore
+- ALWAYS use ~--trailer~ flags for attribution, NEVER inline in message:
+  #+begin_src bash
+  git commit -m "feat(client): add support for system instructions" \
+    --trailer "Co-authored-by: Claude <claude@anthropic.com>" \
+    --trailer "Signed-off-by: jwalsh <j@wal.sh>"
+  #+end_src
 
 ** Org-mode
 - Use proper heading structure
-- Add PROPERTIES drawers for metadata and code block settings
 - Tangle code to appropriate files using header args
 - Include docstrings and comments in tangled code
 - Keep implementation details in org files
 
-** Shell
-- 4-space indentation
-- Functions snake_case
-- Use set -euo pipefail at start of scripts
-- Always quote variables: ~"${VAR}"~
-- Document functions with comments
-
-* Docker Usage
+** Docker Usage
 - Build environment: ~docker-compose build~
 - Run notebooks: ~docker-compose up notebook~
 - Run API service: ~docker-compose up api~
 - Access Jupyter: http://localhost:8888
-
-* Makefile Best Practices
-
-** Core Principles
-- Focus on file dependencies to leverage Make's DAG (Directed Acyclic Graph)
-- Avoid complex shell scripting inside targets
-- Mark targets that don't produce files as ~.PHONY~
-- Minimize conditionals and loops in recipes
-
-** File Dependencies
-Makefiles excel at tracking file-level dependencies:
-
-#+begin_src makefile
-output.pdf: report.tex bibliography.bib
-    pdflatex report.tex
-#+end_src
-
-This allows Make to determine which targets need rebuilding based on file timestamps.
-
-** Pattern Rules
-Use pattern rules for similar artifacts:
-
-#+begin_src makefile
-%.py: %.org
-    emacs --batch --eval "(require 'org)" --eval "(org-babel-tangle-file \"$<\")"
-#+end_src
-
-** Clean Target Implementation
-Keep targets focused on their primary operations:
-
-#+begin_src makefile
-# Good
-compile: source.c header.h
-    $(CC) $(CFLAGS) -o output source.c
-
-# Avoid
-compile:
-    if [ -f source.c ]; then \
-        $(CC) $(CFLAGS) -o output source.c; \
-    fi
-#+end_src
-
-** Target Organization
-- Group related targets with clear naming
-- Order targets from high-level to low-level
-- Document target relationships in comments
-- Default target should be help or overview
-
-** Proper DAG for File Processing
-For projects with org files tangling to implementation:
-
-#+begin_src makefile
-# Build Python files from Org files
-src/%.py: org/%.org
-    emacs --batch --eval "(require 'org)" --eval "(org-babel-tangle-file \"$<\")"
-
-# Testing depends on source files
-tests/test_%.py: src/%.py
-    pytest $@
-
-# All source files
-SOURCES = $(wildcard org/*.org)
-# All derived Python files
-PY_FILES = $(patsubst org/%.org,src/%.py,$(SOURCES))
-
-# Build all Python files
-build: $(PY_FILES)
-
-# Run all tests
-test: $(patsubst src/%.py,tests/test_%.py,$(PY_FILES))
-#+end_src

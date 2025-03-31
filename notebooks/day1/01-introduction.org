@@ -6,7 +6,7 @@
 #+PROPERTY: header-args:python :session day1-py :results output :exports both :eval no-export
 #+PROPERTY: header-args:restclient :results value code :exports both
 
-* Introduction to Generative AI
+* TODO Introduction to Generative AI
 :PROPERTIES:
 :VISIBILITY: all
 :END:
@@ -15,8 +15,8 @@
 
 Key resources for Day 1 of the 5-Day Gen AI Intensive course:
 
-- Foundational LLM and Text Generation: https://www.kaggle.com/whitepaper-foundational-llm-and-text-generation
-- Prompt Engineering: https://www.kaggle.com/whitepaper-prompt-engineering
+- [ ] Foundational LLM and Text Generation: https://www.kaggle.com/whitepaper-foundational-llm-and-text-generation
+- [ ] Prompt Engineering: https://www.kaggle.com/whitepaper-prompt-engineering
 - Course Livestreams: https://www.youtube.com/playlist?list=PLqFaTIg4myu-lbBTrUpoQQIzZZxvrOaP5
 
 ** What is Generative AI?
@@ -27,7 +27,7 @@ Generative AI refers to artificial intelligence systems capable of generating ne
 (print "Hello from Hy! This is our first notebook.")
 #+end_src
 
-** Core Concepts
+** TODO Core Concepts
 
 - *Foundation models*: Large pre-trained models that can be adapted to many tasks
 - *Transformer architecture*: Key neural network design enabling modern LLMs
@@ -35,7 +35,7 @@ Generative AI refers to artificial intelligence systems capable of generating ne
 - *Context window*: How much information a model can consider at once
 - *Inference*: The process of generating outputs from the model
 
-* Gemini Model Architecture
+* TODO Gemini Model Architecture
 
 ** Understanding the Gemini Family
 
@@ -69,7 +69,7 @@ Generative AI refers to artificial intelligence systems capable of generating ne
   (print))
 #+end_src
 
-* Setting Up Your Environment
+* TODO Setting Up Your Environment
 
 ** API Keys and Authentication
 
@@ -101,7 +101,7 @@ Generative AI refers to artificial intelligence systems capable of generating ne
 (show-env-status)
 #+end_src
 
-* First Steps with the Gemini API
+* TODO First Steps with the Gemini API
 
 ** Basic Text Generation
 
@@ -126,7 +126,7 @@ Let's explore simple text generation with the Gemini API:
     (print "\nNote: This code requires a valid API key to run.")))
 #+end_src
 
-* Exercise: Exploring Different Prompts
+* TODO Exercise: Exploring Different Prompts
 
 ** Try Different Types of Prompts
 
@@ -160,7 +160,7 @@ Experiment with these different prompt types:
     (print f"Error setting up client: {e}")))
 #+end_src
 
-* API Testing with Restclient
+* TODO API Testing with Restclient
 
 ** Direct API Interaction
 
@@ -212,7 +212,7 @@ Content-Type: application/json
 }
 #+end_src
 
-* Conclusion and Next Steps
+* TODO Conclusion and Next Steps
 
 ** Key Takeaways from Day 1
 
