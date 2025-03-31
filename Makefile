@@ -1,7 +1,7 @@
 # 5D-GAI Intensive Course - Makefile
 # Helper commands for project management
 
-.PHONY: help setup dev clean lint lint-py lint-sh lint-org lint-el format format-py format-sh test api-test docker docker-jupyter docker-api install-dev-tools check-tools
+.PHONY: help setup dev clean lint lint-py lint-sh lint-org lint-el format format-py format-sh test api-test docker docker-jupyter docker-api install-dev-tools check-tools paper-summaries
 
 # Colors for terminal output
 GREEN  := $(shell tput -Txterm setaf 2)
@@ -13,6 +13,11 @@ RESET  := $(shell tput -Txterm sgr0)
 ORG_FILES := $(shell find . -name "*.org" | grep -v -E '(/\.|/docs/|/node_modules/)')
 PY_TARGETS := $(patsubst %.org,%.py,$(ORG_FILES))
 HY_TARGETS := $(patsubst %.org,%.hy,$(ORG_FILES))
+
+# Paper files and summary targets
+PAPER_FILES := $(shell find papers -name "*.pdf")
+SUMMARY_TARGETS := $(patsubst %.pdf,%.summary.txt,$(PAPER_FILES))
+PROMPT_TEMPLATE := prompts/summarize-paper.md
 
 # Default target when running 'make'
 help:
@@ -41,7 +46,9 @@ help:
 	@echo "  ${GREEN}build${RESET}          Tangle all org files and build source files"
 	@echo "  ${YELLOW}Testing & Docker:${RESET}"
 	@echo "  ${GREEN}test${RESET}           Run tests"
+	@echo "  ${GREEN}test-paper-summarizer${RESET} Run paper summarizer tests"
 	@echo "  ${GREEN}api-test${RESET}       Test API connectivity with Gemini"
+	@echo "  ${GREEN}paper-summaries${RESET} Generate summaries for all papers using Gemini"
 	@echo "  ${GREEN}docker${RESET}         Build all Docker containers"
 	@echo "  ${GREEN}docker-jupyter${RESET} Run Jupyter notebook server in Docker"
 	@echo "  ${GREEN}docker-api${RESET}     Run API service in Docker"
@@ -185,6 +192,12 @@ test:
 	@poetry run pytest -xvs tests
 	@echo "${GREEN}Tests complete!${RESET}"
 
+# Run paper summarizer tests
+test-paper-summarizer:
+	@echo "${BLUE}Running paper summarizer tests...${RESET}"
+	@poetry run hy tests/hy/test_paper_summarizer.hy
+	@echo "${GREEN}Paper summarizer tests complete!${RESET}"
+
 # Test API connectivity with Gemini
 api-test:
 	@echo "${BLUE}Testing Gemini API connectivity...${RESET}"
@@ -252,3 +265,15 @@ build: $(PY_TARGETS) $(HY_TARGETS)
 	@echo "${BLUE}Rebuilding all tangled sources...${RESET}"
 	@./scripts/tangle-all.sh
 	@touch $@
+
+# Paper summary rule - only regenerate if PDF or prompt template changes
+%.summary.txt: %.pdf $(PROMPT_TEMPLATE)
+	@echo "${BLUE}Generating summary for $<...${RESET}"
+	@mkdir -p $(@D)
+	@poetry run hy src/paper_summarizer.hy $< $(PROMPT_TEMPLATE) $@
+	@echo "${GREEN}Summary generated: $@${RESET}"
+
+# Generate all paper summaries
+paper-summaries: $(SUMMARY_TARGETS)
+	@echo "${GREEN}All paper summaries generated!${RESET}"
+	@echo "${YELLOW}Summaries can be found in papers/ directory with .summary.txt extension${RESET}"
