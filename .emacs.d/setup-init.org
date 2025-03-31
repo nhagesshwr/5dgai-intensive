@@ -1,0 +1,510 @@
+#+TITLE: 5DGAI Intensive Emacs Configuration
+#+AUTHOR: jwalsh
+#+DATE: 2025-03-31
+#+PROPERTY: header-args :mkdirp yes
+#+STARTUP: overview
+
+* Introduction
+
+This is a complete Emacs configuration for the 5-Day Generative AI Intensive course.
+All components will be tangled to the appropriate files in the .emacs.d directory.
+
+* Core initialization
+
+#+begin_src elisp :tangle init.el
+;; 5D-GAI Intensive Emacs Configuration
+;; Main initialization file
+
+;; Fix path issues for TRAMP
+(setq user-init-file (or load-file-name (buffer-file-name)))
+(setq user-emacs-directory (file-name-directory user-init-file))
+
+;; Set up package management
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(package-initialize)
+
+;; Ensure we have use-package
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+;; Configure org-babel before loading components
+(require 'org)
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (shell . t)
+   (sh . t)
+   (python . t)))
+
+;; Make sure shell and sh both work
+(unless (fboundp 'org-babel-execute:shell)
+  (defalias 'org-babel-execute:shell 'org-babel-execute:sh))
+
+;; Load environment variables first
+(load-file (expand-file-name "env-loader.el" user-emacs-directory))
+
+;; Load configuration components with error handling
+(dolist (component '("package-setup.el" "org-config.el" "restclient-config.el" 
+                    "gptel-config.el" "python-config.el" "keybindings.el"))
+  (let ((file (expand-file-name component user-emacs-directory)))
+    (if (file-exists-p file)
+        (condition-case err
+            (load-file file)
+          (error (message "Error loading %s: %s" component (error-message-string err))))
+      (message "Warning: %s not found" file))))
+
+;; Project specific settings
+(setq org-publish-project-alist
+      '(("5dgai-intensive"
+         :base-directory "."
+         :publishing-directory "./public"
+         :publishing-function org-html-publish-to-html
+         :recursive t
+         :with-toc t
+         :section-numbers nil)))
+
+;; Custom-set-variables will be added by Custom
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+(provide 'init)
+#+end_src
+
+* Environment Variables Loader
+
+#+begin_src elisp :tangle env-loader.el
+;; Environment variables loader for 5D-GAI Intensive
+
+;; Define utility functions for file path handling
+(defun project-root-dir ()
+  "Get the project root directory."
+  (let ((current-dir (if load-file-name
+                         (file-name-directory load-file-name)
+                       default-directory)))
+    ;; Navigate up to find project root (where .emacs.d is located)
+    (expand-file-name ".." current-dir)))
+
+;; Load .env file and set environment variables
+(defun load-dotenv-file (&optional env-file)
+  "Load environment variables from .env file or specified ENV-FILE."
+  (interactive)
+  (let* ((project-dir (project-root-dir))
+         (dotenv-file (or env-file 
+                          (expand-file-name ".env" project-dir))))
+    (if (file-exists-p dotenv-file)
+        (progn
+          (with-temp-buffer
+            (insert-file-contents dotenv-file)
+            (goto-char (point-min))
+            (let ((count 0))
+              (while (re-search-forward "^\\([A-Za-z0-9_]+\\)=\\(.*\\)" nil t)
+                (let ((key (match-string 1))
+                      (value (match-string 2)))
+                  ;; Remove quotes if present
+                  (when (string-match "^\"\\(.*\\)\"$" value)
+                    (setq value (match-string 1 value)))
+                  (setenv key value)
+                  (setq count (1+ count))))
+              (message "Loaded %d environment variables from %s" count dotenv-file)))
+          t)  ; Return true if file was loaded
+      (message "Environment file %s not found" dotenv-file)
+      nil)))  ; Return nil if file not found
+
+;; Try to load .env file at startup
+(unless (load-dotenv-file)
+  (load-dotenv-file (expand-file-name ".envrc" (project-root-dir))))
+
+;; Load from .envrc.el if it exists
+(let ((envrc-el (expand-file-name ".envrc.el" (project-root-dir))))
+  (when (file-exists-p envrc-el)
+    (load-file envrc-el)))
+
+(provide 'env-loader)
+#+end_src
+
+* Google API Key Setup
+
+#+begin_src elisp :tangle google-api.el
+;; Set all Google API keys using a loop
+(let ((api-key "AIzaSyBNd-m2_Cof5874Gof6x6fCLVuj7crkIuc")
+      (api-var-names '("GOOGLE_API_KEY" "GEMINI_API_KEY" "VERTEX_API_KEY" "AI_STUDIO_API_KEY")))
+  (dolist (var-name api-var-names)
+    (setenv var-name api-key)
+    (message "Set %s to %s..." var-name (substring api-key 0 10))))
+
+;; Verify all keys are set
+(message "All Google API keys configured successfully.")
+#+end_src
+
+* Package Setup
+
+#+begin_src elisp :tangle package-setup.el
+;; Package setup for 5D-GAI Intensive
+
+;; Install essential packages if not already installed
+(dolist (pkg '(use-package restclient ob-restclient hy-mode gptel))
+  (unless (package-installed-p pkg)
+    (package-install pkg)))
+
+;; Ensure required packages are installed with use-package
+(use-package hy-mode)
+
+(use-package markdown-mode
+  :mode (("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :config
+  (setq markdown-command "pandoc"))
+
+(use-package json-mode
+  :mode "\\.json\\'")
+
+(use-package yaml-mode
+  :mode "\\.ya?ml\\'")
+
+(use-package restclient)
+
+(use-package ob-restclient)
+
+(use-package gptel)
+
+;; Company for completion
+(use-package company
+  :config
+  (global-company-mode))
+
+(provide 'package-setup)
+#+end_src
+
+* Org-mode Configuration
+
+#+begin_src elisp :tangle org-config.el
+;; Org-mode configuration for 5D-GAI Intensive
+
+(require 'org)
+
+;; Basic org settings
+(setq org-confirm-babel-evaluate nil)
+(setq org-src-fontify-natively t)
+(setq org-src-tab-acts-natively t)
+(setq org-edit-src-content-indentation 0)
+(setq org-src-preserve-indentation t)
+(setq org-startup-folded 'content)
+
+;; Ensure org-babel languages are configured
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (shell . t)
+   (sh . t)
+   (python . t)
+   (restclient . t)))
+
+;; Make sure shell and sh both work
+(unless (fboundp 'org-babel-execute:shell)
+  (defalias 'org-babel-execute:shell 'org-babel-execute:sh))
+
+;; Add support for Hy language
+(add-to-list 'org-src-lang-modes '("hy" . hy))
+
+;; Define a function to run Hy code through IPython
+(defun org-babel-execute:hy (body params)
+  "Execute a block of Hy code with IPython."
+  (let ((org-babel-python-command "poetry run ipython -c 'import hy; hy.eval(\"\"\""))
+    (org-babel-execute:python (concat body "\"\"\"')") params)))
+
+;; Auto-tangling on save
+(defun org-babel-auto-tangle ()
+  "Automatically tangle org files when saving."
+  (when (eq major-mode 'org-mode)
+    (let ((org-confirm-babel-evaluate nil))
+      (when (member "tangle" (org-get-tags))
+        (org-babel-tangle)))))
+
+(add-hook 'after-save-hook 'org-babel-auto-tangle)
+
+;; Custom functions for org-based workflows
+(defun org-tangle-files-in-dir (dir &optional exclude)
+  "Tangle all org files in DIR, excluding any files matching EXCLUDE regex."
+  (interactive "DDirectory: ")
+  (let ((files (directory-files dir t "\\.org$")))
+    (dolist (file files)
+      (when (and (not (string-match-p (or exclude "") file))
+                 (file-regular-p file))
+        (org-babel-tangle-file file)))))
+
+(provide 'org-config)
+#+end_src
+
+* Restclient Configuration
+
+#+begin_src elisp :tangle restclient-config.el
+;; Restclient configuration for 5D-GAI Intensive
+
+(require 'restclient)
+(require 'ob-restclient)
+
+;; Helper function to insert API key from environment
+(defun restclient-insert-api-key ()
+  "Insert the API key from environment variables"
+  (interactive)
+  (let ((api-key (getenv "AI_STUDIO_API_KEY")))
+    (if api-key
+        (insert api-key)
+      (message "API key not found in environment"))))
+
+;; Key binding for inserting API key
+(define-key restclient-mode-map (kbd "C-c C-k") 'restclient-insert-api-key)
+
+;; Security functions to filter API keys from output
+(defun filter-api-keys-from-output (output)
+  "Filter API keys from restclient output."
+  (let ((filtered-output output))
+    ;; Filter API key from URL in request line
+    (setq filtered-output 
+          (replace-regexp-in-string 
+           "\\(key=\\)[^&\n ]*" 
+           "\\1REDACTED" 
+           filtered-output))
+    
+    ;; Filter API key from response headers and other potential places
+    (setq filtered-output 
+          (replace-regexp-in-string 
+           "\\(https://[^?]*\\?key=\\)[^&\n ]*" 
+           "\\1REDACTED" 
+           filtered-output))
+    
+    filtered-output))
+
+;; Add advice to restclient to filter API keys from output
+(advice-add 'restclient-http-do 
+            :around 
+            (lambda (orig-fun &rest args)
+              (let ((result (apply orig-fun args)))
+                (let ((response-buffer (get-buffer "*HTTP Response*")))
+                  (when response-buffer
+                    (with-current-buffer response-buffer
+                      (let ((filtered-content (filter-api-keys-from-output (buffer-string))))
+                        (erase-buffer)
+                        (insert filtered-content)))))
+                result)))
+
+;; Add a hook to org-babel-restclient to filter API keys after execution
+(defun filter-restclient-results ()
+  "Filter API keys from restclient results."
+  (let ((results-markers (org-babel-where-is-src-block-result)))
+    (when results-markers
+      (save-excursion
+        (goto-char (marker-position results-markers))
+        (let* ((element (org-element-at-point))
+               (content (buffer-substring-no-properties 
+                         (org-element-property :contents-begin element)
+                         (org-element-property :contents-end element)))
+               (filtered-content (filter-api-keys-from-output content)))
+          (delete-region (org-element-property :contents-begin element)
+                         (org-element-property :contents-end element))
+          (goto-char (org-element-property :contents-begin element))
+          (insert filtered-content))))))
+
+(add-hook 'org-babel-after-execute-hook
+          (lambda ()
+            (when (string= "restclient" (org-babel-get-src-block-info t))
+              (filter-restclient-results))))
+
+(provide 'restclient-config)
+#+end_src
+
+* Python and IPython configuration
+
+#+begin_src elisp :tangle python-config.el
+;; Python configuration for 5D-GAI Intensive
+
+;; IPython integration
+(setq python-shell-interpreter "poetry"
+      python-shell-interpreter-args "run ipython -i --simple-prompt")
+
+;; Define a function to run Hy code through IPython
+(defun org-babel-execute:hy (body params)
+  "Execute a block of Hy code with IPython."
+  (let ((org-babel-python-command "poetry run ipython -c 'import hy; hy.eval(\"\"\""))
+    (org-babel-execute:python (concat body "\"\"\"')") params)))
+
+;; Support for poetry environments
+(defun set-poetry-environment ()
+  "Set the python interpreter to use the poetry environment."
+  (interactive)
+  (let ((python-path (string-trim
+                      (shell-command-to-string "poetry env info -p 2>/dev/null || echo ''"))))
+    (when (and python-path (not (string= python-path "")))
+      (setq python-shell-interpreter (concat python-path "/bin/python"))
+      (message "Using Python at %s" python-shell-interpreter))))
+
+;; Try to set poetry environment when opening python files
+(add-hook 'python-mode-hook 'set-poetry-environment)
+
+(provide 'python-config)
+#+end_src
+
+* ZMQ Integration
+
+#+begin_src elisp :tangle zmq-config.el
+;; ZMQ Configuration for 5D-GAI Intensive
+
+;; Try to load zmq package if available
+(when (require 'zmq nil t)
+  (message "ZMQ package loaded successfully")
+  
+  ;; Configure zmq for Jupyter integration
+  (when (require 'jupyter nil t)
+    (message "Jupyter package loaded successfully")
+    
+    ;; Add jupyter to org-babel
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     (append org-babel-load-languages '((jupyter . t))))
+    
+    ;; Configure default kernels
+    (setq jupyter-default-kernel "python3")
+    
+    ;; Add keyboard shortcuts
+    (global-set-key (kbd "C-c j") 'jupyter-run-repl)
+    (global-set-key (kbd "C-c J") 'jupyter-connect-repl)))
+
+;; Fall back if zmq not available
+(unless (featurep 'zmq)
+  (message "ZMQ not available - using standard REPL communication"))
+
+(provide 'zmq-config)
+#+end_src
+
+* GPTel configuration
+
+#+begin_src elisp :tangle gptel-config.el
+;; GPTel configuration for 5D-GAI Intensive
+
+(require 'gptel)
+
+;; Basic configuration
+(setq gptel-default-mode 'org-mode)  ; Set default response mode to org-mode
+(setq gptel-model-history nil)       ; Don't save model history between sessions
+
+;; Configure available models
+(gptel-make-ollama "Ollama"
+  :host "localhost:11434"
+  :stream t
+  :models '(llama3.2:latest))
+
+;; Set Gemini as the default model
+(setq
+ gptel-model 'gemini-pro
+ gptel-backend (gptel-make-gemini "Gemini"
+                :key (getenv "GEMINI_API_KEY")
+                :stream t))
+
+;; Add GitHub/Azure models
+(gptel-make-openai "Github Models"
+  :host "models.inference.ai.azure.com"
+  :endpoint "/chat/completions?api-version=2024-05-01-preview"
+  :stream t
+  :key (getenv "GITHUB_TOKEN")
+  :models '(gpt-4o))
+
+;; Integrate with org-babel (create LLM blocks)
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages '((gptel . t)))))
+
+;; Helper functions for AI assistants in org-mode
+(defun gptel-send-region-or-block ()
+  "Send the current region or org block to gptel"
+  (interactive)
+  (if (use-region-p)
+      (gptel-send (region-beginning) (region-end))
+    (when (eq major-mode 'org-mode)
+      (let* ((element (org-element-at-point))
+             (type (org-element-type element)))
+        (when (eq type 'src-block)
+          (let ((begin (org-element-property :begin element))
+                (end (org-element-property :end element)))
+            (gptel-send begin end)))))))
+
+;; Key bindings
+(global-set-key (kbd "C-c g") 'gptel)
+(global-set-key (kbd "C-c C-g") 'gptel-send-region-or-block)
+
+;; Set prompt templates for different tasks
+(setq gptel-prompt-templates
+      '(("5DGAI-Agent" . "You are an AI assistant helping with the 5D Gen AI Intensive Course.
+You'll be helping with coding, API interactions, and explanations of AI concepts.
+The user is working in Emacs with org-mode and Babel for literate programming.
+
+%s")
+        ("Code-Helper" . "You are a coding assistant. Help debug, explain, or generate code.
+Focus on clear, efficient solutions with good documentation.
+
+%s")
+        ("API-Explorer" . "You are an API exploration assistant. Help the user understand and use 
+the Gemini API and other AI APIs through restclient examples.
+
+%s")))
+
+(provide 'gptel-config)
+#+end_src
+
+* Custom keybindings
+
+#+begin_src elisp :tangle keybindings.el
+;; Keybindings for 5D-GAI Intensive
+
+;; Org-mode keybindings
+(global-set-key (kbd "C-c o t") 'org-babel-tangle)
+(global-set-key (kbd "C-c o d") 'org-babel-detangle)
+(global-set-key (kbd "C-c o e") 'org-export-dispatch)
+(global-set-key (kbd "C-c o j") 'org-babel-execute-src-block)
+
+;; GPTel keybindings
+(global-set-key (kbd "C-c g") 'gptel)
+(global-set-key (kbd "C-c C-g") 'gptel-send)
+
+;; Restclient keybindings
+(with-eval-after-load 'restclient-mode
+  (define-key restclient-mode-map (kbd "C-c C-r") 'restclient-http-send-current))
+
+;; Project navigation
+(global-set-key (kbd "C-c p f") 'project-find-file)
+(global-set-key (kbd "C-c p g") 'project-find-regexp)
+
+(provide 'keybindings)
+#+end_src
+
+* Verifying Installation
+
+Run these blocks to verify your installation:
+
+#+begin_src elisp :tangle no
+(princ "Checking configuration status:\n\n")
+
+(princ (format "Emacs version: %s\n" emacs-version))
+(princ (format "Org mode version: %s\n" (org-version)))
+(princ (format "User emacs directory: %s\n" user-emacs-directory))
+
+(princ "\nChecking package installation:\n")
+(dolist (pkg '(use-package restclient ob-restclient hy-mode gptel))
+  (princ (format "- %s: %s\n" pkg (if (package-installed-p pkg) "Installed" "Not installed"))))
+
+(princ "\nChecking org-babel languages:\n")
+(princ (format "%S\n" org-babel-load-languages))
+
+(princ "\nChecking environment variables:\n")
+(dolist (var '("GEMINI_API_KEY" "GITHUB_TOKEN" "AI_STUDIO_API_KEY"))
+  (princ (format "- %s: %s\n" var (if (getenv var) "Set" "Not set"))))
+#+end_src

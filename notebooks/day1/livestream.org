@@ -1,0 +1,80 @@
+#+TITLE: Kaggle Gen AI Intensive Course - Day 1 Notes
+#+AUTHOR: 
+#+DATE: 
+#+OPTIONS: toc:nil num:nil
+#+PROPERTY: header-args :mkdirp yes :tangle yes
+
+* Kaggle 5-Day Gen AI Intensive Course with Google 2025
+** Day 1 Livestream
+#+BEGIN_SRC 
+URL: https://www.youtube.com/watch?v=WpIfAeCIFc0&list=PLqFaTIg4myu-lbBTrUpoQQIzZZxvrOaP5&index=1
+#+END_SRC
+
+*** Key Points
+- Suggested listening: NotebookLLM podcast (noted as "just trolling")
+- Discussion topics:
+  + Agent versioning and testing
+  + Comprehensive SDK coverage 
+  + Deep analysis approaches
+  + 1-3 year speculation deemed unnecessary
+  + Evaluation flows and quality criteria
+  + Context considerations
+
+*** Technical Aspects
+- Prompt caching implementation
+- Batch APIs and fixed requirements
+- Idle compute utilization
+- Energy efficiency optimization
+
+*** Organizational Challenges
+- Rapid rate of change will be difficult for organizations to adapt to
+
+*** Questions & Comments
+- "This is an interesting question" (specific question not noted)
+- Excessive speculation about LLM background noted as unnecessary
+
+*** Action Items
+- Consider having AI listen to the stream for better notes
+- Follow up on evaluation criteria discussion
+
+*** About Kaggle
+#+BEGIN_SRC 
+Kaggle is the world's largest community of data scientists offering:
+- Collaboration and competition platforms
+- Jupyter notebooks with one-click setup
+- Free code and data repositories
+- Community support
+- Educational resources
+#+END_SRC
+
+#+BEGIN_COMMENT
+These notes were automatically formatted and organized from raw stream notes.
+#+END_COMMENT
+
+https://www.youtube.com/watch?v=WpIfAeCIFc0&list=PLqFaTIg4myu-lbBTrUpoQQIzZZxvrOaP5&index=1
+
+* Raw
+
+
+day 1: notes and instrctions 
+
+- asked people to listten to the notebookllm podcaast which is just trolling 
+- agent versioning and testing 
+- covering all of the sdkk
+- deep analysis 
+- nonsennse about 1-3 y specutiionnn is unnecessary ; not worth listtening 
+- need to have the ai listen to the stream 
+- so much speculation about background for teh llm, why do people 
+- eval flows noted/ what are the criteria of what is good 
+- conntext vs. something else 
+- rate of change will be difficult for orgs
+- "this is an intereint questino" 
+- prommpt caching 
+- batch apis / fixed reqirements 
+- look at idle compute 
+- flatten out / energy efficiency 
+- use prompt engineerng and criteria and judge criteria
+- asking questions at the end look like a sales pitch 
+- had dean at the start talking about excitement
+- really, the notebook llm as 
+- rlhf should be reward model ; this quiz approach is like asking about what the model foxus attention on so it's about learning the tone 

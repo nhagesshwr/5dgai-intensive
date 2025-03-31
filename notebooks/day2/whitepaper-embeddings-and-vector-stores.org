@@ -1,0 +1,367 @@
+#+TITLE: Embeddings & Vector Stores - Reading Notes
+#+AUTHOR: Google Whitepaper (February 2025)
+#+DATE: March 31, 2025
+#+PROPERTY: header-args:python :session *python* :results output
+
+* Introduction
+Embeddings are numerical representations of real-world data (text, images, audio) that transform heterogeneous data into unified vector representations. These low-dimensional vectors capture semantic meaning and significantly help with efficient large-scale data processing and storage.
+
+** Key Concepts
+- Embeddings map high-dimensional data to lower-dimensional space
+- Semantic similarity is captured by geometric distance in vector space
+- Essential for multimodal data handling (text, images, audio, etc.)
+- Enable efficient search, recommendation, and other applications
+
+* Why Embeddings Are Important
+
+Embeddings help with:
+- Providing compact representations of different data types
+- Quantifying semantic similarity between data objects
+- Efficient large-scale data processing and compression
+- Multimodal data handling and semantic relationships
+
+#+begin_src python :tangle src/embedding_similarity.py :mkdirp yes
+# Simple example of comparing semantic similarity using embeddings
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
+# Hypothetical embeddings for words
+computer_embed = np.array([[0.2, 0.8, 0.7, 0.1]])
+laptop_embed = np.array([[0.25, 0.75, 0.6, 0.2]])
+car_embed = np.array([[0.9, 0.2, 0.1, 0.7]])
+
+# Calculate similarities
+print(f"Computer-Laptop similarity: {cosine_similarity(computer_embed, laptop_embed)[0][0]:.4f}")
+print(f"Computer-Car similarity: {cosine_similarity(computer_embed, car_embed)[0][0]:.4f}")
+#+end_src
+
+* Types of Embeddings
+
+** Text Embeddings
+*** Word Embeddings
+Traditional word embedding techniques include:
+- Word2Vec (CBOW and Skip-gram approaches)
+- GloVe (Global Vectors)
+- SWIVEL
+
+#+begin_src python :tangle src/word_embeddings.py :mkdirp yes
+# Example of loading pre-trained word embeddings
+# !pip install gensim
+import gensim.downloader as api
+
+# Load pre-trained Word2Vec embeddings
+word_vectors = api.load('word2vec-google-news-300')
+
+# Find similar words
+similar_words = word_vectors.most_similar('computer', topn=3)
+print("Words similar to 'computer':")
+for word, similarity in similar_words:
+    print(f"  {word}: {similarity:.4f}")
+
+# Calculate similarity between two words
+similarity = word_vectors.similarity('computer', 'laptop')
+print(f"\nSimilarity between 'computer' and 'laptop': {similarity:.4f}")
+#+end_src
+
+*** Document Embeddings
+Document embedding approaches:
+- Shallow BoW (Bag of Words) models
+  - LSA (Latent Semantic Analysis)
+  - LDA (Latent Dirichlet Allocation)
+  - TF-IDF
+  - Doc2Vec
+- Deeper pretrained LLM-based models
+  - BERT, T5, GPT-based models
+  - Sentence-BERT, SimCSE, E5
+  - Newer approaches: multi-vector embeddings (ColBERT, XTR)
+
+#+begin_src python :tangle src/document_embeddings.py :mkdirp yes
+# Example using Doc2Vec for document embeddings
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+from gensim.utils import simple_preprocess
+
+# Sample documents
+documents = [
+    "The earth is spherical.",
+    "The earth is a planet.",
+    "I like to eat at a restaurant."
+]
+
+# Preprocess and tag documents
+tagged_docs = [TaggedDocument(simple_preprocess(doc), [i]) for i, doc in enumerate(documents)]
+
+# Train a Doc2Vec model
+model = Doc2Vec(tagged_docs, vector_size=10, window=2, min_count=1, workers=4, epochs=20)
+
+# Get document vectors
+doc_vectors = [model.dv[i] for i in range(len(documents))]
+
+# Calculate similarity between documents
+from scipy.spatial.distance import cosine
+
+similarity_0_1 = 1 - cosine(doc_vectors[0], doc_vectors[1])
+similarity_0_2 = 1 - cosine(doc_vectors[0], doc_vectors[2])
+
+print(f"Similarity between doc 0 and doc 1: {similarity_0_1:.4f}")
+print(f"Similarity between doc 0 and doc 2: {similarity_0_2:.4f}")
+#+end_src
+
+*** Using Modern LLM-based Embeddings
+
+#+begin_src python :tangle src/vertex_ai_embeddings.py :mkdirp yes
+# Example using Vertex AI Text Embeddings (pseudocode as it requires API setup)
+from vertexai.language_models import TextEmbeddingModel, TextEmbeddingInput
+
+def embed_texts(texts, task_type="RETRIEVAL_DOCUMENT"):
+    """Generate embeddings for a list of texts using Vertex AI."""
+    # Initialize the model (requires proper setup in actual environment)
+    model = TextEmbeddingModel.from_pretrained("text-embedding-004")
+    
+    # Create embedding inputs with appropriate task type
+    inputs = [TextEmbeddingInput(text=text, task_type=task_type) for text in texts]
+    
+    # Generate embeddings
+    embeddings = model.get_embeddings(inputs)
+    
+    # Print embedding dimension
+    print(f"Embedding dimension: {len(embeddings[0].values)}")
+    return embeddings
+
+# Demo with sample texts
+sample_texts = [
+    "The earth is spherical.",
+    "The earth is a planet.",
+    "I like to eat at a restaurant."
+]
+
+# This is just pseudo-code - would require actual API setup
+# embeddings = embed_texts(sample_texts)
+# print(f"Number of embeddings: {len(embeddings)}")
+#+end_src
+
+** Image & Multimodal Embeddings
+Image embeddings can be derived from:
+- CNN or Vision Transformer models trained on image classification
+- Multimodal models that align images and text in the same space
+
+** Structured Data Embeddings
+- General structured data (tables, records)
+- User/item structured data (for recommendation systems)
+- Graph embeddings (capturing node relationships)
+
+* Vector Search
+
+Traditional keyword search has limitations when dealing with semantic meaning. Vector search enables searching by meaning across data modalities:
+
+#+begin_src python :tangle src/faiss_vector_search.py :mkdirp yes
+# Example of simple vector search with FAISS
+import numpy as np
+import faiss
+
+# Sample vector data (embedding dimension = 10)
+dim = 10          # Dimension of embeddings
+n_vectors = 100   # Number of vectors in our database
+np.random.seed(42)
+vectors = np.random.random((n_vectors, dim)).astype('float32')  # Random vectors as database
+
+# Create a FAISS index for vector search
+index = faiss.IndexFlatL2(dim)  # L2 distance (Euclidean)
+index.add(vectors)              # Add vectors to the index
+
+# Query vector (what we're searching for)
+query = np.random.random((1, dim)).astype('float32')
+
+# Search for the 5 nearest vectors
+k = 5  # Number of nearest neighbors to retrieve
+distances, indices = index.search(query, k)
+
+print(f"Query vector shape: {query.shape}")
+print(f"Found {len(indices[0])} nearest neighbors")
+print(f"Neighbor indices: {indices[0]}")
+print(f"Distances: {distances[0]}")
+#+end_src
+
+** Important Vector Search Algorithms
+*** Locality Sensitive Hashing (LSH) & Trees
+LSH creates hash functions that map similar items to the same hash bucket.
+
+#+begin_src python :tangle src/simple_lsh.py :mkdirp yes
+# Example of LSH for approximate nearest neighbor search
+# (simplified implementation)
+
+import numpy as np
+from sklearn.random_projection import GaussianRandomProjection
+
+class SimpleLSH:
+    def __init__(self, dim, n_projections=10):
+        self.dim = dim
+        self.n_projections = n_projections
+        # Create random projections
+        self.projections = GaussianRandomProjection(n_components=n_projections)
+        self.data = None
+        self.indices = None
+        
+    def fit(self, vectors):
+        """Transform vectors and store them with original indices."""
+        self.data = vectors
+        # Project data to lower dimensions
+        self.transformed = self.projections.fit_transform(vectors)
+        # Create binary hash (1 for positive, 0 for negative)
+        self.hashes = (self.transformed > 0).astype(int)
+        self.indices = np.arange(len(vectors))
+        return self
+        
+    def query(self, vector, k=5):
+        """Find k approximate nearest neighbors."""
+        # Project query vector
+        query_proj = self.projections.transform(vector.reshape(1, -1))
+        # Get binary hash
+        query_hash = (query_proj > 0).astype(int)
+        
+        # Calculate Hamming distances (number of different bits)
+        hamming_distances = np.sum(np.abs(self.hashes - query_hash), axis=1)
+        
+        # Get k nearest neighbors based on Hamming distance
+        nearest_indices = np.argsort(hamming_distances)[:k]
+        
+        return self.indices[nearest_indices], hamming_distances[nearest_indices]
+
+# Test with random vectors
+dim = 20
+n_vectors = 1000
+vectors = np.random.random((n_vectors, dim))
+query = np.random.random(dim)
+
+# Initialize and fit LSH
+lsh = SimpleLSH(dim, n_projections=10)
+lsh.fit(vectors)
+
+# Query
+nearest_indices, distances = lsh.query(query, k=5)
+print(f"Query results - indices: {nearest_indices}, distances: {distances}")
+#+end_src
+
+*** Hierarchical Navigable Small Worlds (HNSW)
+HNSW organizes vectors in a hierarchical graph structure for efficient navigation.
+
+#+begin_src python :tangle src/hnsw_search.py :mkdirp yes
+# Using FAISS with HNSW (simplified)
+import numpy as np
+import faiss
+
+# Parameters for HNSW
+d = 64          # Dimension of embeddings
+nb = 10000      # Number of vectors in database
+M = 16          # Number of connections per layer (higher = better recall, more memory)
+efConstruction = 40  # Size of dynamic candidate list (higher = better recall, slower construction)
+
+# Generate random database vectors
+np.random.seed(42)
+database = np.random.random((nb, d)).astype('float32')
+
+# Create HNSW index
+index = faiss.IndexHNSWFlat(d, M)
+index.hnsw.efConstruction = efConstruction
+index.add(database)
+
+# Generate query vector
+query = np.random.random((1, d)).astype('float32')
+
+# Set search parameters
+index.hnsw.efSearch = 20  # Size of dynamic candidate list for search (higher = better recall, slower search)
+
+# Search
+k = 5  # Number of nearest neighbors to retrieve
+distances, indices = index.search(query, k)
+
+print(f"Query vector shape: {query.shape}")
+print(f"Top {k} results - indices: {indices[0]}")
+print(f"Distances: {distances[0]}")
+#+end_src
+
+*** ScaNN
+Google's Scalable Approximate Nearest Neighbor search algorithm offers superior performance with multiple optimization techniques:
+- Partitioning
+- Efficient scoring
+- Optional reranking
+
+* Vector Databases
+
+Vector databases are specialized systems for storing and retrieving embeddings efficiently. 
+Common vector databases include:
+- Google Cloud's Vertex AI Vector Search (uses ScaNN)
+- AlloyDB & Cloud SQL Postgres (with pgvector)
+- Pinecone
+- Weaviate
+- ChromaDB
+
+#+begin_src python :tangle src/rag_with_vectorstore.py :mkdirp yes
+# Example using Langchain with Vertex AI Vector Search for RAG (pseudocode)
+from langchain_google_vertexai import VertexAIEmbeddings, VertexAI
+from langchain_google_vertexai import VectorSearchVectorStore
+from langchain.chains import RetrievalQA
+from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+
+# Initialize embedding model
+embedding_model = VertexAIEmbeddings(model_name="text-embedding-004")
+
+# Create vector store (this is pseudocode - real implementation requires GCP setup)
+vector_store = VectorSearchVectorStore.from_components(
+    project_id="my_project",
+    region="us-central1",
+    gcs_bucket_name="my_bucket",
+    index_id="my_index",
+    endpoint_id="my_endpoint",
+    embedding=embedding_model,
+)
+
+# Add documents to vector store
+sample_texts = [
+    "The earth is spherical.",
+    "The earth is a planet.",
+    "I like to eat at a restaurant."
+]
+# vector_store.add_texts(texts=sample_texts)
+
+# Create retriever
+retriever = vector_store.as_retriever(search_kwargs={'k': 2})
+
+# Initialize LLM
+llm = VertexAI(model_name="gemini-pro")
+
+# Create RAG chain
+chain = RetrievalQA.from_chain_type(
+    llm=llm,
+    chain_type="stuff",
+    retriever=retriever,
+    return_source_documents=True
+)
+
+# Example query
+query = "What shape is the planet where humans live?"
+# result = chain(query)
+# print(f"Answer: {result['result']}")
+# print(f"Sources: {[doc.page_content for doc in result['source_documents']]}")
+#+end_src
+
+* Applications and Operational Considerations
+
+** Applications
+- Question answering with sources (RAG)
+- Semantic search
+- Recommendation systems
+- Anomaly detection
+- Classification
+
+** Operational Considerations
+- Embedding model selection and updates
+- Vector database choice based on scale requirements
+- Combining semantic and literal/syntactic search
+- Production scalability and performance trade-offs
+
+* Summary
+
+Embeddings and vector stores provide powerful tools for building semantic applications:
+1. Choose appropriate embedding models for your data and use case
+2. Select suitable vector databases based on operational requirements
+3. Consider combining with other techniques (like RAG for LLMs) to improve results

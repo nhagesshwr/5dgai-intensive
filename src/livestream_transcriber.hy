@@ -20,6 +20,9 @@
   (.add_argument parser "--segment-length" :type int :default 10 :help "Length of audio segments in seconds")
   (.add_argument parser "--summary-interval" :type int :default 300 :help "Generate summaries every N seconds")
   (.add_argument parser "--output-dir" :default "transcripts" :help "Directory to save transcripts and summaries")
+  (.add_argument parser "--download-only" :action "store_true" :help "Only download the audio without transcribing")
+  (.add_argument parser "--archive" :action "store_true" :help "Process archived (non-live) stream")
+  (.add_argument parser "--day" :type int :default 0 :help "Day number of the livestream (1-5)")
   (.parse_args parser))
 
 (defn setup-fifo []
@@ -34,10 +37,13 @@
   "Create output directory for transcripts and summaries"
   (when (not (os.path.exists args.output_dir))
     (os.makedirs args.output_dir))
+  
   (setv timestamp (time.strftime "%Y%m%d-%H%M%S"))
-  (setv output-base f"{args.output_dir}/{timestamp}")
+  (setv day-prefix (if (> args.day 0) f"day{args.day}-" ""))
+  (setv output-base f"{args.output_dir}/{day-prefix}{timestamp}")
   (setv transcript-path f"{output-base}.transcript.txt")
   (setv summary-path f"{output-base}.summary.txt")
+  (setv audio-path f"{output-base}.audio.mp3")
   
   ;; Create empty files
   (with [f (open transcript-path "w")] None)
@@ -45,6 +51,7 @@
   
   {"transcript_path" transcript-path
    "summary_path" summary-path
+   "audio_path" audio-path
    "base_path" output-base})
 
 (defn signal-handler [sig frame terminated processes]
@@ -60,6 +67,29 @@
     (os.remove "/tmp/whisper_stream.wav"))
   (print "Cleanup complete. Exiting.")
   (sys.exit 0))
+
+(defn download-youtube-audio [url output-path]
+  "Download audio from YouTube URL"
+  (setv cmd [
+    "yt-dlp"
+    "-x"                          ;; Extract audio
+    "--audio-format" "mp3"        ;; Convert to mp3
+    "--audio-quality" "0"         ;; Best quality
+    "-o" output-path              ;; Output path
+    url                           ;; URL to download
+  ])
+  
+  (print "Downloading YouTube audio...")
+  (print f"Command: {' '.join cmd}")
+  (print f"Output will be saved to: {output-path}")
+  
+  (setv process (subprocess.run cmd :capture_output True :text True))
+  (when (!= process.returncode 0)
+    (print f"Error downloading audio: {process.stderr}")
+    (sys.exit 1))
+  
+  (print "Download complete!")
+  output-path)
 
 (defn start-stream-listener [url fifo-path segment-length]
   "Start ffmpeg process to listen to the stream"
@@ -100,6 +130,28 @@
                     :stdout subprocess.PIPE
                     :stderr subprocess.STDOUT
                     :text True))
+
+(defn transcribe-audio-file [model lang audio-path transcript-path]
+  "Transcribe an audio file using whisper.cpp"
+  (setv cmd [
+    "whisper"
+    "-m" f"models/ggml-{model}.bin"
+    "--language" lang
+    "-f" audio-path
+    "--output-txt"
+    "-otxt" transcript-path
+  ])
+  
+  (print "Transcribing audio file...")
+  (print f"Command: {' '.join cmd}")
+  
+  (setv process (subprocess.run cmd :capture_output True :text True))
+  (when (!= process.returncode 0)
+    (print f"Error transcribing audio: {process.stderr}")
+    (sys.exit 1))
+  
+  (print f"Transcription complete! Results saved to {transcript-path}")
+  transcript-path)
 
 (defn process-transcription [transcriber transcript-path terminated]
   "Process transcription output and save to file"
@@ -164,10 +216,37 @@
       (print "Generating periodic summary...")
       (summarize-with-gemini transcript-path summary-path))))
 
-(defn main []
-  "Main function to run the livestream transcription and summarization"
-  ;; Parse command-line arguments
-  (setv args (setup-argparse))
+(defn process-archived-stream [args]
+  "Process an archived YouTube livestream"
+  (print "Processing archived YouTube stream...")
+  
+  ;; Set up output paths
+  (setv output-paths (setup-output-dir args))
+  (setv transcript-path (get output-paths "transcript_path"))
+  (setv summary-path (get output-paths "summary_path"))
+  (setv audio-path (get output-paths "audio_path"))
+  
+  ;; Download the YouTube audio
+  (download-youtube-audio args.url audio-path)
+  
+  ;; If download-only flag is set, exit after downloading
+  (when args.download_only
+    (print f"Audio downloaded to {audio-path}")
+    (return))
+  
+  ;; Transcribe the audio file
+  (transcribe-audio-file args.model args.lang audio-path transcript-path)
+  
+  ;; Generate summary
+  (summarize-with-gemini transcript-path summary-path)
+  
+  (print "Archived stream processing complete.")
+  (print f"Transcript: {transcript-path}")
+  (print f"Summary: {summary-path}"))
+
+(defn process-live-stream [args]
+  "Process a live YouTube stream"
+  (print "Processing live YouTube stream...")
   
   ;; Set up output paths
   (setv output-paths (setup-output-dir args))
@@ -191,9 +270,9 @@
   
   ;; Start processing threads
   (setv transcription-thread (threading.Thread :target process-transcription
-                                              :args [transcriber transcript-path terminated]))
+                                             :args [transcriber transcript-path terminated]))
   (setv summary-thread (threading.Thread :target periodic-summarization
-                                        :args [transcript-path summary-path args.summary_interval terminated]))
+                                       :args [transcript-path summary-path args.summary_interval terminated]))
   
   (.start transcription-thread)
   (.start summary-thread)
@@ -208,7 +287,17 @@
   (when (os.path.exists fifo-path)
     (os.remove fifo-path))
   
-  (print "Transcription and summarization complete."))
+  (print "Live stream transcription and summarization complete."))
+
+(defn main []
+  "Main function to run the livestream transcription and summarization"
+  ;; Parse command-line arguments
+  (setv args (setup-argparse))
+  
+  ;; Process either archived or live stream
+  (if args.archive
+      (process-archived-stream args)
+      (process-live-stream args)))
 
 (when (= __name__ "__main__")
   (main))
