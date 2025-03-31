@@ -2,11 +2,11 @@
 ;; Paper Summarizer in Hy
 ;; Summarizes academic papers using Google's Gemini API
 
-(import [os]
-        [sys]
-        [pathlib [Path]]
-        [google.genai [genai types]]
-        [httpx])
+(import os)
+(import sys)
+(import pathlib)
+(import google.genai)
+(import httpx)
 
 (defn load-prompt [prompt-path]
   "Load the prompt template from the given path"
@@ -25,7 +25,7 @@
       ;; Read the local file
       (do
         (print f"Reading local PDF file {paper-path}")
-        (.read_bytes (Path paper-path)))))
+        (.read_bytes (pathlib.Path paper-path)))))
 
 (defn summarize-paper [paper-path prompt-path output-path]
   "Summarize a paper using Gemini API"
@@ -34,7 +34,7 @@
   (print f"Output will be saved to: {output-path}")
   
   ;; Initialize the API client
-  (setv client (genai.Client))
+  (setv client (google.genai.genai.Client))
   
   ;; Load the prompt template
   (setv prompt (load-prompt prompt-path))
@@ -44,32 +44,31 @@
   
   ;; Generate summary using Gemini API
   (print "Generating summary...")
-  (setv response (client.models.generate_content
-                   :model "gemini-1.5-flash"
-                   :contents [(types.Part.from_bytes
-                                :data pdf-content
-                                :mime_type "application/pdf")
-                              prompt]))
+  (setv response (.generate_content client.models
+                                   :model "gemini-1.5-flash"
+                                   :contents [(google.genai.types.Part.from_bytes
+                                               :data pdf-content
+                                               :mime_type "application/pdf")
+                                             prompt]))
   
   ;; Save the summary
   (print f"Saving summary to {output-path}")
   (with [f (open output-path "w")]
     (.write f (.text response)))
   
-  (print "Summary generation complete!")
-  (.text response))
+  (print "Summary generation complete!"))
 
-(defmain [&rest args]
+(defn main []
   "Main entry point for the script"
-  (if (< (len args) 4)
-      (do
-        (print "Usage: hy paper_summarizer.hy <paper_path> <prompt_path> <output_path>")
-        (sys.exit 1)))
+  (when (< (len sys.argv) 4)
+    (print "Usage: hy paper_summarizer.hy <paper_path> <prompt_path> <output_path>")
+    (sys.exit 1))
   
-  (setv [_ paper-path prompt-path output-path] args)
+  (setv paper-path (get sys.argv 1))
+  (setv prompt-path (get sys.argv 2))
+  (setv output-path (get sys.argv 3))
   
-  (try
-    (summarize-paper paper-path prompt-path output-path)
-    (except [e Exception]
-      (print f"Error: {e}")
-      (sys.exit 1))))
+  (summarize-paper paper-path prompt-path output-path))
+
+(when (= __name__ "__main__")
+  (main))
