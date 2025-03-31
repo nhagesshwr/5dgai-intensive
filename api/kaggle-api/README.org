@@ -1,0 +1,437 @@
+#+TITLE: Kaggle API Integration
+#+AUTHOR: jwalsh
+#+DATE: 2025-03-31
+#+PROPERTY: header-args :mkdirp yes :tangle yes
+#+STARTUP: overview
+
+* Introduction
+
+This document provides a literate programming interface to the Kaggle API using Emacs, 
+org-mode, and Hy (a Lisp dialect that compiles to Python). It enables interactive exploration
+of Kaggle competitions, datasets, kernels, and models directly from within Emacs.
+
+- https://github.com/Kaggle/kaggle-api
+
+
+* Environment Setup
+:PROPERTIES:
+:header-args:sh: :results output :exports both
+:END:
+
+** API Authentication
+   
+First, we need to set up the Kaggle API credentials:
+
+#+begin_src shell :tangle generate-kaggle-json.sh
+  #!/bin/bash
+
+  # Ensure config directory exists with proper permissions
+  mkdir -p ~/.kaggle
+  chmod 700 ~/.kaggle
+
+  # Check if environment variables are set
+  if [ -z "$KAGGLE_USERNAME" ] || [ -z "$KAGGLE_KEY" ]; then
+      echo "ERROR: Kaggle credentials not found in environment variables."
+      echo "Please set KAGGLE_USERNAME and KAGGLE_KEY environment variables."
+      exit 1
+  fi
+
+  # Check if file already exists and take proper action
+  if [ -f ~/.kaggle/kaggle.json ]; then
+      echo "Kaggle credentials file already exists."
+      echo "Do you want to overwrite it? (y/n)"
+      read -r answer
+      if [[ "$answer" =~ ^[Yy]$ ]]; then
+          # Backup existing file first
+          cp ~/.kaggle/kaggle.json ~/.kaggle/kaggle.json.bak
+          echo "Backed up existing credentials to ~/.kaggle/kaggle.json.bak"
+          
+          # Create new credentials file
+          cat > ~/.kaggle/kaggle.json << EOF
+  {
+    "username": "$KAGGLE_USERNAME",
+    "key": "$KAGGLE_KEY"
+  }
+  EOF
+          chmod 600 ~/.kaggle/kaggle.json
+          echo "Credentials updated successfully."
+      else
+          echo "Keeping existing credentials file."
+      fi
+  else
+      # Create new credentials file if it doesn't exist
+      cat > ~/.kaggle/kaggle.json << EOF
+  {
+    "username": "$KAGGLE_USERNAME",
+    "key": "$KAGGLE_KEY"
+  }
+  EOF
+      chmod 600 ~/.kaggle/kaggle.json
+      echo "Credentials file created successfully."
+  fi
+
+  # Verify file permissions
+  file_perms=$(stat -c "%a" ~/.kaggle/kaggle.json 2>/dev/null || stat -f "%Lp" ~/.kaggle/kaggle.json)
+  if [ "$file_perms" != "600" ]; then
+      echo "WARNING: File permissions are not secure. Fixing..."
+      chmod 600 ~/.kaggle/kaggle.json
+  fi
+
+  # Validate JSON format
+  if command -v jq &> /dev/null; then
+      if ! jq empty ~/.kaggle/kaggle.json 2>/dev/null; then
+          echo "ERROR: Invalid JSON format in credentials file."
+          exit 1
+      else
+          echo "JSON format verified."
+      fi
+  else
+      echo "Note: Install 'jq' for JSON validation."
+  fi
+
+  echo "Kaggle credentials setup complete."
+#+end_src
+
+Check if the credentials file exists:
+
+#+begin_src shell
+if [ -f ~/.kaggle/kaggle.json ]; then
+    echo "Kaggle credentials found."
+    ls -la ~/.kaggle/kaggle.json
+else
+    echo "Kaggle credentials not found. Please set up your ~/.kaggle/kaggle.json file."
+fi
+#+end_src
+
+** Python Environment
+
+Verify Python and required packages:
+
+#+begin_src sh
+python --version
+pip list | grep -E "kaggle|pandas|matplotlib|requests"
+poetry --version 
+poetry run python --version 
+poetry run ipython --version 
+poetry run pip list | grep -E "kaggle|pandas|matplotlib|requests"
+poetry self list 
+#+end_src
+
+Install required packages:
+
+#+begin_src shell :tangle no
+pip install kaggle pandas matplotlib requests
+#+end_src
+
+* Hy API Wrapper
+:PROPERTIES:
+:header-args:hy: :results output :exports both :tangle kaggle_api.hy
+:END:
+
+Let's create a Hy wrapper for the Kaggle API:
+
+#+begin_src hy
+#!/usr/bin/env hy
+
+(import json)
+(import os)
+(import sys)
+(import [kaggle [KaggleApi]])
+(import [pandas :as pd])
+(import [pathlib [Path]])
+
+(defn init-api []
+  "Initialize and authenticate the Kaggle API"
+  (let [api (KaggleApi)]
+    (.authenticate api)
+    api))
+
+(defn get-competitions [api &optional [search None] [category "all"] [sort-by "latestDeadline"]]
+  "List available competitions"
+  (let [comps (.competitions_list api 
+                                  :search search
+                                  :category category 
+                                  :sort_by sort-by)]
+    (pd.DataFrame comps)))
+
+(defn get-competition-files [api competition]
+  "List files for a specific competition"
+  (let [files (.competition_list_files api competition)]
+    (pd.DataFrame files)))
+
+(defn download-competition-files [api competition &optional [file-name None] [path "./"]]
+  "Download competition files"
+  (.competition_download_files api competition 
+                              :file_name file-name 
+                              :path path))
+
+(defn get-datasets [api &optional [search None] [sort-by "hottest"]]
+  "List available datasets"
+  (let [datasets (.dataset_list api 
+                              :search search
+                              :sort_by sort-by)]
+    (pd.DataFrame datasets)))
+
+(defn get-dataset-files [api dataset]
+  "List files for a specific dataset"
+  (let [files (.dataset_list_files api dataset)]
+    (pd.DataFrame files)))
+
+(defn download-dataset [api dataset &optional [file-name None] [path "./"] [unzip False]]
+  "Download dataset files"
+  (.dataset_download_files api dataset 
+                         :file_name file-name 
+                         :path path
+                         :unzip unzip))
+
+(defn get-kernels [api &optional [search None] [language "all"] [kernel-type "all"]]
+  "List available kernels"
+  (let [kernels (.kernels_list api 
+                             :search search 
+                             :language language
+                             :kernel_type kernel-type)]
+    (pd.DataFrame kernels)))
+
+(defn pull-kernel [api kernel &optional [path "./"] [metadata False]]
+  "Pull down a kernel"
+  (.kernels_pull api kernel 
+                :path path 
+                :metadata metadata))
+
+(defn get-models [api &optional [search None] [sort-by "hotness"]]
+  "List available models"
+  (let [models (.model_list api 
+                          :search search 
+                          :sort_by sort-by)]
+    (pd.DataFrame models)))
+
+(defmain [&rest args]
+  "CLI entry point"
+  (let [api (init-api)]
+    (if (>= (len args) 2)
+      (let [command (get args 1)]
+        (cond 
+          [(= command "competitions") 
+           (print (get-competitions api))]
+          [(= command "datasets") 
+           (print (get-datasets api))]
+          [(= command "kernels") 
+           (print (get-kernels api))]
+          [(= command "models") 
+           (print (get-models api))]
+          [True (print "Unknown command. Use: competitions, datasets, kernels, or models")]))
+      (print "Usage: hy kaggle_api.hy [command]"))))
+#+end_src
+
+** Test the Wrapper
+
+Let's test our Hy wrapper:
+
+#+begin_src hy :tangle no
+(import [kaggle_api [init-api get-competitions]])
+
+(let [api (init-api)]
+  (print (get-competitions api :search "5-day")))
+#+end_src
+
+* Interactive API Use Cases
+:PROPERTIES:
+:header-args:hy: :results output :exports both
+:END:
+
+** Exploring Competitions
+
+List available competitions:
+
+#+begin_src hy
+(import [kaggle_api [init-api get-competitions]])
+
+(let [api (init-api)]
+  (print (get-competitions api 
+                          :search "gen ai" 
+                          :category "featured" 
+                          :sort-by "latestDeadline")))
+#+end_src
+
+Get competition files:
+
+#+begin_src hy :var competition="llms-you-cant-please-them-all"
+(import [kaggle_api [init-api get-competition-files]])
+
+(let [api (init-api)]
+  (print (get-competition-files api competition)))
+#+end_src
+
+** Working with Datasets
+
+Search for datasets:
+
+#+begin_src hy
+(import [kaggle_api [init-api get-datasets]])
+
+(let [api (init-api)]
+  (print (get-datasets api 
+                      :search "generative ai" 
+                      :sort-by "votes")))
+#+end_src
+
+Download a dataset:
+
+#+begin_src hy :var dataset="kaggle/kaggle-survey-2023" :tangle no
+(import [kaggle_api [init-api download-dataset]])
+
+(let [api (init-api)]
+  (download-dataset api dataset :path "./data" :unzip True))
+#+end_src
+
+** Kernels and Notebooks
+
+List kernels related to a topic:
+
+#+begin_src hy
+(import [kaggle_api [init-api get-kernels]])
+
+(let [api (init-api)]
+  (print (get-kernels api 
+                     :search "generative ai" 
+                     :language "python")))
+#+end_src
+
+* Restclient API Integration
+:PROPERTIES:
+:header-args:restclient: :results value :exports both
+:END:
+
+For direct API access, we can use restclient-mode:
+
+#+begin_src restclient
+# List competitions
+GET https://www.kaggle.com/api/v1/competitions/list
+Accept: application/json
+Authorization: Basic :base64(KAGGLE_USERNAME:KAGGLE_KEY)
+#+end_src
+
+#+begin_src restclient
+# Get competition details
+GET https://www.kaggle.com/api/v1/competitions/data/llms-you-cant-please-them-all
+Accept: application/json
+Authorization: Basic :base64(KAGGLE_USERNAME:KAGGLE_KEY)
+#+end_src
+
+* Shell Command Examples
+:PROPERTIES:
+:header-args:shell: :results output :exports both
+:END:
+
+Direct use of the Kaggle CLI:
+
+#+begin_src shell
+kaggle competitions list --sort-by latestDeadline --category featured | head -10
+#+end_src
+
+Search for datasets:
+
+#+begin_src shell
+kaggle datasets list --sort-by votes --search "generative ai" | head -10
+#+end_src
+
+Download a dataset (commented out to prevent accidental execution):
+
+#+begin_src shell :tangle no
+kaggle datasets download kaggle/kaggle-survey-2023 --path ./data --unzip
+#+end_src
+
+* Python Integration
+:PROPERTIES:
+:header-args:python: :results output :exports both
+:END:
+
+For data analysis with pandas:
+
+#+begin_src python
+import os
+import pandas as pd
+from kaggle.api.kaggle_api_extended import KaggleApi
+
+# Initialize the Kaggle API
+api = KaggleApi()
+api.authenticate()
+
+# Get competitions and convert to DataFrame
+competitions = api.competitions_list(search="generative ai")
+df = pd.DataFrame(competitions)
+
+# Display basic stats
+print(f"Total competitions: {len(df)}")
+print("\nCategories:")
+print(df['category'].value_counts())
+
+print("\nRecent competitions:")
+print(df[['title', 'deadline']].head(5))
+#+end_src
+
+* GPTel Integration
+
+Use LLMs to help with Kaggle tasks:
+
+#+begin_src elisp :tangle no
+(defun kaggle-gpt-prompt (topic)
+  "Generate GPT prompt for Kaggle competition strategy."
+  (interactive "sTopic: ")
+  (gptel-request
+   (format "I'm working on a Kaggle competition related to %s. 
+    Can you suggest an approach for:
+    1. Initial data exploration
+    2. Feature engineering
+    3. Model selection
+    4. Evaluation metrics" topic)))
+#+end_src
+
+* Project Templates
+
+** Competition Template
+
+Create a new competition project:
+
+#+begin_src shell :tangle no :var competition_name="new-competition"
+mkdir -p ~/kaggle-projects/$competition_name/{data,notebooks,models,submissions}
+echo "# $competition_name" > ~/kaggle-projects/$competition_name/README.md
+#+end_src
+
+** Dataset Creation Template
+
+Template for creating a new dataset:
+
+#+begin_src shell :tangle no :var dataset_name="my-dataset"
+mkdir -p ~/kaggle-datasets/$dataset_name
+kaggle datasets init -p ~/kaggle-datasets/$dataset_name
+#+end_src
+
+* Useful Links and Resources
+
+- [[https://www.kaggle.com/docs/api][Kaggle API Documentation]]
+- [[https://github.com/Kaggle/kaggle-api][Kaggle API GitHub Repository]]
+- [[https://www.kaggle.com/competitions][Active Competitions]]
+- [[https://www.kaggle.com/datasets][Kaggle Datasets]]
+
+* Configuration
+
+** API Setup
+
+API configuration paths:
+
+#+begin_src shell
+echo "Kaggle configuration is stored at:"
+echo "Linux: ~/.kaggle/kaggle.json or ~/.config/kaggle/kaggle.json"
+echo "Windows: %USERPROFILE%\.kaggle\kaggle.json"
+echo "Mac: ~/.kaggle/kaggle.json"
+#+end_src
+
+** Environment Variables
+
+Environment variables setup:
+
+#+begin_src shell :tangle ~/.kaggle/env.sh
+export KAGGLE_USERNAME="your-username"
+export KAGGLE_KEY="your-api-key"
+#+end_src

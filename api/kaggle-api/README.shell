@@ -1,0 +1,15 @@
+if [ -f ~/.kaggle/kaggle.json ]; then
+    echo "Kaggle credentials found."
+    ls -la ~/.kaggle/kaggle.json
+else
+    echo "Kaggle credentials not found. Please set up your ~/.kaggle/kaggle.json file."
+fi
+
+kaggle competitions list --sort-by latestDeadline --category featured | head -10
+
+kaggle datasets list --sort-by votes --search "generative ai" | head -10
+
+echo "Kaggle configuration is stored at:"
+echo "Linux: ~/.kaggle/kaggle.json or ~/.config/kaggle/kaggle.json"
+echo "Windows: %USERPROFILE%\.kaggle\kaggle.json"
+echo "Mac: ~/.kaggle/kaggle.json"

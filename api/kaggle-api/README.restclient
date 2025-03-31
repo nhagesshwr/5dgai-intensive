@@ -1,0 +1,9 @@
+# List competitions
+GET https://www.kaggle.com/api/v1/competitions/list
+Accept: application/json
+Authorization: Basic :base64(KAGGLE_USERNAME:KAGGLE_KEY)
+
+# Get competition details
+GET https://www.kaggle.com/api/v1/competitions/data/llms-you-cant-please-them-all
+Accept: application/json
+Authorization: Basic :base64(KAGGLE_USERNAME:KAGGLE_KEY)

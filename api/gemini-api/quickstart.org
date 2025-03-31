@@ -1,0 +1,51 @@
+#+TITLE: Google SDK Quickstart for 5DGSK
+#+AUTHOR: 
+#+DATE: 
+#+PROPERTY: header-args:sh :results output :exports both
+#+PROPERTY: header-args:json :results output :exports both
+#+PROPERTY: header-args:restclient :results value :exports both :mkdirp t :tangle yes
+
+* Quickstart Guide
+
+** Check your API Key
+Verify your API key is properly set by displaying the first part (for security):
+
+#+begin_src bash :results output
+echo $GEMINI_API_KEY | cut -c 1-25
+#+end_src
+
+#+RESULTS:
+: 
+
+** Prepare Request Payload
+Define the JSON payload for the API request:
+
+#+name: payload
+#+begin_src json :tangle payload-ai-works.json
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "Explain how AI works in a few words"
+        }
+      ]
+    }
+  ]
+}
+#+end_src
+
+** Make API Request
+Send the request to the Gemini API:
+
+#+begin_src restclient :var key=GEMINI_API_KEY :var payload=payload
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{key}}
+Content-Type: application/json
+
+{{payload}}
+#+end_src
+
+* Additional Resources
+- [[https://ai.google.dev/docs][Google AI Documentation]]
+- [[https://ai.google.dev/tutorials/rest_quickstart][REST API Quickstart Guide]]
+
