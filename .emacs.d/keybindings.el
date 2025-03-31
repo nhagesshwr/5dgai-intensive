@@ -14,7 +14,8 @@
 (with-eval-after-load 'restclient-mode
   (define-key restclient-mode-map (kbd "C-c C-r") 'restclient-http-send-current))
 
-;; Magit
-(global-set-key (kbd "C-x g") 'magit-status)
+;; Project navigation
+(global-set-key (kbd "C-c p f") 'project-find-file)
+(global-set-key (kbd "C-c p g") 'project-find-regexp)
 
 (provide 'keybindings)

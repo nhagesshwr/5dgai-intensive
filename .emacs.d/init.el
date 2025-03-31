@@ -1,7 +1,7 @@
 ;; 5D-GAI Intensive Emacs Configuration
 ;; Main initialization file
 
-;; Fix path issues - ensure we're looking in the right place
+;; Fix path issues for TRAMP
 (setq user-init-file (or load-file-name (buffer-file-name)))
 (setq user-emacs-directory (file-name-directory user-init-file))
 
@@ -18,23 +18,23 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-;; Set org-babel languages before loading components
+;; Configure org-babel before loading components
 (require 'org)
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((emacs-lisp . t)
    (shell . t)
-   (python . t)
-   (hy . t)))
+   (sh . t)
+   (python . t)))
 
-;; Fix shell execution in org-babel if needed
+;; Make sure shell and sh both work
 (unless (fboundp 'org-babel-execute:shell)
   (defalias 'org-babel-execute:shell 'org-babel-execute:sh))
 
-;; Load environment variables
+;; Load environment variables first
 (load-file (expand-file-name "env-loader.el" user-emacs-directory))
 
-;; Load configuration components - with error handling
+;; Load configuration components with error handling
 (dolist (component '("package-setup.el" "org-config.el" "restclient-config.el" 
                     "gptel-config.el" "python-config.el" "keybindings.el"))
   (let ((file (expand-file-name component user-emacs-directory)))
@@ -53,5 +53,13 @@
          :recursive t
          :with-toc t
          :section-numbers nil)))
+
+;; Custom-set-variables will be added by Custom
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 
 (provide 'init)

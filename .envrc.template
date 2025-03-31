@@ -1,4 +1,4 @@
-# Environment configuration for 5D-GAI Intensive
+C# Environment configuration for 5D-GAI Intensive
 # Copy this file to .envrc and fill in your values
 # You can use direnv to automatically load these variables
 

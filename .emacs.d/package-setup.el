@@ -1,6 +1,11 @@
 ;; Package setup for 5D-GAI Intensive
 
-;; Ensure required packages are installed
+;; Install essential packages if not already installed
+(dolist (pkg '(use-package restclient ob-restclient hy-mode gptel))
+  (unless (package-installed-p pkg)
+    (package-install pkg)))
+
+;; Ensure required packages are installed with use-package
 (use-package hy-mode)
 
 (use-package markdown-mode
@@ -20,9 +25,6 @@
 (use-package ob-restclient)
 
 (use-package gptel)
-
-;; Magit for git integration
-(use-package magit)
 
 ;; Company for completion
 (use-package company
