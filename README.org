@@ -68,8 +68,11 @@ the elegance of Lisp syntax and the power of Org-mode's tangling capabilities.
    # Or view with any text editor
    less notebooks/day1/01-introduction.org
    
-   # To tangle code from notebooks
+   # To tangle code from a specific notebook
    make tangle FILE=notebooks/day1/01-introduction.org
+   
+   # To tangle all notebooks and build source files
+   make build
    #+end_src
 
 ** Test your API connectivity
@@ -180,6 +183,8 @@ print(client.extract_text(chat_response))
 | ~make setup~       | Setup Python environment with Poetry     |
 | ~make dev~         | Start Poetry shell for development       |
 | ~make api-test~    | Test API connectivity with Gemini        |
+| ~make build~       | Tangle all Org files to source code      |
+| ~make tangle~      | Tangle a specific Org file (FILE=path)   |
 | ~make help~        | Show all available make commands         |
 
 ** Course Resources

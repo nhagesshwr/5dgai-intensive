@@ -1,13 +1,18 @@
 # 5D-GAI Intensive Course - Makefile
 # Helper commands for project management
 
-.PHONY: help setup dev clean lint lint-py lint-sh lint-org lint-el format format-py format-sh test api-test docker docker-jupyter docker-api tangle tangle-all install-dev-tools check-tools
+.PHONY: help setup dev clean lint lint-py lint-sh lint-org lint-el format format-py format-sh test api-test docker docker-jupyter docker-api install-dev-tools check-tools
 
 # Colors for terminal output
 GREEN  := $(shell tput -Txterm setaf 2)
 YELLOW := $(shell tput -Txterm setaf 3)
 BLUE   := $(shell tput -Txterm setaf 4)
 RESET  := $(shell tput -Txterm sgr0)
+
+# Org files and their targets
+ORG_FILES := $(shell find . -name "*.org" | grep -v -E '(/\.|/docs/|/node_modules/)')
+PY_TARGETS := $(patsubst %.org,%.py,$(ORG_FILES))
+HY_TARGETS := $(patsubst %.org,%.hy,$(ORG_FILES))
 
 # Default target when running 'make'
 help:
@@ -33,6 +38,7 @@ help:
 	@echo "  ${YELLOW}Org-mode & Tangling:${RESET}"
 	@echo "  ${GREEN}tangle${RESET}         Tangle a specific org file (make tangle FILE=path/to/file.org)"
 	@echo "  ${GREEN}tangle-all${RESET}     Tangle all org files in the project"
+	@echo "  ${GREEN}build${RESET}          Tangle all org files and build source files"
 	@echo "  ${YELLOW}Testing & Docker:${RESET}"
 	@echo "  ${GREEN}test${RESET}           Run tests"
 	@echo "  ${GREEN}api-test${RESET}       Test API connectivity with Gemini"
@@ -212,7 +218,12 @@ docker-api:
 	@docker-compose up api
 	@echo "${GREEN}API service stopped.${RESET}"
 
-# Tangle a specific org file
+# Tangle a specific org file with dependency checking
+%.py %.hy: %.org
+	@echo "${BLUE}Tangling $<...${RESET}"
+	@./scripts/tangle-org.sh $<
+
+# Tangle a specific org file (using the script)
 tangle:
 	@if [ -z "$(FILE)" ]; then \
 		echo "${YELLOW}Error: No file specified. Usage: make tangle FILE=path/to/file.org${RESET}"; \
@@ -223,22 +234,21 @@ tangle:
 		exit 1; \
 	fi
 	@echo "${BLUE}Tangling $(FILE)...${RESET}"
-	@emacs --batch \
-		--eval "(require 'org)" \
-		--eval "(setq org-confirm-babel-evaluate nil)" \
-		--eval "(org-babel-tangle-file \"$(FILE)\")"
+	@./scripts/tangle-org.sh "$(FILE)"
 	@echo "${GREEN}Tangling complete!${RESET}"
 
-# Tangle all org files
+# Tangle all org files (using the script)
 tangle-all:
 	@echo "${BLUE}Tangling all Org files...${RESET}"
-	@emacs --batch \
-		--eval "(require 'org)" \
-		--eval "(setq org-confirm-babel-evaluate nil)" \
-		--eval "(dolist (file (directory-files-recursively \".\" \"\\.org$\" t)) \
-			(unless (or (string-match-p \"/\\.\" file) \
-					(string-match-p \"/docs/\" file) \
-					(string-match-p \"/node_modules/\" file)) \
-				(message \"Tangling %s...\" file) \
-				(org-babel-tangle-file file)))"
+	@./scripts/tangle-all.sh
 	@echo "${GREEN}All Org files tangled!${RESET}"
+
+# Build all source files from Org files
+build: $(PY_TARGETS) $(HY_TARGETS)
+	@echo "${GREEN}All source files built!${RESET}"
+
+# Generate timestamp file for all generated sources
+.tangled_sources: $(ORG_FILES)
+	@echo "${BLUE}Rebuilding all tangled sources...${RESET}"
+	@./scripts/tangle-all.sh
+	@touch $@

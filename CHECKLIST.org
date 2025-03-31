@@ -64,7 +64,7 @@ Based on analysis of existing projects and style preferences:
 - [ ] Jupyter notebook integration
 - [ ] Proper syntax highlighting for code blocks
 
-* Development Workflow [0/7]
+* Development Workflow [1/7]
 :PROPERTIES:
 :CUSTOM_ID: development
 :END:
@@ -73,17 +73,17 @@ Based on analysis of existing projects and style preferences:
 - [ ] Always use --trailer for attribution
 - [ ] ALWAYS run make lint before commit
 - [ ] Use org-babel for all code development
-- [ ] Tangle code from org files
+- [X] Tangle code from org files with file-based dependencies
 - [ ] Run tests via make test
 - [ ] Document all new features in org files
 
-* Project-Specific Tools [0/6]
+* Project-Specific Tools [2/6]
 :PROPERTIES:
 :CUSTOM_ID: tools
 :END:
 
-- [ ] Poetry for Python dependency management
-- [ ] Makefile for common tasks (with help as default)
+- [X] Poetry for Python dependency management
+- [X] Makefile for common tasks (with help as default)
 - [ ] Docker for containerization
 - [ ] Pre-commit hooks for code quality
 - [ ] Continuous integration setup
