@@ -47,6 +47,7 @@ help:
 	@echo "  ${YELLOW}Testing & Docker:${RESET}"
 	@echo "  ${GREEN}test${RESET}           Run tests"
 	@echo "  ${GREEN}test-paper-summarizer${RESET} Run paper summarizer tests"
+	@echo "  ${GREEN}test-livestream${RESET} Run livestream transcriber tests"
 	@echo "  ${GREEN}api-test${RESET}       Test API connectivity with Gemini"
 	@echo "  ${GREEN}paper-summaries${RESET} Generate summaries for all papers using Gemini"
 	@echo "  ${GREEN}docker${RESET}         Build all Docker containers"
@@ -197,6 +198,12 @@ test-paper-summarizer:
 	@echo "${BLUE}Running paper summarizer tests...${RESET}"
 	@poetry run hy tests/hy/test_paper_summarizer.hy
 	@echo "${GREEN}Paper summarizer tests complete!${RESET}"
+
+# Run livestream transcriber tests
+test-livestream:
+	@echo "${BLUE}Running livestream transcriber tests...${RESET}"
+	@poetry run hy tests/hy/test_livestream_transcriber.hy
+	@echo "${GREEN}Livestream transcriber tests complete!${RESET}"
 
 # Test API connectivity with Gemini
 api-test:

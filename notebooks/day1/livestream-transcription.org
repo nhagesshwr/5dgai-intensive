@@ -1,0 +1,320 @@
+#+TITLE: Livestream Transcription and Summarization with Hy and Gemini
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: April 1, 2025
+
+* Livestream Transcription and Summarization
+
+This notebook demonstrates how to use Hy (a Lisp dialect for Python) to transcribe and summarize YouTube livestreams using ~whisper.cpp~ for transcription and Google's Gemini API for summarization.
+
+** Dependencies
+
+Before getting started, you'll need to install the following:
+
+- ~whisper.cpp~ - A C++ implementation of OpenAI's Whisper model
+- ~ffmpeg~ - For audio processing and streaming
+- Hy and the Google Generative AI Python library
+
+#+begin_src sh
+# Install whisper.cpp (consult their documentation for latest instructions)
+git clone https://github.com/ggerganov/whisper.cpp.git
+cd whisper.cpp
+make
+# Download a model
+bash ./models/download-ggml-model.sh small
+# Make whisper available in your PATH
+sudo cp main /usr/local/bin/whisper
+
+# Install other dependencies through poetry
+poetry add google-generativeai hy
+#+end_src
+
+** How It Works
+
+The solution follows these steps:
+
+1. Creates a named pipe using ~mkfifo~ for streaming audio
+2. Uses ~ffmpeg~ to stream YouTube content and send audio to the pipe
+3. Runs ~whisper.cpp~ to transcribe the audio stream in real-time
+4. Processes and saves the transcriptions
+5. Periodically generates summaries using Google's Gemini API
+
+** Code Implementation
+
+Here's the Hy implementation for livestream transcription and summarization:
+
+#+begin_src hy
+#!/usr/bin/env hy
+;; Livestream Transcription and Summarization
+;; Listens to YouTube livestreams, transcribes them, and generates summaries
+
+(import subprocess
+        os
+        argparse
+        signal
+        time
+        sys
+        threading
+        [google.genai [genai types]])
+
+(defn setup-argparse []
+  "Configure command-line argument parsing"
+  (setv parser (argparse.ArgumentParser :description "Listen to YouTube live stream using whisper.cpp and summarize with Gemini"))
+  (.add_argument parser "url" :help "YouTube live stream URL")
+  (.add_argument parser "--model" :default "small" :help "Whisper model to use (tiny, base, small, medium, large)")
+  (.add_argument parser "--lang" :default "en" :help "Language code for transcription")
+  (.add_argument parser "--segment-length" :type int :default 10 :help "Length of audio segments in seconds")
+  (.add_argument parser "--summary-interval" :type int :default 300 :help "Generate summaries every N seconds")
+  (.add_argument parser "--output-dir" :default "transcripts" :help "Directory to save transcripts and summaries")
+  (.parse_args parser))
+
+(defn setup-fifo []
+  "Create named pipe for audio streaming"
+  (setv fifo-path "/tmp/whisper_stream.wav")
+  (when (os.path.exists fifo-path)
+    (os.remove fifo-path))
+  (os.mkfifo fifo-path)
+  fifo-path)
+
+(defn setup-output-dir [args]
+  "Create output directory for transcripts and summaries"
+  (when (not (os.path.exists args.output_dir))
+    (os.makedirs args.output_dir))
+  (setv timestamp (time.strftime "%Y%m%d-%H%M%S"))
+  (setv output-base f"{args.output_dir}/{timestamp}")
+  (setv transcript-path f"{output-base}.transcript.txt")
+  (setv summary-path f"{output-base}.summary.txt")
+  
+  ;; Create empty files
+  (with [f (open transcript-path "w")] None)
+  (with [f (open summary-path "w")] None)
+  
+  {"transcript_path" transcript-path
+   "summary_path" summary-path
+   "base_path" output-base})
+
+(defn signal-handler [sig frame terminated processes]
+  "Handle termination signals"
+  (print "\nReceived signal to terminate. Cleaning up...")
+  (setv (get terminated 0) True)
+  (for [process processes]
+    (try
+      (.terminate process)
+      (except [e Exception]
+        (print f"Error terminating process: {e}"))))
+  (when (os.path.exists "/tmp/whisper_stream.wav")
+    (os.remove "/tmp/whisper_stream.wav"))
+  (print "Cleanup complete. Exiting.")
+  (sys.exit 0))
+
+(defn start-stream-listener [url fifo-path segment-length]
+  "Start ffmpeg process to listen to the stream"
+  (setv cmd [
+    "ffmpeg"
+    "-re"
+    "-i" url
+    "-f" "segment"
+    "-segment_time" (str segment-length)
+    "-c:a" "pcm_s16le"
+    "-ar" "16000"
+    "-ac" "1"
+    "-f" "wav"
+    fifo-path
+  ])
+  
+  (print "Starting stream listener...")
+  (print f"Command: {' '.join cmd}")
+  
+  (subprocess.Popen cmd
+                    :stdout subprocess.PIPE
+                    :stderr subprocess.PIPE))
+
+(defn start-transcriber [model lang fifo-path]
+  "Start whisper.cpp process to transcribe audio"
+  (setv cmd [
+    "whisper"
+    "-m" f"models/ggml-{model}.bin"
+    "--language" lang
+    "-f" fifo-path
+    "--output-txt"
+  ])
+  
+  (print "Starting transcriber...")
+  (print f"Command: {' '.join cmd}")
+  
+  (subprocess.Popen cmd
+                    :stdout subprocess.PIPE
+                    :stderr subprocess.STDOUT
+                    :text True))
+
+(defn process-transcription [transcriber transcript-path terminated]
+  "Process transcription output and save to file"
+  (print "Processing transcriptions...")
+  (with [transcript-file (open transcript-path "a")]
+    (while (not (get terminated 0))
+      (setv line (.readline transcriber.stdout))
+      (when (not line)
+        (break))
+      (setv line (.strip line))
+      (when (and line (not (.startswith line "[")))
+        (print f"Transcript: {line}")
+        (.write transcript-file f"{line}\n")
+        (.flush transcript-file))
+      (time.sleep 0.1))))
+
+(defn summarize-with-gemini [transcript summary-path]
+  "Generate summary of transcript with Gemini API"
+  (print "Generating summary with Gemini...")
+  
+  ;; Initialize the API client
+  (setv client (genai.Client))
+  
+  ;; Read the transcript
+  (with [f (open transcript "r")]
+    (setv transcript-text (.read f)))
+  
+  ;; Skip if transcript is too short
+  (when (< (len transcript-text) 50)
+    (print "Transcript too short for summarization")
+    (return))
+  
+  ;; Create prompt for summarization
+  (setv prompt (+ 
+    "Summarize the following livestream transcript in 3-5 bullet points. "
+    "Focus on the main topics discussed and key insights. "
+    "Format as bullet points with timestamps if available:\n\n"
+    transcript-text))
+  
+  ;; Generate summary
+  (try
+    (setv response (.generate_content client.models
+                                      :model "gemini-1.5-flash"
+                                      :contents [prompt]))
+    
+    ;; Save summary
+    (with [f (open summary-path "w")]
+      (.write f "--- Livestream Summary ---\n\n")
+      (.write f (.text response))
+      (.write f "\n\n--- Generated at " (time.strftime "%Y-%m-%d %H:%M:%S") " ---\n"))
+    
+    (print "Summary generated and saved to" summary-path)
+    (except [e Exception]
+      (print f"Error generating summary: {e}"))))
+
+(defn periodic-summarization [transcript-path summary-path interval terminated]
+  "Periodically summarize the transcript"
+  (print f"Starting periodic summarization every {interval} seconds...")
+  (while (not (get terminated 0))
+    (time.sleep interval)
+    (when (not (get terminated 0))
+      (print "Generating periodic summary...")
+      (summarize-with-gemini transcript-path summary-path))))
+
+(defn main []
+  "Main function to run the livestream transcription and summarization"
+  ;; Parse command-line arguments
+  (setv args (setup-argparse))
+  
+  ;; Set up output paths
+  (setv output-paths (setup-output-dir args))
+  (setv transcript-path (get output-paths "transcript_path"))
+  (setv summary-path (get output-paths "summary_path"))
+  
+  ;; Create named pipe
+  (setv fifo-path (setup-fifo))
+  
+  ;; Initialize termination flag (using list for mutability)
+  (setv terminated [False])
+  
+  ;; Start processes
+  (setv stream-listener (start-stream-listener args.url fifo-path args.segment_length))
+  (setv transcriber (start-transcriber args.model args.lang fifo-path))
+  
+  ;; Set up signal handler
+  (signal.signal signal.SIGINT 
+                (fn [sig frame] 
+                  (signal-handler sig frame terminated [stream-listener transcriber])))
+  
+  ;; Start processing threads
+  (setv transcription-thread (threading.Thread :target process-transcription
+                                              :args [transcriber transcript-path terminated]))
+  (setv summary-thread (threading.Thread :target periodic-summarization
+                                        :args [transcript-path summary-path args.summary_interval terminated]))
+  
+  (.start transcription-thread)
+  (.start summary-thread)
+  
+  ;; Wait for threads to complete
+  (.join transcription-thread)
+  (.join summary-thread)
+  
+  ;; Cleanup
+  (.terminate stream-listener)
+  (.terminate transcriber)
+  (when (os.path.exists fifo-path)
+    (os.remove fifo-path))
+  
+  (print "Transcription and summarization complete."))
+
+(when (= __name__ "__main__")
+  (main))
+#+end_src
+
+** Usage Examples
+
+To use the script, you'll need a YouTube livestream URL and the necessary models.
+
+#+begin_src sh
+# Basic usage with defaults
+hy src/livestream_transcriber.hy https://www.youtube.com/watch?v=LIVESTREAM_ID
+
+# Customize model, language, and summarization interval
+hy src/livestream_transcriber.hy \
+  https://www.youtube.com/watch?v=LIVESTREAM_ID \
+  --model medium \
+  --lang en \
+  --segment-length 15 \
+  --summary-interval 600 \
+  --output-dir livestream_results
+#+end_src
+
+** Customizing Prompts
+
+The script's summarization prompt can be customized to focus on different aspects of the livestream. The current prompt is:
+
+#+begin_quote
+Summarize the following livestream transcript in 3-5 bullet points. Focus on the main topics discussed and key insights. Format as bullet points with timestamps if available.
+#+end_quote
+
+You can modify the ~summarize-with-gemini~ function to alter this prompt based on your needs.
+
+** Limitations and Extensions
+
+- *Transcription Quality*: Depends heavily on the whisper model used (tiny, small, medium, large)
+- *API Costs*: Be aware that using Gemini API for frequent summarization may incur costs
+- *Stream Stability*: YouTube streams may occasionally disconnect
+- *Speaker Identification*: Current setup doesn't identify different speakers
+
+Possible extensions:
+- Add speaker diarization (identifying who is speaking)
+- Implement sentiment analysis on the transcript
+- Create a web interface to view transcripts and summaries in real-time
+- Store summaries in a database for easier retrieval
+
+** Google Livestream Example
+
+This is particularly useful for following the Google 5-Day Gen AI Intensive course livestreams, allowing you to:
+
+1. Automatically transcribe the technical sessions
+2. Generate periodic summaries of key points
+3. Create a searchable archive of the course content
+
+** Conclusion
+
+This implementation showcases how to combine Hy, whisper.cpp, and Gemini API to create a powerful tool for livestream transcription and summarization. The solution demonstrates:
+
+- Using Hy's Lisp-like syntax for readable, expressive code
+- Managing external processes with subprocess
+- Thread-based concurrency for parallel tasks
+- Signal handling for clean termination
+- Integration with Gemini API for AI-powered summarization
