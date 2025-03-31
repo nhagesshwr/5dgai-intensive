@@ -128,3 +128,6 @@ images/intake/
 # Org Babel
 ob-*.el
 *.tangled.envrc.el
+# Ignore PDF files in papers directory
+papers/*.pdf
+papers/**/*.pdf
