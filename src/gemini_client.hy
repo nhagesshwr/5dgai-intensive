@@ -5,11 +5,11 @@ This module provides a Hy implementation of the Gemini API client,
 demonstrating how to use Hy's Lisp-like syntax with Google's Gemini models.
 \""
 
-(import os
-        json
-        requests
-        [dotenv [load-dotenv]]
-        [typing [Dict List Any Optional Union]])
+(import os)
+(import json)
+(import requests)
+(import dotenv)
+(import typing)
 
 (defclass GeminiClient []
   "\"
@@ -20,8 +20,7 @@ demonstrating how to use Hy's Lisp-like syntax with Google's Gemini models.
       api-url: Base URL for the Gemini API
   \""
   
-  (defn __init__ [self &optional [api-key None] 
-                       &kwonly [api-url "https://generativelanguage.googleapis.com/v1beta"]]
+  (defn __init__ [self [api-key None] [api-url "https://generativelanguage.googleapis.com/v1beta"]]
     "\"
     Initialize the Gemini client.
     
@@ -30,7 +29,7 @@ demonstrating how to use Hy's Lisp-like syntax with Google's Gemini models.
         api-url: Base URL for the API
     \""
     ;; Load environment variables if API key not provided
-    (load-dotenv)
+    (dotenv.load_dotenv)
     
     ;; Set the API key from parameter or environment
     (setv self.api-key (or api-key (os.getenv "AI_STUDIO_API_KEY")))
@@ -40,11 +39,7 @@ demonstrating how to use Hy's Lisp-like syntax with Google's Gemini models.
     ;; Set the API URL
     (setv self.api-url api-url))
   
-  (defn generate-content [self prompt &optional 
-                              [model "gemini-2.0-flash"]
-                              [system None]
-                              [temperature 0.7]
-                              [max-tokens 1024]]
+  (defn generate-content [self prompt [model "gemini-2.0-flash"] [system None] [temperature 0.7] [max-tokens 1024]]
     "\"
     Generate content using the Gemini API.
     
@@ -75,19 +70,16 @@ demonstrating how to use Hy's Lisp-like syntax with Google's Gemini models.
     ;; Check for errors
     (when (not (= response.status-code 200))
       (try
-        (setv error-data (response.json))
-        (setv error-message (get-in error-data ["error" "message"] "Unknown error"))
-        (except [e [Exception]]
+        (setv error-data (.json response))
+        (setv error-message (get (get error-data "error") "message" "Unknown error"))
+        (except [e Exception]
           (setv error-message (.text response))))
       (raise (Exception f"API Error ({response.status-code}): {error-message}")))
     
     ;; Return the parsed response
-    (response.json))
+    (.json response))
   
-  (defn chat [self messages &optional 
-                  [model "gemini-2.0-flash"]
-                  [temperature 0.7]
-                  [max-tokens 1024]]
+  (defn chat [self messages [model "gemini-2.0-flash"] [temperature 0.7] [max-tokens 1024]]
     "\"
     Have a chat conversation with the Gemini model.
     
@@ -120,14 +112,14 @@ demonstrating how to use Hy's Lisp-like syntax with Google's Gemini models.
     ;; Check for errors
     (when (not (= response.status-code 200))
       (try
-        (setv error-data (response.json))
-        (setv error-message (get-in error-data ["error" "message"] "Unknown error"))
-        (except [e [Exception]]
+        (setv error-data (.json response))
+        (setv error-message (get (get error-data "error") "message" "Unknown error"))
+        (except [e Exception]
           (setv error-message (.text response))))
       (raise (Exception f"API Error ({response.status-code}): {error-message}")))
     
     ;; Return the parsed response
-    (response.json))
+    (.json response))
   
   (defn extract-text [self response]
     "\"
@@ -140,8 +132,8 @@ demonstrating how to use Hy's Lisp-like syntax with Google's Gemini models.
         Extracted text content
     \""
     (try
-      (get-in response ["candidates" 0 "content" "parts" 0 "text"])
-      (except [e [KeyError IndexError]]
+      (get (get (get (get response "candidates") 0) "content") "parts" 0 "text")
+      (except [e Exception]
         "No text content found in response"))))
 
 ;; Example usage when run directly
@@ -151,5 +143,5 @@ demonstrating how to use Hy's Lisp-like syntax with Google's Gemini models.
     (setv response (.generate-content client "Hello, Gemini! What can you do?"))
     (print "Response from Gemini:")
     (print (.extract-text client response))
-    (except [e [Exception]]
+    (except [e Exception]
       (print f"Error: {e}"))))
