@@ -1,185 +1,50 @@
 ;; 5D-GAI Intensive Emacs Configuration
-;; Support for Org-mode, Hy, IPython and Restclient
+;; Main initialization file
 
-;; Package setup
+;; Fix path issues - ensure we're looking in the right place
+(setq user-init-file (or load-file-name (buffer-file-name)))
+(setq user-emacs-directory (file-name-directory user-init-file))
+
+;; Set up package management
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
 
-;; Ensure required packages are installed
-(unless package-archive-contents
-  (package-refresh-contents))
+;; Ensure we have use-package
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
 
-(dolist (pkg '(restclient ob-restclient hy-mode))
-  (unless (package-installed-p pkg)
-    (package-install pkg)))
+(require 'use-package)
+(setq use-package-always-ensure t)
 
-;; Minimal Org-mode configuration for tangling
+;; Set org-babel languages before loading components
 (require 'org)
-(setq org-confirm-babel-evaluate nil)
-(setq org-src-fontify-natively t)
-(setq org-src-tab-acts-natively t)
-(setq org-edit-src-content-indentation 0)
-(setq org-src-preserve-indentation t)
-(setq org-startup-folded 'content)
-
-;; Org babel languages - extended set
 (org-babel-do-load-languages
  'org-babel-load-languages
- '((python . t)
+ '((emacs-lisp . t)
    (shell . t)
-   (emacs-lisp . t)
-   (restclient . t)))
+   (python . t)
+   (hy . t)))
 
-;; Add support for Hy language
-(add-to-list 'org-src-lang-modes '("hy" . hy))
+;; Fix shell execution in org-babel if needed
+(unless (fboundp 'org-babel-execute:shell)
+  (defalias 'org-babel-execute:shell 'org-babel-execute:sh))
 
-;; Restclient configuration
-(require 'restclient)
-(require 'ob-restclient)
+;; Load environment variables
+(load-file (expand-file-name "env-loader.el" user-emacs-directory))
 
-;; Support 
+;; Load configuration components - with error handling
+(dolist (component '("package-setup.el" "org-config.el" "restclient-config.el" 
+                    "gptel-config.el" "python-config.el" "keybindings.el"))
+  (let ((file (expand-file-name component user-emacs-directory)))
+    (if (file-exists-p file)
+        (condition-case err
+            (load-file file)
+          (error (message "Error loading %s: %s" component (error-message-string err))))
+      (message "Warning: %s not found" file))))
 
-(gptel-make-ollama "Ollama"
-  :host "localhost:11434"
-  :stream t
-  :models '(llama3.2:latest))
-
-(setq
- gptel-model 'gemini-pro
- gptel-backend (gptel-make-gemini "Gemini"
-                 :key (getenv "GEMINI_API_KEY")
-                 :stream t))
-
-(gptel-make-openai "Github Models"
-  :host "models.inference.ai.azure.com"
-  :endpoint "/chat/completions?api-version=2024-05-01-preview"
-  :stream t
-  :key (getenv "GITHUB_TOKEN")
-  :models '(gpt-4o))
-
-;; Helper function to insert API key from environment
-(defun restclient-insert-api-key ()
-  "Insert the API key from environment variables"
-  (interactive)
-  (let ((api-key (getenv "AI_STUDIO_API_KEY")))
-    (if api-key
-        (insert api-key)
-      (message "API key not found in environment"))))
-
-;; Key binding for inserting API key
-(define-key restclient-mode-map (kbd "C-c C-k") 'restclient-insert-api-key)
-
-;; Security functions to filter API keys from output
-(defun filter-api-keys-from-output (output)
-  "Filter API keys from restclient output."
-  (let ((filtered-output output))
-    ;; Filter API key from URL in request line
-    (setq filtered-output 
-          (replace-regexp-in-string 
-           "\\(key=\\)[^&\n ]*" 
-           "\\1REDACTED" 
-           filtered-output))
-    
-    ;; Filter API key from response headers and other potential places
-    (setq filtered-output 
-          (replace-regexp-in-string 
-           "\\(https://[^?]*\\?key=\\)[^&\n ]*" 
-           "\\1REDACTED" 
-           filtered-output))
-    
-    filtered-output))
-
-;; Add advice to restclient to filter API keys from output
-(advice-add 'restclient-http-do 
-            :around 
-            (lambda (orig-fun &rest args)
-              (let ((result (apply orig-fun args)))
-                (let ((response-buffer (get-buffer "*HTTP Response*")))
-                  (when response-buffer
-                    (with-current-buffer response-buffer
-                      (let ((filtered-content (filter-api-keys-from-output (buffer-string))))
-                        (erase-buffer)
-                        (insert filtered-content)))))
-                result)))
-
-;; Add a hook to org-babel-restclient to filter API keys after execution
-(defun filter-restclient-results ()
-  "Filter API keys from restclient results."
-  (let ((results-markers (org-babel-where-is-src-block-result)))
-    (when results-markers
-      (save-excursion
-        (goto-char (marker-position results-markers))
-        (let* ((element (org-element-at-point))
-               (content (buffer-substring-no-properties 
-                         (org-element-property :contents-begin element)
-                         (org-element-property :contents-end element)))
-               (filtered-content (filter-api-keys-from-output content)))
-          (delete-region (org-element-property :contents-begin element)
-                         (org-element-property :contents-end element))
-          (goto-char (org-element-property :contents-begin element))
-          (insert filtered-content))))))
-
-(add-hook 'org-babel-after-execute-hook
-          (lambda ()
-            (when (string= "restclient" (org-babel-get-src-block-info t))
-              (filter-restclient-results))))
-
-;; Load .env file and set environment variables
-(defun load-dotenv-file ()
-  "Load environment variables from .env file"
-  (interactive)
-  (let ((dotenv-file (expand-file-name ".env")))
-    (when (file-exists-p dotenv-file)
-      (with-temp-buffer
-        (insert-file-contents dotenv-file)
-        (goto-char (point-min))
-        (while (re-search-forward "^\\([A-Za-z0-9_]+\\)=\\(.*\\)" nil t)
-          (let ((key (match-string 1))
-                (value (match-string 2)))
-            (setenv key value)
-            (message "Set %s=%s" key value)))))))
-
-;; Load .env when opening the project
-(add-hook 'after-init-hook 'load-dotenv-file)
-
-;; IPython integration
-(setq python-shell-interpreter "poetry"
-      python-shell-interpreter-args "run ipython -i --simple-prompt")
-
-;; Define a function to run Hy code through IPython
-(defun org-babel-execute:hy (body params)
-  "Execute a block of Hy code with IPython."
-  (let ((org-babel-python-command "poetry run ipython -c 'import hy; hy.eval(\"\"\""))
-    (org-babel-execute:python (concat body "\"\"\"')") params)))
-
-;; Custom functions for org-based workflows
-(defun org-tangle-files-in-dir (dir &optional exclude)
-  "Tangle all org files in DIR, excluding any files matching EXCLUDE regex."
-  (interactive "DDirectory: ")
-  (let ((files (directory-files dir t "\\.org$")))
-    (dolist (file files)
-      (when (and (not (string-match-p (or exclude "") file))
-                 (file-regular-p file))
-        (org-babel-tangle-file file)))))
-
-;; Auto-tangling on save
-(defun org-babel-auto-tangle ()
-  "Automatically tangle org files when saving."
-  (when (eq major-mode 'org-mode)
-    (let ((org-confirm-babel-evaluate nil))
-      (when (member "tangle" (org-get-tags))
-        (org-babel-tangle)))))
-
-(add-hook 'after-save-hook 'org-babel-auto-tangle)
-
-;; Keybindings
-(global-set-key (kbd "C-c o t") 'org-babel-tangle)
-(global-set-key (kbd "C-c o d") 'org-babel-detangle)
-(global-set-key (kbd "C-c o e") 'org-export-dispatch)
-(global-set-key (kbd "C-c o j") 'org-babel-execute-src-block)
-
-;; Project-specific setup
+;; Project specific settings
 (setq org-publish-project-alist
       '(("5dgai-intensive"
          :base-directory "."
