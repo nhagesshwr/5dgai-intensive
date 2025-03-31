@@ -273,11 +273,11 @@ build: $(PY_TARGETS) $(HY_TARGETS)
 	@./scripts/tangle-all.sh
 	@touch $@
 
-# Paper summary rule - only regenerate if PDF changes
-%.summary.txt: %.pdf
+# Paper summary rule - only regenerate if PDF or prompt template changes
+%.summary.txt: %.pdf $(PROMPT_TEMPLATE)
 	@echo "${BLUE}Generating summary for $<...${RESET}"
 	@mkdir -p $(@D)
-	@poetry run hy src/paper_summarizer_simple.hy $< > $@
+	@poetry run hy src/paper_summarizer.hy $< $(PROMPT_TEMPLATE) $@
 	@echo "${GREEN}Summary generated: $@${RESET}"
 
 # Generate all paper summaries
