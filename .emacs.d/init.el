@@ -38,6 +38,26 @@
 (require 'restclient)
 (require 'ob-restclient)
 
+;; Support 
+
+(gptel-make-ollama "Ollama"
+  :host "localhost:11434"
+  :stream t
+  :models '(llama3.2:latest))
+
+(setq
+ gptel-model 'gemini-pro
+ gptel-backend (gptel-make-gemini "Gemini"
+                 :key (getenv "GEMINI_API_KEY")
+                 :stream t))
+
+(gptel-make-openai "Github Models"
+  :host "models.inference.ai.azure.com"
+  :endpoint "/chat/completions?api-version=2024-05-01-preview"
+  :stream t
+  :key (getenv "GITHUB_TOKEN")
+  :models '(gpt-4o))
+
 ;; Helper function to insert API key from environment
 (defun restclient-insert-api-key ()
   "Insert the API key from environment variables"
