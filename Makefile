@@ -53,6 +53,7 @@ help:
 	@echo "  ${GREEN}test-paper-summarizer${RESET} Run paper summarizer tests"
 	@echo "  ${GREEN}test-livestream${RESET} Run livestream transcriber tests"
 	@echo "  ${GREEN}api-test${RESET}       Test API connectivity with Gemini"
+	@echo "  ${GREEN}env-test${RESET}       Test environment setup for Google API"
 	@echo "  ${GREEN}paper-summaries${RESET} Generate summaries for all papers using Gemini"
 	@echo "  ${GREEN}extract-french-verbs${RESET} Extract French verbs for embedding tests"
 	@echo "  ${GREEN}verb-embeddings${RESET} Process French verbs for embeddings"
@@ -305,6 +306,12 @@ extract-french-verbs: resources/verbs/french_verbs_list.txt
 	@echo "${GREEN}French verb extraction complete!${RESET}"
 	@echo "${YELLOW}Use resources/verbs/test_french_verbs.txt for embedding tests${RESET}"
 
+# Test environment setup for Google API
+env-test:
+	@echo "${BLUE}Testing environment setup...${RESET}"
+	@$(PYTHON) src/env_test.py
+	@echo "${GREEN}Environment test complete!${RESET}"
+
 # Generate embeddings for French verbs
 verb-embeddings: resources/verbs/test_french_verbs.txt
 	@echo "${BLUE}Running French verb embeddings...${RESET}"
@@ -316,3 +323,9 @@ dépatouiller:
 	@echo "${BLUE}Running dépatouiller test...${RESET}"
 	@$(HY) src/embeddings/dépatouiller.hy
 	@echo "${GREEN}Dépatouillage complete!${RESET}"
+
+# Test Google GenAI embeddings
+genai-test:
+	@echo "${BLUE}Testing Google GenAI embeddings...${RESET}"
+	@$(HY) src/embeddings/genai.hy
+	@echo "${GREEN}GenAI test complete!${RESET}"
