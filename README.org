@@ -102,7 +102,7 @@ the elegance of Lisp syntax and the power of Org-mode's tangling capabilities.
 
 * Using the Gemini Client
 
-Our simplified client makes it easy to interact with Gemini models in both Hy and Python:
+Our simplified client makes it easy to interact with Gemini models using Hy:
 
 #+begin_src hy
 (import [src.gemini-client [GeminiClient]])
@@ -125,30 +125,6 @@ Our simplified client makes it easy to interact with Gemini models in both Hy an
 (print (.extract-text client chat-response))
 #+end_src
 
-Python version for reference:
-
-#+begin_src python
-from src.gemini_client import GeminiClient
-
-# Initialize with API key from .env file
-client = GeminiClient()
-
-# Simple text generation
-response = client.generate_content(
-    "Explain the concept of attention in transformer models."
-)
-print(client.extract_text(response))
-
-# Chat conversation
-messages = [
-    {"role": "user", "content": "What are three applications of generative AI?"},
-    {"role": "model", "content": "1. Content creation\n2. Code generation\n3. Data augmentation"},
-    {"role": "user", "content": "Elaborate on code generation use cases."}
-]
-chat_response = client.chat(messages)
-print(client.extract_text(chat_response))
-#+end_src
-
 * Course Day-by-Day Navigation
 
 **  ~notebooks/day1/~
@@ -159,7 +135,7 @@ print(client.extract_text(chat_response))
 - Prompt engineering deep dives
 
 
-**  ~notebooks/day3/~ -
+**  ~notebooks/day3/~
 - Building with the API
 ** ~notebooks/day4/~
 
