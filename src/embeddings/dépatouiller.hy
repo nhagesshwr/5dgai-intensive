@@ -11,11 +11,12 @@
 (print "🇫🇷 French Verb Embedding Contrast 🇫🇷")
 (print "======================================")
 
-;; Two contrasting verbs
+;; Three French verbs with contrasting meanings
 (print "dépatouiller: to untangle/sort out a difficult situation")
 (print "flâner: to stroll/wander leisurely")
+(print "être: to be/exist")
 (print)
-(print "What we do in code vs. what we wish we were doing...")
+(print "What we do in code vs. what we wish we were doing vs. what we are...")
 
 ;; Try to load the Google GenAI API
 (dotenv.load_dotenv)
@@ -24,6 +25,7 @@
 ;; Define fallback embeddings in case API calls fail
 (setv depatouiller-fallback [0.42 0.314 0.1337 0.007])  ;; Stressed, complex
 (setv flaner-fallback [0.1 0.75 0.2 0.8])              ;; Relaxed, pleasant
+(setv etre-fallback [0.5 0.5 0.5 0.5])                 ;; Balanced, fundamental
 
 ;; Try to get embeddings from Google GenAI
 (try
@@ -86,33 +88,42 @@
                   (setv flaner-response (embed-method 
                                          :model model-name 
                                          :contents [{"text" "flâner"}]))
+                  (setv etre-response (embed-method 
+                                      :model model-name 
+                                      :contents [{"text" "être"}]))
                   
                   ;; Get embeddings and convert to list
                   (setv depatouiller-obj (get depatouiller-response.embeddings 0))
                   (setv flaner-obj (get flaner-response.embeddings 0))
+                  (setv etre-obj (get etre-response.embeddings 0))
                   
                   ;; Extract the values
                   (setv depatouiller-emb (list depatouiller-obj.values))
                   (setv flaner-emb (list flaner-obj.values))
+                  (setv etre-emb (list etre-obj.values))
                   (print "✅ Embeddings generated via embed_content")
                   (except [e2 Exception]
                     (print f"embed_content failed: {e2}")
                     ;; Fallback to our placeholders
                     (setv depatouiller-emb depatouiller-fallback)
-                    (setv flaner-emb flaner-fallback)))))
+                    (setv flaner-emb flaner-fallback)
+                    (setv etre-emb etre-fallback)))))
             (except [e Exception]
               (print f"embed_content failed: {e}")
               ;; Fallback to our placeholders
               (setv depatouiller-emb depatouiller-fallback)
-              (setv flaner-emb flaner-fallback)))
+              (setv flaner-emb flaner-fallback)
+              (setv etre-emb etre-fallback)))
           (except [e Exception]
             (print f"Error getting embeddings: {e}")
             (setv depatouiller-emb depatouiller-fallback)
-            (setv flaner-emb flaner-fallback)))))
+            (setv flaner-emb flaner-fallback)
+            (setv etre-emb etre-fallback)))))
   (except [e Exception]
     (print f"Google GenAI error: {e}, using fallback values")
     (setv depatouiller-emb depatouiller-fallback)
-    (setv flaner-emb flaner-fallback)))
+    (setv flaner-emb flaner-fallback)
+    (setv etre-emb etre-fallback)))
 
 ;; Calculate the cosine similarity (just for fun)
 (defn dot-product [a b]
@@ -137,17 +148,42 @@
          (* (magnitude a-list) (magnitude b-list)))
       0.0))
 
-(setv similarity (cosine-similarity depatouiller-emb flaner-emb))
-(print "\nSimilarity between debugging and strolling:" (float similarity))
-(print "(Unsurprisingly, they're quite different activities!)")
+;; Calculate similarity matrix
+(setv dp-fl (cosine-similarity depatouiller-emb flaner-emb))
+(setv dp-et (cosine-similarity depatouiller-emb etre-emb))
+(setv fl-et (cosine-similarity flaner-emb etre-emb))
+
+;; Format similarity values as strings
+(setv dp-fl-fmt (.format "{:.4f}" (float dp-fl)))
+(setv dp-et-fmt (.format "{:.4f}" (float dp-et)))
+(setv fl-et-fmt (.format "{:.4f}" (float fl-et)))
+
+;; Print similarity table
+(print "\n=== French Verb Similarity Matrix ===")
+(print "                dépatouiller  flâner      être")
+(print "-------------------------------------------------")
+(print (+ "dépatouiller  | 1.000        " dp-fl-fmt "    " dp-et-fmt))
+(print (+ "flâner        | " dp-fl-fmt "    1.000      " fl-et-fmt))
+(print (+ "être          | " dp-et-fmt "    " fl-et-fmt "    1.000"))
+(print "-------------------------------------------------")
+
+;; Add some fun interpretation
+(print "\n🔍 Semantic Insights:")
+(if (> (float dp-et) (float fl-et))
+    (print "Untangling problems is closer to 'being' than leisurely strolling! Work defines us?")
+    (print "Leisurely strolling is closer to 'being' than problem-solving! Enjoy the moment!"))
 
 ;; Save to files
 (os.makedirs "data/embeddings" :exist_ok True)
-(with [f (open "data/embeddings/debugging_vs_strolling.json" "w")]
+(with [f (open "data/embeddings/french_verbs_similarity.json" "w")]
   (.write f (json.dumps {"dépatouiller" depatouiller-emb
                         "flâner" flaner-emb
-                        "similarity" similarity} :indent 2)))
+                        "être" etre-emb
+                        "dépatouiller_flâner" dp-fl
+                        "dépatouiller_être" dp-et
+                        "flâner_être" fl-et} :indent 2)))
 
-(print "\n✅ Successfully embedded both verbs")
+(print "\n✅ Successfully embedded all three verbs")
 (print "While you're dépatouiller-ing your code problems,")
-(print "dream of flâner-ing through a Parisian boulevard instead!")
+(print "dream of flâner-ing through a Parisian boulevard,")
+(print "and don't forget to être in the moment!")
