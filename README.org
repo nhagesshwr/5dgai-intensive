@@ -41,13 +41,15 @@ the elegance of Lisp syntax and the power of Org-mode's tangling capabilities.
 
 ** Setup your environment
    #+begin_src sh
-   # Using the setup script (recommended)
-   ./setup.sh
+   # Using make (recommended approach)
+   make setup
    
-   # Or manually with Poetry
-   poetry install
-   poetry shell
+   # Start development environment after setup
+   make dev
    #+end_src
+   
+   *Note*: Always prefer using `make` commands over direct scripts or tool calls. The Makefile provides 
+   consistent, tested, and maintainable operations for all project tasks.
 
 ** Configure your API keys
    Edit the ~.env~ file to add your API keys:
@@ -60,20 +62,23 @@ the elegance of Lisp syntax and the power of Org-mode's tangling capabilities.
    ANTHROPIC_API_KEY=""
    #+end_src
 
-** Open Org-mode Notebooks
+** Work with Org-mode Notebooks
    #+begin_src sh
-   # Using Emacs (recommended)
-   emacs notebooks/day1/01-introduction.org
+   # Start the development environment first
+   make dev
    
-   # Or view with any text editor
-   less notebooks/day1/01-introduction.org
-   
-   # To tangle code from a specific notebook
+   # Tangle code from a specific notebook
    make tangle FILE=notebooks/day1/01-introduction.org
    
-   # To tangle all notebooks and build source files
+   # Tangle all notebooks and build source files
    make build
+   
+   # Run tests after making changes
+   make test
    #+end_src
+   
+   *Note*: The Makefile handles environment setup, dependencies, and execution context.
+   Always use `make` commands rather than direct tool invocation to ensure consistent behavior.
 
 ** Test your API connectivity
    #+begin_src sh
