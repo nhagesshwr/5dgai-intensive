@@ -2,13 +2,13 @@
 ;;; Google GenAI embeddings for French verbs
 ;;; Demonstrates a minimal implementation with the google-genai 1.7.0 API
 
-(require [hy.contrib.walk [let]])
+;; Standard imports for Hy 1.0
 (import os sys json pickle)
-(import [tqdm [tqdm]])
-(import [dotenv [load-dotenv]])
+(import tqdm)
+(import dotenv)
 
 ;; Load environment variables
-(load-dotenv)
+(dotenv.load_dotenv)
 (setv GOOGLE-API-KEY (os.getenv "GOOGLE_API_KEY"))
 
 (when (not GOOGLE-API-KEY)
@@ -18,8 +18,8 @@
 
 ;; Import GenAI
 (try
-  (import [google [genai]])
-  (except [ImportError]
+  (import google.genai)
+  (except [e ImportError]
     (print "❌ Error: google-genai package not installed!")
     (print "  Try: pip install google-genai==1.7.0")
     (sys.exit 1)))
@@ -100,7 +100,7 @@
   (print (.join ", " (cut verbs 0 5)) "...")
   
   ;; Initialize GenAI client
-  (setv client (genai.Client :api-key GOOGLE-API-KEY))
+  (setv client (google.genai.Client :api-key GOOGLE-API-KEY))
   
   ;; Get embedding models
   (setv embedding-models (get-embedding-models client))
@@ -120,7 +120,7 @@
   (print f"Using model: {model-name}")
   
   ;; Create embeddings for each verb
-  (for [verb (tqdm verbs :desc "Creating embeddings")]
+  (for [verb (tqdm.tqdm verbs :desc "Creating embeddings")]
     (try
       (setv embedding (try-get-embedding client model-name verb))
       (setv (get embeddings verb) embedding)
