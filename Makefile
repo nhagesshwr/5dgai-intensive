@@ -312,6 +312,12 @@ env-test:
 	@$(PYTHON) src/env_test.py
 	@echo "${GREEN}Environment test complete!${RESET}"
 
+# Test Google GenAI API functionality
+test-genai:
+	@echo "${BLUE}Testing Google GenAI API functionality...${RESET}"
+	@$(PYTHON) src/test/test_genai.py
+	@echo "${GREEN}GenAI API test complete!${RESET}"
+
 # Generate embeddings for French verbs
 verb-embeddings: resources/verbs/test_french_verbs.txt
 	@echo "${BLUE}Running French verb embeddings...${RESET}"
@@ -325,7 +331,7 @@ dépatouiller:
 	@echo "${GREEN}Dépatouillage complete!${RESET}"
 
 # Test Google GenAI embeddings
-genai-test:
-	@echo "${BLUE}Testing Google GenAI embeddings...${RESET}"
+genai-embeddings:
+	@echo "${BLUE}Testing Google GenAI embeddings for French verbs...${RESET}"
 	@$(HY) src/embeddings/genai.hy
-	@echo "${GREEN}GenAI test complete!${RESET}"
+	@echo "${GREEN}GenAI embeddings test complete!${RESET}"
