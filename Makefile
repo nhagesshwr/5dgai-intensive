@@ -292,19 +292,20 @@ paper-summaries: $(SUMMARY_TARGETS)
 	@echo "${YELLOW}Summaries can be found in papers/ directory with .summary.txt extension${RESET}"
 
 # Extract French verbs from Verbiste XML
-data/french_verbs_list.txt: resources/xslt/verbiste_extract.xsl
+resources/verbs/french_verbs_list.txt: resources/xslt/verbiste_extract.xsl
 	@echo "${BLUE}Extracting French verbs from verbiste XML...${RESET}"
+	@mkdir -p resources/verbs
 	@xml tr $< /usr/local/share/verbiste-0.1/verbs-fr.xml > $@
 	@echo "${GREEN}French verbs extracted to $@${RESET}"
 	@echo "${YELLOW}Total verbs: $$(wc -l < $@)${RESET}"
 
 # Extract all French verbs (just once for initial setup)
-extract-french-verbs: data/french_verbs_list.txt
+extract-french-verbs: resources/verbs/french_verbs_list.txt
 	@echo "${GREEN}French verb extraction complete!${RESET}"
-	@echo "${YELLOW}Use data/test_french_verbs.txt for embedding tests${RESET}"
+	@echo "${YELLOW}Use resources/verbs/test_french_verbs.txt for embedding tests${RESET}"
 
 # Generate embeddings for French verbs
-verb-embeddings: data/test_french_verbs.txt
+verb-embeddings: resources/verbs/test_french_verbs.txt
 	@echo "${BLUE}Running French verb embeddings...${RESET}"
 	@$(HY) src/embeddings/verb_embeddings.hy
 	@echo "${GREEN}Verb embeddings complete!${RESET}"

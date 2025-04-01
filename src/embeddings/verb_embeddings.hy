@@ -16,7 +16,7 @@
   (print "French Verb Embeddings - Simple Test")
   
   ;; Load the 20 test verbs
-  (setv verbs-path "/home/jwalsh/projects/aygp-dr/5dgai-intensive/data/test_french_verbs.txt")
+  (setv verbs-path "/home/jwalsh/projects/aygp-dr/5dgai-intensive/resources/verbs/test_french_verbs.txt")
   (setv verbs (load-verbs verbs-path))
   (print f"Loaded {(len verbs)} French verbs:")
   (print (.join ", " verbs))
