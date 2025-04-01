@@ -127,23 +127,45 @@ Our simplified client makes it easy to interact with Gemini models using Hy:
 
 * Course Day-by-Day Navigation
 
-**  ~notebooks/day1/~
+** Day 1: Foundation Concepts
+   
+[[file:notebooks/day1/01-introduction.org][Day 1: Introduction to Generative AI]]
 
 - Foundation concepts and initial exercises
-**  ~notebooks/day2/~
+- Introduction to LLMs and Gemini models
+- Basic text generation and prompt techniques
+
+** Day 2: Prompt Engineering
+   
+[[file:notebooks/day2/01-prompt-engineering.org][Day 2: Prompt Engineering Techniques]]
 
 - Prompt engineering deep dives
+- Vector embeddings and similarity
+- Improving model outputs
 
+** Day 3: Building with APIs
+   
+[[file:notebooks/day3/01-building-with-api.org][Day 3: Building with Gemini API]]
 
-**  ~notebooks/day3/~
-- Building with the API
-** ~notebooks/day4/~
+- Building practical applications
+- System instructions and parameter tuning
+- Error handling and optimizations
 
-- Multimodal applications
+** Day 4: Multimodal Applications
+   
+[[file:notebooks/day4/01-multimodal-applications.org][Day 4: Multimodal Applications]]
 
-** ~notebooks/day5/~
+- Working with images, audio, and video
+- Multimodal embeddings 
+- Responsible AI considerations
 
-- Advanced techniques and production deployment
+** Day 5: Production Deployment
+   
+[[file:notebooks/day5/01-production-deployment.org][Day 5: Production Deployment]]
+
+- Advanced techniques for production
+- Optimization and scaling
+- Real-world implementation strategies
 
 ** Get Help & Community
 
