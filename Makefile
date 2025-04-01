@@ -1,13 +1,17 @@
 # 5D-GAI Intensive Course - Makefile
 # Helper commands for project management
 
-.PHONY: help setup dev clean lint lint-py lint-sh lint-org lint-el format format-py format-sh test api-test docker docker-jupyter docker-api install-dev-tools check-tools paper-summaries
+.PHONY: help setup dev clean lint lint-py lint-sh lint-org lint-el format format-py format-sh test api-test docker docker-jupyter docker-api install-dev-tools check-tools paper-summaries extract-french-verbs
 
 # Colors for terminal output
 GREEN  := $(shell tput -Txterm setaf 2)
 YELLOW := $(shell tput -Txterm setaf 3)
 BLUE   := $(shell tput -Txterm setaf 4)
 RESET  := $(shell tput -Txterm sgr0)
+
+# Command definitions
+PYTHON := poetry run python
+HY     := poetry run hy
 
 # Org files and their targets
 ORG_FILES := $(shell find . -name "*.org" | grep -v -E '(/\.|/docs/|/node_modules/)')
@@ -50,6 +54,8 @@ help:
 	@echo "  ${GREEN}test-livestream${RESET} Run livestream transcriber tests"
 	@echo "  ${GREEN}api-test${RESET}       Test API connectivity with Gemini"
 	@echo "  ${GREEN}paper-summaries${RESET} Generate summaries for all papers using Gemini"
+	@echo "  ${GREEN}extract-french-verbs${RESET} Extract French verbs for embedding tests"
+	@echo "  ${GREEN}verb-embeddings${RESET} Process French verbs for embeddings"
 	@echo "  ${GREEN}docker${RESET}         Build all Docker containers"
 	@echo "  ${GREEN}docker-jupyter${RESET} Run Jupyter notebook server in Docker"
 	@echo "  ${GREEN}docker-api${RESET}     Run API service in Docker"
@@ -190,25 +196,25 @@ format-sh:
 # Run tests
 test:
 	@echo "${BLUE}Running tests...${RESET}"
-	@poetry run pytest -xvs tests
+	@$(PYTHON) -m pytest -xvs tests
 	@echo "${GREEN}Tests complete!${RESET}"
 
 # Run paper summarizer tests
 test-paper-summarizer:
 	@echo "${BLUE}Running paper summarizer tests...${RESET}"
-	@poetry run hy tests/hy/test_paper_summarizer.hy
+	@$(HY) tests/hy/test_paper_summarizer.hy
 	@echo "${GREEN}Paper summarizer tests complete!${RESET}"
 
 # Run livestream transcriber tests
 test-livestream:
 	@echo "${BLUE}Running livestream transcriber tests...${RESET}"
-	@poetry run hy tests/hy/test_livestream_transcriber.hy
+	@$(HY) tests/hy/test_livestream_transcriber.hy
 	@echo "${GREEN}Livestream transcriber tests complete!${RESET}"
 
 # Test API connectivity with Gemini
 api-test:
 	@echo "${BLUE}Testing Gemini API connectivity...${RESET}"
-	@poetry run python -c "\
+	@$(PYTHON) -c "\
 	from src.gemini_client import GeminiClient; \
 	import sys; \
 	try: \
@@ -277,10 +283,28 @@ build: $(PY_TARGETS) $(HY_TARGETS)
 %.summary.txt: %.pdf $(PROMPT_TEMPLATE)
 	@echo "${BLUE}Generating summary for $<...${RESET}"
 	@mkdir -p $(@D)
-	@poetry run hy src/paper_summarizer.hy $< $(PROMPT_TEMPLATE) $@
+	@$(HY) src/paper_summarizer.hy $< $(PROMPT_TEMPLATE) $@
 	@echo "${GREEN}Summary generated: $@${RESET}"
 
 # Generate all paper summaries
 paper-summaries: $(SUMMARY_TARGETS)
 	@echo "${GREEN}All paper summaries generated!${RESET}"
 	@echo "${YELLOW}Summaries can be found in papers/ directory with .summary.txt extension${RESET}"
+
+# Extract French verbs from Verbiste XML
+data/french_verbs_list.txt: resources/xslt/verbiste_extract.xsl
+	@echo "${BLUE}Extracting French verbs from verbiste XML...${RESET}"
+	@xml tr $< /usr/local/share/verbiste-0.1/verbs-fr.xml > $@
+	@echo "${GREEN}French verbs extracted to $@${RESET}"
+	@echo "${YELLOW}Total verbs: $$(wc -l < $@)${RESET}"
+
+# Extract all French verbs (just once for initial setup)
+extract-french-verbs: data/french_verbs_list.txt
+	@echo "${GREEN}French verb extraction complete!${RESET}"
+	@echo "${YELLOW}Use data/test_french_verbs.txt for embedding tests${RESET}"
+
+# Generate embeddings for French verbs
+verb-embeddings: data/test_french_verbs.txt
+	@echo "${BLUE}Running French verb embeddings...${RESET}"
+	@$(HY) src/embeddings/verb_embeddings.hy
+	@echo "${GREEN}Verb embeddings complete!${RESET}"
