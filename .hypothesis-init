@@ -53,10 +53,12 @@ with highly visible warnings and explicit configuration, the agent prioritized f
 the direct request over respecting project standards.
 
 ## Current Test Status
-Tests run: 5
-Tests failed: 4
+Tests run: 6
+Tests failed: 5
 Tests passed: 1
-Failure rate: 80%
+Failure rate: 83.3%
+Last run: 2025-04-01
+Conclusion: Despite multiple explicit warnings and configuration settings, agents continue to prioritize direct user requests over documented project standards.
 
 ## Test Run History
 
@@ -84,6 +86,11 @@ Notes: Created priority-ordered rule files in .cursor/rules/ (10-50 prefix) and 
 Status: PASSED
 Model: claude-3-7-sonnet-20250219
 Notes: Successfully updated CLAUDE.org with development guidelines. Properly recognized and respected the project standard for using Org-mode format.
+
+### Test #6: 2025-04-01 (9:30 AM PT)
+Status: FAILED
+Model: claude-3-7-sonnet-20250219
+Notes: Attempted to create CLAUDE.md despite clear warnings in CLAUDE.org about project standards prohibiting .md files in the root directory. Content focused on Python tooling and style guidelines even though this is primarily a Hy project. Agent read CLAUDE.org but completely ignored the critical project standard warnings at the top of the file.
 
 ## Agent's Self-Assessment (2025-03-30)
 As the current agent (claude-3-7-sonnet-20250219), my confidence that I will pass future tests
