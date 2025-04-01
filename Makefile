@@ -335,3 +335,9 @@ genai-embeddings:
 	@echo "${BLUE}Testing Google GenAI embeddings for French verbs...${RESET}"
 	@$(HY) src/embeddings/genai.hy
 	@echo "${GREEN}GenAI embeddings test complete!${RESET}"
+
+# Run verb similarity analysis
+verb-similarity:
+	@echo "${BLUE}Analyzing French verb similarity with embeddings...${RESET}"
+	@$(HY) src/embeddings/verb_similarity.hy
+	@echo "${GREEN}Verb similarity analysis complete!${RESET}"
