@@ -50,16 +50,43 @@
   (plt.tight_layout)
   (plt.show))
 
-(defmain [&rest args]
-  ;; Load pre-trained models
-  (setv v2w-model (api.load "word2vec-google-news-300"))
-  (setv glove-model (api.load "glove-twitter-25"))
+(defn visualize-embeddings [models-list words-list &optional [output-path None]]
+  "Load embedding models and visualize the specified words"
+  (setv loaded-models [])
   
-  (print "Words most similar to 'computer' with word2vec and glove respectively:")
+  ;; Load each model
+  (for [model-name models-list]
+    (print f"Loading {model-name}...")
+    (.append loaded-models (api.load model-name)))
+  
+  ;; Create visualization
+  (print f"Creating TSNE visualization for {(len words-list)} words...")
+  (tsne-plot loaded-models words-list)
+  
+  ;; Save visualization if output path provided
+  (when output-path
+    (plt.savefig output-path)
+    (print f"Visualization saved to {output-path}"))
+  
+  ;; Return models for further use
+  loaded-models)
+
+(defn main []
+  "Main entry point for command line use"
+  ;; Use default models if run directly
+  (setv models ["word2vec-google-news-300" "glove-twitter-25"])
+  
+  (print "Loading word embedding models...")
+  (setv loaded-models (visualize-embeddings models []))
+  
+  (setv v2w-model (get loaded-models 0))
+  (setv glove-model (get loaded-models 1))
+  
+  (print "\nWords most similar to 'computer' with word2vec and glove respectively:")
   (pprint.pprint (cut (v2w-model.most_similar "computer") 0 3))
   (pprint.pprint (cut (glove-model.most_similar "computer") 0 3))
   
-  (print "2D projection of some common words of both models")
+  (print "\nGenerating 2D projection of common words")
   
   ;; Find common words between both models
   (setv sample-common-words 
@@ -68,5 +95,8 @@
                   (set (cut glove-model.index_to_key 100 10000))))
              0 100))
   
-  ;; Create visualization
-  (tsne-plot [v2w-model glove-model] sample-common-words))
+  ;; Create visualization of common words
+  (tsne-plot loaded-models sample-common-words))
+
+(when (= __name__ "__main__")
+  (main))

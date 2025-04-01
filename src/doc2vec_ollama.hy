@@ -86,16 +86,30 @@
                               (* (np.linalg.norm vec) (np.linalg.norm query-vector)))])]
       (cut (sorted similarities :key (fn [x] (get x 1)) :reverse True) 0 topn))))
 
-;; Example usage
-(defmain [&rest args]
+(defn create-embeddings [documents &optional [model-name "nomic-embed-text"] [output-path None]]
+  "Create document embeddings for the given documents and optionally save model"
+  ;; Create embeddings model
+  (setv model (OllamaDocEmbeddings :model-name model-name))
+  
+  ;; Fit model on documents
+  (print f"Training document embeddings on {(len documents)} documents...")
+  (model.fit documents)
+  
+  ;; Save model if output path provided
+  (when output-path
+    (model.save output-path)
+    (print f"Model saved to {output-path}"))
+  
+  ;; Return model for further use
+  model)
+
+(defn main []
+  "Main entry point for command line use"
   (import [gensim.test.utils [common-texts]])
   
   ;; Create and train model
-  (setv model (OllamaDocEmbeddings))
-  (model.fit common-texts)
-  
-  ;; Save model
-  (model.save "ollama_doc2vec_v1")
+  (print "Creating document embeddings model...")
+  (setv model (create-embeddings common-texts :output-path "ollama_doc2vec_v1"))
   
   ;; Test similarity
   (print "\nDocument similarities:")
@@ -109,3 +123,6 @@
   (print "\nMost similar documents to 'human interface':")
   (for [[doc-id similarity] (model.most-similar query-vec)]
     (print f"Document {doc-id}: {similarity:.4f}")))
+
+(when (= __name__ "__main__")
+  (main))
