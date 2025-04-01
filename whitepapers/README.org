@@ -9,9 +9,10 @@ This directory contains the endnotes sections extracted from the 5-Day Gen AI In
 
 ** Current Endnotes Files
 
-- ~prompt_engineering_endnotes.pdf~ - Endnotes from Prompt Engineering whitepaper
-- ~embeddings_endnotes.pdf~ - Endnotes from Embeddings & Vector Stores whitepaper  
-- ~llm_endnotes.pdf~ - Endnotes from Foundational LLMs & Text Generation whitepaper
+- [[file:prompt_engineering_endnotes.pdf][prompt_engineering_endnotes.pdf]] - Endnotes from Prompt Engineering whitepaper
+- [[file:embeddings_endnotes.pdf][embeddings_endnotes.pdf]] - Endnotes from Embeddings & Vector Stores whitepaper  
+- [[file:llm_endnotes.pdf][llm_endnotes.pdf]] - Endnotes from Foundational LLMs & Text Generation whitepaper
+- [[file:agents_endnotes.pdf][agents_endnotes.pdf]] - Endnotes from Generative AI Agents whitepaper
 
 ** Extraction Process
 
@@ -39,17 +40,19 @@ pdftk "original_whitepaper.pdf" cat START_PAGE-end output endnotes_output.pdf
 pdftk "22365_3_Prompt Engineering_v7 (1).pdf" cat 68-end output prompt_engineering_endnotes.pdf
 pdftk "whitepaper_emebddings_vectorstores_v2.pdf" cat 59-end output embeddings_endnotes.pdf
 pdftk "whitepaper_Foundational Large Language models & text generation_v2.pdf" cat 82-end output llm_endnotes.pdf
+pdftk "Complete Unit 3a - Generative AI Agents.pdf" cat 74-end output agents_endnotes.pdf
 #+end_src
 
 *** Known Page Ranges
 
 The endnotes sections start on these pages in the original whitepapers:
 
-| Whitepaper                            | Endnotes Start Page |
-|---------------------------------------+--------------------|
-| Prompt Engineering                    | 68                 |
-| Embeddings & Vector Stores            | 59                 |
-| Foundational Large Language Models    | 82                 |
+| Whitepaper                            | Endnotes Start Page | File Link                                                 |
+|---------------------------------------+--------------------+----------------------------------------------------------|
+| Prompt Engineering                    | 68                 | [[file:prompt_engineering_endnotes.pdf][prompt_engineering_endnotes.pdf]] |
+| Embeddings & Vector Stores            | 59                 | [[file:embeddings_endnotes.pdf][embeddings_endnotes.pdf]]           |
+| Foundational Large Language Models    | 82                 | [[file:llm_endnotes.pdf][llm_endnotes.pdf]]                   |
+| Generative AI Agents                  | 74                 | [[file:agents_endnotes.pdf][agents_endnotes.pdf]]               |
 
 *** Benefits of This Approach
 
