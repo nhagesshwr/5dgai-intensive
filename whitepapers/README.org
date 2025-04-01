@@ -1,0 +1,68 @@
+#+TITLE: Whitepapers Endnotes Extraction
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: April 1, 2025
+
+* Whitepaper Endnotes
+
+This directory contains the endnotes sections extracted from the 5-Day Gen AI Intensive Course whitepapers.
+
+** Current Endnotes Files
+
+- ~prompt_engineering_endnotes.pdf~ - Endnotes from Prompt Engineering whitepaper
+- ~embeddings_endnotes.pdf~ - Endnotes from Embeddings & Vector Stores whitepaper  
+- ~llm_endnotes.pdf~ - Endnotes from Foundational LLMs & Text Generation whitepaper
+
+** Extraction Process
+
+The endnotes were extracted using ~pdftk~ to select specific page ranges from the original whitepapers.
+
+*** Installing pdftk
+
+#+begin_src bash
+# On macOS
+brew install pdftk-java
+
+# On Ubuntu/Debian
+sudo apt-get install pdftk
+#+end_src
+
+*** Extracting Endnotes
+
+To extract endnotes from a whitepaper PDF, identify the starting page of the endnotes section and use pdftk:
+
+#+begin_src bash
+# General format
+pdftk "original_whitepaper.pdf" cat START_PAGE-end output endnotes_output.pdf
+
+# Specific examples
+pdftk "22365_3_Prompt Engineering_v7 (1).pdf" cat 68-end output prompt_engineering_endnotes.pdf
+pdftk "whitepaper_emebddings_vectorstores_v2.pdf" cat 59-end output embeddings_endnotes.pdf
+pdftk "whitepaper_Foundational Large Language models & text generation_v2.pdf" cat 82-end output llm_endnotes.pdf
+#+end_src
+
+*** Known Page Ranges
+
+The endnotes sections start on these pages in the original whitepapers:
+
+| Whitepaper                            | Endnotes Start Page |
+|---------------------------------------+--------------------|
+| Prompt Engineering                    | 68                 |
+| Embeddings & Vector Stores            | 59                 |
+| Foundational Large Language Models    | 82                 |
+
+*** Benefits of This Approach
+
+- Creates smaller files that can be committed to git
+- Preserves all bibliographic references
+- More reliable than splitting/recombining approaches
+- Maintains original PDF formatting and links
+
+** Future Whitepapers
+
+When processing whitepapers from days 3-5, follow the same process:
+
+1. Identify the starting page of the endnotes section
+2. Run the pdftk command to extract that section
+3. Add the new file to this directory
+4. Update this README with the new filename and starting page information
