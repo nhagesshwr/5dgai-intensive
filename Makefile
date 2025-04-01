@@ -56,6 +56,7 @@ help:
 	@echo "  ${GREEN}paper-summaries${RESET} Generate summaries for all papers using Gemini"
 	@echo "  ${GREEN}extract-french-verbs${RESET} Extract French verbs for embedding tests"
 	@echo "  ${GREEN}verb-embeddings${RESET} Process French verbs for embeddings"
+	@echo "  ${GREEN}dépatouiller${RESET} Run embedding debug test with dépatouiller"
 	@echo "  ${GREEN}docker${RESET}         Build all Docker containers"
 	@echo "  ${GREEN}docker-jupyter${RESET} Run Jupyter notebook server in Docker"
 	@echo "  ${GREEN}docker-api${RESET}     Run API service in Docker"
@@ -309,3 +310,9 @@ verb-embeddings: resources/verbs/test_french_verbs.txt
 	@echo "${BLUE}Running French verb embeddings...${RESET}"
 	@$(HY) src/embeddings/verb_embeddings.hy
 	@echo "${GREEN}Verb embeddings complete!${RESET}"
+
+# Run the dépatouiller test (for debugging embedding problems)
+dépatouiller:
+	@echo "${BLUE}Running dépatouiller test...${RESET}"
+	@$(HY) src/embeddings/dépatouiller.hy
+	@echo "${GREEN}Dépatouillage complete!${RESET}"
