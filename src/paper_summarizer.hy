@@ -108,7 +108,7 @@ Part of 5-Day Gen AI Intensive Course
           (if (= stored-fingerprint current-fingerprint)
               ;; Fingerprints match, no need to regenerate
               (do
-                (print f"Inputs unchanged since last generation ({(get metadata 'timestamp')})")
+                (print f"Inputs unchanged since last generation ({(get metadata "timestamp")})")
                 [False current-fingerprint])
               ;; Fingerprints don't match, need to regenerate
               (do
@@ -219,7 +219,7 @@ Part of 5-Day Gen AI Intensive Course
   (for [paper-path papers-list]
     ;; Determine output path
     (setv paper-filename (os.path.basename paper-path))
-    (setv paper-basename (os.path.splitext paper-filename) 0)
+    (setv paper-basename (get (os.path.splitext paper-filename) 0))
     (setv summary-filename f"{paper-basename}.summary.txt")
     
     (setv output-path 
@@ -327,7 +327,7 @@ Part of 5-Day Gen AI Intensive Course
       (print "\nErrors:")
       (for [[paper info] (.items results)]
         (when (not (get info "success"))
-          (print f"  {paper}: {(get info 'error')}")))
+          (print f"  {paper}: {(.get info \"error\")}")))
       (return 1))
     
     0))
