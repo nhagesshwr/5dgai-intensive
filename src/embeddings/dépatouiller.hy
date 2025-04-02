@@ -148,40 +148,69 @@
          (* (magnitude a-list) (magnitude b-list)))
       0.0))
 
-;; Calculate similarity matrix
-(setv dp-fl (cosine-similarity depatouiller-emb flaner-emb))
-(setv dp-et (cosine-similarity depatouiller-emb etre-emb))
-(setv fl-et (cosine-similarity flaner-emb etre-emb))
+;; Store verbs and embeddings in collections
+(setv verb-names ["dépatouiller" "flâner" "être"])
+(setv verb-embs [depatouiller-emb flaner-emb etre-emb])
 
-;; Format similarity values as strings
-(setv dp-fl-fmt (.format "{:.4f}" (float dp-fl)))
-(setv dp-et-fmt (.format "{:.4f}" (float dp-et)))
-(setv fl-et-fmt (.format "{:.4f}" (float fl-et)))
+;; Calculate similarity matrix dynamically with loops
+(setv sim-matrix [])
+(for [i (range (len verb-names))]
+  (setv row [])
+  (for [j (range (len verb-names))]
+    (setv emb1 (get verb-embs i))
+    (setv emb2 (get verb-embs j))
+    (setv sim (cosine-similarity emb1 emb2))
+    (.append row sim))
+  (.append sim-matrix row))
 
 ;; Print similarity table
 (print "\n=== French Verb Similarity Matrix ===")
 (print "                dépatouiller  flâner      être")
 (print "-------------------------------------------------")
-(print (+ "dépatouiller  | 1.000        " dp-fl-fmt "    " dp-et-fmt))
-(print (+ "flâner        | " dp-fl-fmt "    1.000      " fl-et-fmt))
-(print (+ "être          | " dp-et-fmt "    " fl-et-fmt "    1.000"))
+
+;; Print rows using loops
+(for [i (range (len verb-names))]
+  (setv verb (get verb-names i))
+  (print (+ verb (.ljust "" (- 14 (len verb))) "|") :end " ")
+  (for [j (range (len verb-names))]
+    (setv sim (get (get sim-matrix i) j))
+    (setv sim-fmt (if (= i j) 
+                      "1.000"
+                      (.format "{:.4f}" (float sim))))
+    (print (.ljust sim-fmt (if (= j 0) 10 8)) :end " "))
+  (print))
 (print "-------------------------------------------------")
 
 ;; Add some fun interpretation
 (print "\n🔍 Semantic Insights:")
-(if (> (float dp-et) (float fl-et))
+(setv dp-et-sim (get (get sim-matrix 0) 2))  ;; dépatouiller-être similarity
+(setv fl-et-sim (get (get sim-matrix 1) 2))  ;; flâner-être similarity
+(if (> dp-et-sim fl-et-sim)
     (print "Untangling problems is closer to 'being' than leisurely strolling! Work defines us?")
     (print "Leisurely strolling is closer to 'being' than problem-solving! Enjoy the moment!"))
 
 ;; Save to files
 (os.makedirs "data/embeddings" :exist_ok True)
+
+;; Create data structure for JSON
+(setv json-data {})
+(for [i (range (len verb-names))]
+  (setv verb (get verb-names i))
+  (setv emb (get verb-embs i))
+  (setv (get json-data verb) emb))
+
+;; Add similarity scores
+(for [i (range (len verb-names))]
+  (for [j (range (+ i 1) (len verb-names))]  ;; Only store each pair once
+    (setv v1 (get verb-names i))
+    (setv v2 (get verb-names j))
+    (setv sim (get (get sim-matrix i) j))
+    (setv key (+ v1 "_" v2))
+    (setv (get json-data key) sim)))
+
+;; Write to file
 (with [f (open "data/embeddings/french_verbs_similarity.json" "w")]
-  (.write f (json.dumps {"dépatouiller" depatouiller-emb
-                        "flâner" flaner-emb
-                        "être" etre-emb
-                        "dépatouiller_flâner" dp-fl
-                        "dépatouiller_être" dp-et
-                        "flâner_être" fl-et} :indent 2)))
+  (.write f (json.dumps json-data :indent 2)))
 
 (print "\n✅ Successfully embedded all three verbs")
 (print "While you're dépatouiller-ing your code problems,")
