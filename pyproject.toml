@@ -15,6 +15,9 @@ langgraph = "0.3.21"
 langchain-google-genai = "2.1.2"
 langgraph-prebuilt = "0.1.7"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"  # For testing (works with Hy)
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

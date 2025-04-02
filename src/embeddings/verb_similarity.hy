@@ -2,13 +2,11 @@
 ;;; French verb embedding similarity matrix
 ;;; Analyzes semantic relationships between 20 common French verbs
 
-;; Standard imports
-(import os sys json pickle csv)
+;; Standard imports - keeping it minimal
+(import os sys json pickle)
 (import tqdm)
 (import dotenv)
 (import math)
-(import numpy :as np)
-(import matplotlib.pyplot :as plt)
 
 ;; Load environment variables
 (dotenv.load_dotenv)
@@ -101,27 +99,19 @@
   {"matrix" matrix "verbs" verbs})
 
 (defn save-similarity-matrix [matrix verbs output-path]
-  "Save the similarity matrix to a CSV file"
-  (with [f (open output-path "w" :newline "" :encoding "utf-8")]
-    (setv writer (csv.writer f))
-    (.writerow writer [""] + verbs)  ;; Header row
-    (for [i (range (len verbs))]
-      (.writerow writer [(get verbs i)] + (list (get matrix [i]))))))
-
-(defn plot-similarity-heatmap [matrix verbs output-path]
-  "Plot similarity matrix as a heatmap"
-  (plt.figure :figsize [10 8])
-  (plt.imshow matrix :cmap "viridis")
-  (plt.colorbar)
+  "Save the similarity matrix to a JSON file"
+  (setv matrix-data {})
+  (for [i (range (len verbs))]
+    (setv verb (get verbs i))
+    (setv row-data {})
+    (for [j (range (len verbs))]
+      (setv other-verb (get verbs j))
+      (setv similarity (get matrix [i j]))
+      (setv (get row-data other-verb) similarity))
+    (setv (get matrix-data verb) row-data))
   
-  ;; Label axes
-  (plt.xticks (range (len verbs)) verbs :rotation 90)
-  (plt.yticks (range (len verbs)) verbs)
-  
-  (plt.title "French Verb Semantic Similarity")
-  (plt.tight-layout)
-  (plt.savefig output-path)
-  (plt.close))
+  (with [f (open output-path "w" :encoding "utf-8")]
+    (json.dump matrix-data f :ensure_ascii False :indent 2)))
 
 (defn print-most-similar [matrix verbs]
   "Print the most similar verb pairs"
@@ -158,6 +148,34 @@
   (for [pair (cut sorted-pairs 0 5)]
     (setv #(verb1 verb2 similarity) pair)
     (print f"• {verb1} — {verb2}: {(.format '{:.4f}' similarity)}")))
+
+(defn print-top-k-similar-for-each [matrix verbs k]
+  "Print the top k most similar verbs for each verb"
+  (print f"\n🔍 Top {k} Most Similar Verbs For Each:")
+  (print "==================================")
+  
+  (for [i (range (len verbs))]
+    (setv verb (get verbs i))
+    (setv similarities [])
+    
+    ;; Get similarity with all other verbs
+    (for [j (range (len verbs))]
+      (when (!= i j)  ;; Skip self
+        (setv other-verb (get verbs j))
+        (setv similarity (get matrix [i j]))
+        (.append similarities [other-verb similarity])))
+    
+    ;; Sort by similarity (descending)
+    (setv sorted-similarities (sorted similarities :key (fn [x] (- (get x 1)))))
+    
+    ;; Take top k
+    (setv top-k (cut sorted-similarities 0 k))
+    
+    ;; Print results
+    (print f"\n{verb}:")
+    (for [pair top-k]
+      (setv #(other-verb similarity) pair)
+      (print f"  • {other-verb}: {(.format '{:.4f}' similarity)}")))))
 
 (defn main []
   (print "🇫🇷 French Verb Embedding Analysis 🇫🇷")
@@ -219,19 +237,37 @@
   (setv similarity-matrix (get similarity-data "matrix"))
   (setv matrix-verbs (get similarity-data "verbs"))
   
-  ;; Save similarity matrix as CSV
-  (setv csv-path (os.path.join output-dir "verb_similarity_matrix.csv"))
-  (save-similarity-matrix similarity-matrix matrix-verbs csv-path)
-  (print f"Similarity matrix saved to {csv-path}")
-  
-  ;; Visualize similarity matrix
-  (setv plot-path (os.path.join output-dir "verb_similarity_heatmap.png"))
-  (plot-similarity-heatmap similarity-matrix matrix-verbs plot-path)
-  (print f"Similarity heatmap saved to {plot-path}")
+  ;; Save similarity matrix as JSON
+  (setv json-path (os.path.join output-dir "verb_similarity_matrix.json"))
+  (save-similarity-matrix similarity-matrix matrix-verbs json-path)
+  (print f"Similarity matrix saved to {json-path}")
   
   ;; Print most/least similar pairs
   (print-most-similar similarity-matrix matrix-verbs)
   (print-least-similar similarity-matrix matrix-verbs)
+  
+  ;; Print top 3 most similar verbs for each verb
+  (print-top-k-similar-for-each similarity-matrix matrix-verbs 3)
+  
+  ;; Focus on a specific verb example - être (to be)
+  (setv etre-index (.index matrix-verbs "être"))
+  (print "\n🔍 Similarity Scores for 'être' (to be):")
+  (print "=========================================")
+  
+  (setv etre-similarities [])
+  (for [i (range (len matrix-verbs))]
+    (when (!= i etre-index)
+      (setv verb (get matrix-verbs i))
+      (setv similarity (get similarity-matrix [etre-index i]))
+      (.append etre-similarities [verb similarity])))
+  
+  ;; Sort by similarity (descending)
+  (setv sorted-etre (sorted etre-similarities :key (fn [x] (- (get x 1)))))
+  
+  ;; Print all similarities for être
+  (for [pair sorted-etre]
+    (setv #(verb similarity) pair)
+    (print f"• {verb}: {(.format '{:.4f}' similarity)}"))
   
   (print "\n✅ French verb embedding analysis complete!")
   
