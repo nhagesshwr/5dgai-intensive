@@ -341,3 +341,9 @@ verb-similarity:
 	@echo "${BLUE}Analyzing French verb similarity with embeddings...${RESET}"
 	@$(HY) src/embeddings/verb_similarity.hy
 	@echo "${GREEN}Verb similarity analysis complete!${RESET}"
+
+# Run simple verb matrix
+verb-matrix:
+	@echo "${BLUE}Generating minimal French verb similarity matrix...${RESET}"
+	@$(HY) src/embeddings/verb_matrix.hy
+	@echo "${GREEN}Verb matrix complete!${RESET}"
