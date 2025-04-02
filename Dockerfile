@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
     emacs \
+    wget \
+    make \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
@@ -18,24 +20,26 @@ ENV PATH="/root/.local/bin:$PATH"
 # Copy poetry configuration files
 COPY pyproject.toml poetry.lock* ./
 
-# Configure poetry to not create a virtual environment inside the container
+# Configure poetry
 RUN poetry config virtualenvs.create false
 
-# Install dependencies
-RUN poetry install --no-dev --no-interaction --no-ansi
+# Install dependencies (Hy-focused)
+RUN poetry install --no-interaction --no-ansi
 
 # Copy project files
 COPY . .
 
-# Install jupytext for notebook conversion
-RUN pip install jupytext
+# Set up Emacs with basic Hy mode support
+RUN mkdir -p /root/.emacs.d/
+RUN echo '(require (quote package))' > /root/.emacs.d/init.el && \
+    echo '(add-to-list (quote package-archives) (quote ("melpa" . "https://melpa.org/packages/")) t)' >> /root/.emacs.d/init.el && \
+    echo '(package-initialize)' >> /root/.emacs.d/init.el && \
+    echo '(unless (package-installed-p (quote hy-mode)) (package-refresh-contents) (package-install (quote hy-mode)))' >> /root/.emacs.d/init.el && \
+    echo '(require (quote hy-mode))' >> /root/.emacs.d/init.el
 
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
-# Expose port for Jupyter
-EXPOSE 8888
-
-# Start Jupyter by default
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=''", "--NotebookApp.password=''"]
+# Start an Emacs daemon by default
+CMD ["emacs", "--daemon", "--no-window-system", "--eval", "(message \"Emacs server ready for Hy development\")"]

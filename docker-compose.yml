@@ -1,12 +1,10 @@
 version: '3'
 
 services:
-  notebook:
+  hy-environment:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8888:8888"
     volumes:
       - .:/app
     environment:
@@ -14,22 +12,6 @@ services:
     env_file:
       - .env
     restart: unless-stopped
-
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: python -m src.api
-    ports:
-      - "5000:5000"
-    volumes:
-      - .:/app
-    environment:
-      - PYTHONPATH=/app
-    env_file:
-      - .env
-    depends_on:
-      - notebook
 
   org-emacs:
     build:
@@ -39,6 +21,18 @@ services:
     volumes:
       - .:/app
       - ./init.el:/root/.emacs.d/init.el
+    environment:
+      - PYTHONPATH=/app
+    env_file:
+      - .env
+    
+  make-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "while true; do sleep 1; done"  # Keep container running
+    volumes:
+      - .:/app
     environment:
       - PYTHONPATH=/app
     env_file:
