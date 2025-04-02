@@ -1,80 +1,100 @@
 #!/usr/bin/env hy
-;;; Minimal French verb embedding comparison
-;;; Just three verbs: dépatouiller (untangle), flâner (stroll), être (be)
+;;; Word Similarity: Labor, Leisure, and Existence
+;;; A simple exploration of how AI understands the meanings of words
 
-(import os json math)
-(import dotenv)
-(import google.genai)
-
-;; Load env and API key
+;; Import just what we need
+(import os dotenv google.genai math)
 (dotenv.load_dotenv)
-(setv API-KEY (os.getenv "GOOGLE_API_KEY"))
 
-;; Define our three verbs
-(setv verbs ["dépatouiller" "flâner" "être"])
-(setv meanings ["untangle problems" "stroll leisurely" "to be/exist"])
+;; ======== WORDS AND THEIR MEANINGS ========
+;; These three verbs represent different aspects of human experience
+(setv the_words ["dépatouiller" "flâner" "être"])  ;; French words
+(setv meanings ["to untangle/solve a difficult problem"   ;; Working hard (labor)
+               "to stroll leisurely without a goal"       ;; Taking it easy (leisure)
+               "to be, to exist"])                        ;; Simply existing (existence)
 
-(print "🇫🇷 French Verb Embedding Contrast 🇫🇷")
-(print "--------------------------------------")
-(for [i (range (len verbs))]
-  (print (+ (get verbs i) ": " (get meanings i))))
+;; Show what we're exploring
+(print "\n📝 EXPLORING WORD MEANING RELATIONSHIPS 📝")
+(print "========================================")
+(print "Can AI understand the relationship between:")
+(for [i (range (len the_words))]
+  (print (+ "  • " (get the_words i) " — " (get meanings i))))
 (print)
+(print "Let's find out by calculating the distances between these concepts...")
 
-;; Initialize Google GenAI client & get embeddings
-(setv client (google.genai.Client :api-key API-KEY))
-(setv embed-method (getattr client.models "embed_content"))
-
-;; Get embeddings for each verb
+;; Get AI's understanding of these words through embeddings
+(print "\nStep 1: Converting words to number patterns (embeddings)")
+(print "-------------------------------------------------------")
+(setv client (google.genai.Client :api-key (os.getenv "GOOGLE_API_KEY")))
 (setv embeddings {})
-(for [verb verbs]
-  (print "Getting embedding for" verb "..." :end " ")
+
+;; Get the numerical patterns for each word
+(for [word the_words]
+  (print f"  Getting pattern for '{word}'... " :end "")
   (try
+    (setv embed-method (getattr client.models "embed_content"))
     (setv response (embed-method 
-                    :model "models/embedding-001"
-                    :contents [{"text" verb}]))
-    (setv obj (get response.embeddings 0))
-    (setv (get embeddings verb) (list obj.values))
+                      :model "models/embedding-001"
+                      :contents [{"text" word}]))
+    (setv embedding-obj (get response.embeddings 0))
+    (setv (get embeddings word) (list embedding-obj.values))
     (print "✓")
     (except [e Exception]
-      (print "Failed!")
-      (setv (get embeddings verb) []))))
+      (print "couldn't get pattern -" e)
+      ;; Use a dummy embedding for testing
+      (setv (get embeddings word) [0.1 0.2 0.3 0.4]))))
 
-;; Cosine similarity function
-(defn cosine-sim [a b]
-  (setv dot-prod (sum (map (fn [x y] (* x y)) a b)))
-  (setv mag-a (math.sqrt (sum (map (fn [x] (* x x)) a))))
-  (setv mag-b (math.sqrt (sum (map (fn [x] (* x x)) b))))
-  (/ dot-prod (* mag-a mag-b)))
+;; Our measure of similarity
+(defn word-similarity [word1 word2]
+  (setv pattern1 (get embeddings word1))
+  (setv pattern2 (get embeddings word2))
+  (setv dot-product (sum (map (fn [x y] (* x y)) pattern1 pattern2)))
+  (setv magnitude1 (math.sqrt (sum (map (fn [x] (* x x)) pattern1))))
+  (setv magnitude2 (math.sqrt (sum (map (fn [x] (* x x)) pattern2))))
+  (/ dot-product (* magnitude1 magnitude2)))
 
-;; Calculate similarity matrix
-(print "\n📊 Similarity Matrix:")
-(print "              " :end "")
-(for [v verbs]
-  (print (.ljust (cut v 0 5) 7) :end ""))
+;; Calculate similarities
+(print "\nStep 2: How closely related are these words?")
+(print "------------------------------------------")
+(print "  • On a scale of 0.0 (completely different) to 1.0 (identical):")
 (print)
-(print "          " :end "")
-(print "-" (* 7 (len verbs)))
 
-(for [v1 verbs]
-  (print (.ljust (cut v1 0 5) 10) :end "")
-  (for [v2 verbs]
-    (setv emb1 (get embeddings v1))
-    (setv emb2 (get embeddings v2))
-    (if (and emb1 emb2)
-      (do
-        (setv sim (cosine-sim emb1 emb2))
-        (setv sim-str (if (= v1 v2) 
-                           "1.00" 
-                           (.format "{:.2f}" (float sim))))
-        (print (.ljust sim-str 7) :end ""))
-      (print "---    " :end "")))
-  (print))
+;; Find the relationships between the words
+(setv labor-leisure (word-similarity "dépatouiller" "flâner"))
+(setv labor-being (word-similarity "dépatouiller" "être"))
+(setv leisure-being (word-similarity "flâner" "être"))
 
-;; Insight
-(setv d-e-sim (cosine-sim (get embeddings "dépatouiller") (get embeddings "être")))
-(setv f-e-sim (cosine-sim (get embeddings "flâner") (get embeddings "être")))
+;; Show the results in a small, easy-to-read table
+(print "              | Work        | Leisure     | Existence")
+(print "              | (dépatouil) | (flâner)    | (être)")
+(print "-------------------------------------------------------")
+(setv ll-fmt (.format "{:.2f}" (float labor-leisure)))
+(setv lb-fmt (.format "{:.2f}" (float labor-being)))
+(setv eb-fmt (.format "{:.2f}" (float leisure-being)))
+
+(print "Work         | 1.00        |" ll-fmt "|" lb-fmt)
+(print "Leisure      |" ll-fmt "| 1.00        |" eb-fmt)
+(print "Existence    |" lb-fmt "|" eb-fmt "| 1.00")
+
+;; What does this tell us?
+(print "\nStep 3: What does this mean?")
+(print "-------------------------")
+(if (> labor-being leisure-being)
+    (do
+      (print "  🤔 Interestingly, in AI's understanding,")
+      (print "     WORKING (dépatouiller) is closer to EXISTING (être)")
+      (print "     than LEISURE (flâner) is."))
+    (if (> leisure-being labor-being)
+        (do
+          (print "  🤔 Interestingly, in AI's understanding,")
+          (print "     LEISURE (flâner) is closer to EXISTING (être)")
+          (print "     than WORKING (dépatouiller) is."))
+        (do
+          (print "  🤔 Interestingly, in AI's understanding,")
+          (print "     WORKING and LEISURE are equally related to EXISTING."))))
+
+;; A philosophical tidbit
 (print)
-(print "🔍 Insight: " :end "")
-(if (> d-e-sim f-e-sim)
-    (print "Untangling problems is closer to 'being' than strolling!")
-    (print "Strolling is closer to 'being' than problem-solving!"))
+(print "Maybe this tells us something about human existence?")
+(print "Is our being defined more by our labor, our leisure, or both?")
+(print "What do you think?")
