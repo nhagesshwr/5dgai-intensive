@@ -1,37 +1,505 @@
-#+TITLE: Day 4: Multimodal Applications and Responsible AI
-#+AUTHOR: Jason Walsh
-#+EMAIL: j@wal.sh
-#+DATE: March 30, 2025
-#+PROPERTY: header-args:hy :session day4 :results output :exports both
+#+TITLE: Fine-tuning a Custom Model for Text Classification
+#+AUTHOR: Claude
+#+DATE: 2025-04-03
+#+PROPERTY: header-args:python :session *python* :results output drawer
 
-* Multimodal AI Applications
-:PROPERTIES:
-:VISIBILITY: all
-:END:
+* Introduction
 
-** Working with Multiple Modalities
+This notebook demonstrates how to fine-tune a Gemini model for text classification using the 20 Newsgroups dataset.
 
-Multimodal AI can process and generate content across different types:
+* Environment Setup
 
-- Text and natural language
-- Images and visual content
-- Code generation and analysis
-- Data analysis and visualization
+Let's set up our environment and configure the API client:
 
-#+begin_src hy
-(print "Welcome to Day 4: Multimodal Applications")
+#+begin_src python
+  # Import necessary libraries
+  import os
+  from dotenv import load_dotenv
+  import google.generativeai as genai
+  from google.generativeai import types
+  import pandas as pd
+  
+  # Load environment variables
+  load_dotenv()
+  
+  # Configure the client
+  client = genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+  
+  print("Environment configured successfully!")
 #+end_src
 
-* Responsible AI Considerations
+#+RESULTS:
+:results:
+:end:
 
-** Ethical AI Development
+* Available Models
 
-- Safety measures and content filtering
-- Bias detection and mitigation
-- Transparency and explainability
-- Privacy considerations
+Check which models support fine-tuning:
 
-#+begin_src hy
-;; Example implementation coming soon
-(print "This notebook will be implemented with Hy examples")
+#+begin_src python
+  # Check which models support fine-tuning
+  for model in client.models.list():
+      if "createTunedModel" in model.supported_actions:
+          print(model.name)
 #+end_src
+
+#+RESULTS:
+:results:
+:end:
+
+* Load Dataset
+
+Load the 20 Newsgroups dataset:
+
+#+begin_src python
+  from sklearn.datasets import fetch_20newsgroups
+  
+  # Load the 20 newsgroups dataset
+  newsgroups_train = fetch_20newsgroups(subset="train")
+  newsgroups_test = fetch_20newsgroups(subset="test")
+  
+  # View list of class names
+  print("Available newsgroup categories:")
+  print(newsgroups_train.target_names)
+#+end_src
+
+#+RESULTS:
+:results:
+:end:
+
+* Examine Sample Data
+
+Let's look at a sample from the dataset:
+
+#+begin_src python
+  # Print a sample from the dataset
+  print(newsgroups_train.data[0][:500])  # Show first 500 chars for brevity
+#+end_src
+
+* Define Preprocessing Functions
+
+Define functions to preprocess the newsgroup data:
+
+#+begin_src python
+  import email
+  import re
+  
+  def preprocess_newsgroup_row(data):
+      # Extract only the subject and body
+      msg = email.message_from_string(data)
+      text = f"{msg['Subject']}\n\n{msg.get_payload()}"
+      # Strip any remaining email addresses
+      text = re.sub(r"[\w\.-]+@[\w\.-]+", "", text)
+      # Truncate the text to fit within the input limits
+      text = text[:40000]
+      return text
+  
+  def preprocess_newsgroup_data(newsgroup_dataset):
+      # Put data points into dataframe
+      df = pd.DataFrame(
+          {"Text": newsgroup_dataset.data, "Label": newsgroup_dataset.target}
+      )
+      # Clean up the text
+      df["Text"] = df["Text"].apply(preprocess_newsgroup_row)
+      # Match label to target name index
+      df["Class Name"] = df["Label"].map(lambda l: newsgroup_dataset.target_names[l])
+      return df
+  
+  print("Preprocessing functions defined successfully!")
+#+end_src
+
+#+RESULTS:
+:results:
+:end:
+
+* Apply Preprocessing
+
+Apply preprocessing to the training and test datasets:
+
+#+begin_src python
+  # Apply preprocessing to training and test datasets
+  df_train = preprocess_newsgroup_data(newsgroups_train)
+  df_test = preprocess_newsgroup_data(newsgroups_test)
+  
+  print(f"Preprocessed {len(df_train)} training examples and {len(df_test)} test examples")
+#+end_src
+
+* Examine Processed Data
+
+View the first few rows of the preprocessed data:
+
+#+begin_src python
+  # Show the first 3 rows of the preprocessed data
+  print(df_train[['Text', 'Class Name']].head(3).to_string())
+#+end_src
+
+* Define Sampling Function
+
+Define a function to sample data from specific categories:
+
+#+begin_src python
+  def sample_data(df, num_samples, classes_to_keep):
+      # Sample rows, selecting num_samples of each Label.
+      df = (
+          df.groupby("Label")[df.columns]
+          .apply(lambda x: x.sample(num_samples) if len(x) >= num_samples else x)
+          .reset_index(drop=True)
+      )
+  
+      df = df[df["Class Name"].str.contains(classes_to_keep)]
+      df["Class Name"] = df["Class Name"].astype("category")
+  
+      return df
+  
+  # Define constants
+  TRAIN_NUM_SAMPLES = 50
+  TEST_NUM_SAMPLES = 10
+  # Keep rec.* and sci.* categories
+  CLASSES_TO_KEEP = "^rec|^sci"
+  
+  print("Sampling function defined successfully!")
+#+end_src
+
+* Sample the Data
+
+Apply sampling to reduce the dataset size:
+
+#+begin_src python
+  # Apply sampling to training and test datasets
+  df_train_sampled = sample_data(df_train, TRAIN_NUM_SAMPLES, CLASSES_TO_KEEP)
+  df_test_sampled = sample_data(df_test, TEST_NUM_SAMPLES, CLASSES_TO_KEEP)
+  
+  print(f"After sampling, we have {len(df_train_sampled)} training examples and {len(df_test_sampled)} test examples")
+  print(f"Included categories: {', '.join(df_train_sampled['Class Name'].unique())}")
+#+end_src
+
+* Examine a Sample Post
+
+Let's examine a sample post and its label:
+
+#+begin_src python
+  # Get a sample row and its label
+  sample_idx = 0
+  sample_row = preprocess_newsgroup_row(newsgroups_test.data[sample_idx])
+  sample_label = newsgroups_test.target_names[newsgroups_test.target[sample_idx]]
+  
+  print("Sample post (truncated):")
+  print(sample_row[:300])  # First 300 chars for brevity
+  print('---')
+  print('Label:', sample_label)
+#+end_src
+
+* Test with Gemini Model (Zero-Shot)
+
+Test the model's ability to classify without fine-tuning:
+
+#+begin_src python
+  # Generate content using Gemini model
+  response = client.models.generate_content(
+      model="gemini-1.5-flash-001", 
+      contents=sample_row
+  )
+  print("Model's raw response to the sample post:")
+  print(response.text)
+#+end_src
+
+* Zero-Shot Prompt Test
+
+Ask the model directly for classification:
+
+#+begin_src python
+  # Ask the model directly in a zero-shot prompt
+  prompt = "From what newsgroup does the following message originate?"
+  baseline_response = client.models.generate_content(
+      model="gemini-1.5-flash-001",
+      contents=[prompt, sample_row]
+  )
+  print("Zero-shot prompt response:")
+  print(baseline_response.text)
+#+end_src
+
+* System Instruction Prompt
+
+Use a system instruction for more direct prompting:
+
+#+begin_src python
+  from google.api_core import retry
+  
+  # System instruction for classification
+  system_instruct = """
+  You are a classification service. You will be passed input that represents
+  a newsgroup post and you must respond with the newsgroup from which the post
+  originates.
+  """
+  
+  # Define a helper to retry when per-minute quota is reached
+  is_retriable = lambda e: (isinstance(e, genai.errors.APIError) and e.code in {429, 503})
+  
+  # Function to predict the label with retry capability
+  @retry.Retry(predicate=is_retriable)
+  def predict_label(post):
+      response = client.models.generate_content(
+          model="gemini-1.5-flash-001",
+          config=types.GenerateContentConfig(
+              system_instruction=system_instruct),
+          contents=post)
+  
+      rc = response.candidates[0]
+  
+      # Check for errors
+      if rc.finish_reason.name != "STOP":
+          return "(error)"
+      else:
+          # Clean up the response
+          return response.text.strip()
+  
+  print("Prediction function defined successfully!")
+#+end_src
+
+* Test System Instruction
+
+Test the system instruction approach:
+
+#+begin_src python
+  # Make prediction and check correctness
+  prediction = predict_label(sample_row)
+  
+  print("Prediction:", prediction)
+  print()
+  print("Correct!" if prediction == sample_label else "Incorrect.")
+#+end_src
+
+* Setup for Evaluation
+
+Configure progress bars and prepare for evaluation:
+
+#+begin_src python
+  import tqdm
+  from tqdm.rich import tqdm as tqdmr
+  import warnings
+  
+  # Enable tqdm features on Pandas
+  tqdmr.pandas()
+  
+  # Suppress the experimental warning
+  warnings.filterwarnings("ignore", category=tqdm.TqdmExperimentalWarning)
+  
+  print("Progress bar setup complete!")
+#+end_src
+
+* Baseline Evaluation
+
+Evaluate the baseline model performance:
+
+#+begin_src python
+  # Further sample the test data to be mindful of quota
+  df_baseline_eval = sample_data(df_test, 2, '.*')
+  
+  # Make predictions using the sampled data
+  print("Making predictions... (this may take a moment)")
+  df_baseline_eval['Prediction'] = df_baseline_eval['Text'].progress_apply(predict_label)
+  
+  # Calculate accuracy
+  accuracy = (df_baseline_eval["Class Name"] == df_baseline_eval["Prediction"]).sum() / len(df_baseline_eval)
+  print(f"Accuracy: {accuracy:.2%}")
+#+end_src
+
+* Examine Baseline Results
+
+Look at the baseline evaluation results:
+
+#+begin_src python
+  # Display evaluation results
+  print(df_baseline_eval[['Class Name', 'Prediction']].to_string())
+#+end_src
+
+* Prepare for Fine-Tuning
+
+Prepare the dataset for fine-tuning:
+
+#+begin_src python
+  from collections.abc import Iterable
+  import random
+  
+  # Convert the data frame into a dataset suitable for tuning
+  input_data = {'examples': 
+      df_train_sampled[['Text', 'Class Name']]
+        .rename(columns={'Text': 'textInput', 'Class Name': 'output'})
+        .to_dict(orient='records')
+   }
+  
+  print(f"Prepared {len(input_data['examples'])} examples for fine-tuning")
+  print("First example:")
+  example = input_data['examples'][0]
+  print(f"Input (truncated): {example['textInput'][:100]}...")
+  print(f"Output: {example['output']}")
+#+end_src
+
+* Initialize or Find Model ID
+
+Initialize or find a model ID for tuning:
+
+#+begin_src python
+  # If you are re-running this lab, add your model_id here
+  model_id = None
+  
+  # Try and find a recent tuning job
+  if not model_id:
+    queued_model = None
+    # Newest models first
+    for m in reversed(client.tunings.list()):
+      # Only look at newsgroup classification models
+      if m.name.startswith('tunedModels/newsgroup-classification-model'):
+        # If there is a completed model, use the first (newest) one
+        if m.state.name == 'JOB_STATE_SUCCEEDED':
+          model_id = m.name
+          print('Found existing tuned model to reuse.')
+          break
+  
+        elif m.state.name == 'JOB_STATE_RUNNING' and not queued_model:
+          # If there's a model still queued, remember the most recent one
+          queued_model = m.name
+    else:
+      if queued_model:
+        model_id = queued_model
+        print('Found queued model, still waiting.')
+  
+  print(f"Model ID: {model_id if model_id else 'None (will create new)'}")
+#+end_src
+
+* Start Tuning Job
+
+Upload the training data and queue the tuning job:
+
+#+begin_src python
+  # Upload the training data and queue the tuning job
+  if not model_id:
+      tuning_op = client.tunings.tune(
+          base_model="models/gemini-1.5-flash-001-tuning",
+          training_dataset=input_data,
+          config=types.CreateTuningJobConfig(
+              tuned_model_display_name="Newsgroup classification model",
+              batch_size=16,
+              epoch_count=2,
+          ),
+      )
+  
+      print(f"Tuning job state: {tuning_op.state}")
+      model_id = tuning_op.name
+  
+  print(f"Model ID: {model_id}")
+#+end_src
+
+* Monitor Tuning Job
+
+Monitor the tuning job progress:
+
+#+begin_src python
+  import datetime
+  import time
+  
+  # Set maximum wait time
+  MAX_WAIT = datetime.timedelta(minutes=10)
+  
+  # Only run this if we don't have a fallback model ID
+  if model_id != "tunedModels/newsgroup-classification-model-ltenbi1b":
+      print("Monitoring tuning job progress...")
+      while not (tuned_model := client.tunings.get(name=model_id)).has_ended:
+          print(tuned_model.state)
+          time.sleep(60)
+          # Don't wait too long. Use a public model if this is going to take a while
+          if datetime.datetime.now(datetime.timezone.utc) - tuned_model.create_time > MAX_WAIT:
+              print("Taking a shortcut, using a previously prepared model.")
+              model_id = "tunedModels/newsgroup-classification-model-ltenbi1b"
+              tuned_model = client.tunings.get(name=model_id)
+              break
+      
+      print(f"Done! The model state is: {tuned_model.state.name}")
+      if not tuned_model.has_succeeded and tuned_model.error:
+          print("Error:", tuned_model.error)
+  else:
+      print("Using pre-existing model.")
+#+end_src
+
+* Test Fine-Tuned Model
+
+Test the fine-tuned model with new text:
+
+#+begin_src python
+  # Define new text for testing the tuned model
+  new_text = """
+  First-timer looking to get out of here.
+  Hi, I'm writing about my interest in travelling to the outer limits!
+  What kind of craft can I buy? What is easiest to access from this 3rd rock?
+  Let me know how to do that please.
+  """
+  
+  # Generate response using the tuned model
+  response = client.models.generate_content(
+      model=model_id, 
+      contents=new_text
+  )
+  
+  # Print the response
+  print("Fine-tuned model response:")
+  print(response.text)
+#+end_src
+
+* Create Classification Function
+
+Create a function to classify text with the fine-tuned model:
+
+#+begin_src python
+  # Define function to classify text with retry capability
+  @retry.Retry(predicate=is_retriable)
+  def classify_text(text):
+      """Classify the provided text into a known newsgroup."""
+      response = client.models.generate_content(
+          model=model_id, contents=text)
+      rc = response.candidates[0]
+      # Check for errors
+      if rc.finish_reason.name != "STOP":
+          return "(error)"
+      else:
+          return rc.content.parts[0].text
+  
+  print("Classification function created successfully!")
+#+end_src
+
+* Evaluate Fine-Tuned Model
+
+Evaluate the performance of the fine-tuned model:
+
+#+begin_src python
+  # Sample the test data to minimize quota usage
+  df_model_eval = sample_data(df_test, 4, '.*')
+  
+  # Make predictions using the tuned model
+  print("Making predictions with the fine-tuned model... (this may take a moment)")
+  df_model_eval["Prediction"] = df_model_eval["Text"].progress_apply(classify_text)
+  
+  # Calculate accuracy
+  accuracy = (df_model_eval["Class Name"] == df_model_eval["Prediction"]).sum() / len(df_model_eval)
+  
+  # Print the accuracy result
+  print(f"Fine-tuned model accuracy: {accuracy:.2%}")
+#+end_src
+
+* Compare Results
+
+Display and compare the evaluation results:
+
+#+begin_src python
+  # Display the fine-tuned model evaluation results
+  print(df_model_eval[['Class Name', 'Prediction']].to_string())
+#+end_src
+
+* Conclusion
+
+This notebook demonstrated how to:
+1. Preprocess the 20 Newsgroups dataset
+2. Evaluate a baseline model using zero-shot and system instruction prompts
+3. Fine-tune a custom model for newsgroup classification
+4. Evaluate and compare the performance of the fine-tuned model
+
+The fine-tuned model should show improved accuracy for classifying newsgroup posts compared to the zero-shot baseline approach.
