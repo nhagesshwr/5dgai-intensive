@@ -1,0 +1,379 @@
+#+TITLE: Building an Agent with LangGraph
+#+AUTHOR: Claude
+#+DATE: 2025-04-03
+#+PROPERTY: header-args:python :session *python* :results output drawer
+
+* Introduction
+
+This notebook demonstrates how to build an agentic ordering system using LangGraph. We'll create a barista bot that can take coffee orders, answer menu questions, and interact with customers.
+
+* Setting Up the Environment
+
+First, let's set up our environment and import the necessary libraries:
+
+#+begin_src python
+  # Import necessary libraries
+  import os
+  import json
+  from typing import Dict, List, Literal, Tuple, TypedDict, Optional
+  from dotenv import load_dotenv
+  
+  # Import LangGraph components
+  from langgraph.graph import StateGraph, START
+  from langgraph.prebuilt import ToolNode
+  from langgraph_prebuilt.callbacks import human_node
+  
+  # Import Gemini libraries
+  import google.generativeai as genai
+  from google.generativeai.types import Tool
+  from langchain_google_genai import GoogleGenerativeAI
+  from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+  
+  # Load environment variables
+  load_dotenv()
+  API_KEY = os.getenv("AI_STUDIO_API_KEY")
+  
+  # Configure Gemini
+  genai.configure(api_key=API_KEY)
+  
+  # Set up the Gemini model
+  llm = GoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.7, google_api_key=API_KEY)
+  
+  print("Environment setup complete!")
+#+end_src
+
+* Defining Order State and System Instructions
+
+Let's define our order state and system instructions for the barista bot:
+
+#+begin_src python
+  # Define OrderState type
+  class OrderState(TypedDict):
+      messages: List  # List of messages in the conversation
+      order: List[str]  # Items in the current order
+      finished: bool  # Whether the order is complete
+  
+  # Define system instructions for the barista bot
+  BARISTABOT_SYSINT = SystemMessage(content="""
+  You are BaristaBot, an AI assistant helping customers order coffee at a café.
+  
+  Be friendly, helpful, and professional. Ask clarifying questions about order details
+  like size, milk type, and special requests when needed.
+  
+  Keep track of the customer's order items. When they want to complete their order,
+  provide a summary of all items and total cost.
+  
+  Use the get_menu tool to check items, prices, and available options.
+  """)
+  
+  # Welcome message
+  WELCOME_MSG = """
+  Welcome to our café! I'm BaristaBot, your virtual barista.
+  
+  How can I help you today? Would you like to see our menu, or can I take your order?
+  """
+  
+  print("Order state and system instructions defined.")
+#+end_src
+
+* Defining the Menu Tool
+
+Now, let's create a tool for the barista bot to get menu information:
+
+#+begin_src python
+  # Define the cafe menu
+  CAFE_MENU = {
+      "coffee": {
+          "espresso": {"small": 2.50, "medium": 3.00, "large": 3.50},
+          "americano": {"small": 2.75, "medium": 3.25, "large": 3.75},
+          "latte": {"small": 3.50, "medium": 4.00, "large": 4.50},
+          "cappuccino": {"small": 3.50, "medium": 4.00, "large": 4.50},
+          "mocha": {"small": 4.00, "medium": 4.50, "large": 5.00},
+      },
+      "tea": {
+          "black": {"small": 2.00, "medium": 2.50, "large": 3.00},
+          "green": {"small": 2.00, "medium": 2.50, "large": 3.00},
+          "herbal": {"small": 2.25, "medium": 2.75, "large": 3.25},
+          "chai latte": {"small": 3.50, "medium": 4.00, "large": 4.50},
+      },
+      "pastries": {
+          "croissant": 2.50,
+          "muffin": 3.00,
+          "scone": 2.75,
+          "cookie": 1.50,
+      },
+      "milk options": ["whole", "skim", "oat", "almond", "soy"],
+      "syrups": ["vanilla", "caramel", "hazelnut", "chocolate"],
+  }
+  
+  def get_menu(query: Optional[str] = None) -> str:
+      """Get information about items on the cafe menu.
+      
+      Args:
+          query: Optional query to filter menu items (e.g., "coffee", "tea", "pastries")
+               or to get specific information (e.g., "latte price", "milk options")
+      
+      Returns:
+          String containing the requested menu information
+      """
+      if not query:
+          # Return full menu overview
+          return json.dumps(CAFE_MENU, indent=2)
+      
+      query = query.lower()
+      
+      # Handle category queries
+      if query in CAFE_MENU:
+          return json.dumps(CAFE_MENU[query], indent=2)
+      
+      # Handle specific item queries
+      for category, items in CAFE_MENU.items():
+          if isinstance(items, dict) and not category in ["milk options", "syrups"]:
+              for item, details in items.items():
+                  if query in item.lower():
+                      return f"{item.title()}: {json.dumps(details, indent=2)}"
+      
+      # Handle specific queries about options
+      if "milk" in query or "milk options" in query:
+          return f"Available milk options: {', '.join(CAFE_MENU['milk options'])}"
+      
+      if "syrup" in query or "syrups" in query:
+          return f"Available syrups: {', '.join(CAFE_MENU['syrups'])}"
+      
+      # Handle price queries
+      if "price" in query:
+          for category, items in CAFE_MENU.items():
+              if isinstance(items, dict) and not category in ["milk options", "syrups"]:
+                  for item, details in items.items():
+                      if item in query:
+                          if isinstance(details, dict):
+                              return f"{item.title()} prices: {json.dumps(details, indent=2)}"
+                          else:
+                              return f"{item.title()}: ${details:.2f}"
+      
+      return "I couldn't find that item on our menu. Please try another query."
+  
+  # Test the menu tool
+  print(get_menu("latte price"))
+#+end_src
+
+* Creating the LangGraph Agent
+
+Now let's build the LangGraph agent with tool integration:
+
+#+begin_src python
+  # Define the tools and create a "tools" node
+  tools = [get_menu]
+  tool_node = ToolNode(tools)
+  
+  # Attach the tools to the model so that it knows what it can call
+  llm_with_tools = llm.bind_tools(tools)
+  
+  def maybe_route_to_tools(state: OrderState) -> Literal["tools", "human"]:
+      """Route between human or tool nodes, depending if a tool call is made."""
+      if not (msgs := state.get("messages", [])):
+          raise ValueError(f"No messages found when parsing state: {state}")
+  
+      # Only route based on the last message
+      msg = msgs[-1]
+  
+      # When the chatbot returns tool_calls, route to the "tools" node
+      if hasattr(msg, "tool_calls") and len(msg.tool_calls) > 0:
+          return "tools"
+      else:
+          return "human"
+  
+  def maybe_exit_human_node(state: OrderState) -> Literal["chatbot", "exit"]:
+      """Decide whether to continue the conversation or exit."""
+      if state.get("finished", False):
+          return "exit"
+      return "chatbot"
+  
+  def chatbot_with_tools(state: OrderState) -> OrderState:
+      """The chatbot with tools. A simple wrapper around the model's own chat interface."""
+      defaults = {"order": [], "finished": False}
+  
+      if state["messages"]:
+          new_output = llm_with_tools.invoke([BARISTABOT_SYSINT] + state["messages"])
+      else:
+          new_output = AIMessage(content=WELCOME_MSG)
+  
+      # Set up some defaults if not already set, then pass through the provided state,
+      # overriding only the "messages" field
+      return defaults | state | {"messages": state.get("messages", []) + [new_output]}
+  
+  print("Agent functions defined.")
+#+end_src
+
+* Building the Graph
+
+Let's build the graph that will define our agent's behavior:
+
+#+begin_src python
+  # Create the graph builder
+  graph_builder = StateGraph(OrderState)
+  
+  # Add the nodes, including the tool_node
+  graph_builder.add_node("chatbot", chatbot_with_tools)
+  graph_builder.add_node("human", human_node)
+  graph_builder.add_node("tools", tool_node)
+  
+  # Chatbot may go to tools, or human
+  graph_builder.add_conditional_edges("chatbot", maybe_route_to_tools)
+  # Human may go back to chatbot, or exit
+  graph_builder.add_conditional_edges("human", maybe_exit_human_node)
+  
+  # Tools always route back to chat afterwards
+  graph_builder.add_edge("tools", "chatbot")
+  
+  # Start with the chatbot node
+  graph_builder.add_edge(START, "chatbot")
+  
+  # Compile the graph
+  graph_with_menu = graph_builder.compile()
+  
+  print("Graph compiled successfully!")
+#+end_src
+
+* Visualizing the Graph
+
+Let's visualize our agent's decision flow:
+
+#+begin_src python
+  # Try to import IPython for visualization
+  try:
+      from IPython.display import Image
+      
+      # Generate and display a visualization of the graph
+      graph_image = graph_with_menu.get_graph().draw_mermaid_png()
+      display(Image(graph_image))
+      print("Graph visualization displayed.")
+  except ImportError:
+      print("IPython not available for visualization.")
+#+end_src
+
+* Running the Agent
+
+Now let's run our barista agent and interact with it:
+
+#+begin_src python
+  # Set up a simple interaction loop
+  def run_agent_demo():
+      # Create a new instance of the graph
+      agent = graph_with_menu.new_instance()
+      
+      # Start the conversation
+      state = {"messages": []}
+      
+      # Initial chatbot greeting
+      state = agent.invoke(state)
+      print("\n=== Barista Bot ===")
+      print(state["messages"][-1].content)
+      
+      # Interactive loop
+      while True:
+          # Get user input
+          user_input = input("\n=== Customer ===\n")
+          
+          # Check for exit command
+          if user_input.lower() in ["exit", "quit", "bye"]:
+              print("\n=== Barista Bot ===")
+              print("Thank you for visiting our café! Have a great day!")
+              break
+          
+          # Add user message to state
+          state["messages"].append(HumanMessage(content=user_input))
+          
+          # Process through the graph
+          state = agent.invoke(state)
+          
+          # Print the response
+          print("\n=== Barista Bot ===")
+          print(state["messages"][-1].content)
+          
+          # Check if order is finished
+          if state.get("finished", False):
+              break
+  
+  # Execute this line to start the interactive demo
+  # run_agent_demo()
+  print("Agent demo ready to run.")
+#+end_src
+
+* Example Interaction
+
+Here's an example of interacting with our barista agent:
+
+#+begin_src
+Customer: Hi, I'd like to see the menu please.
+
+Barista Bot: I'd be happy to help you with that! Let me show you our menu:
+
+Coffee Options:
+- Espresso (small: $2.50, medium: $3.00, large: $3.50)
+- Americano (small: $2.75, medium: $3.25, large: $3.75)
+- Latte (small: $3.50, medium: $4.00, large: $4.50)
+- Cappuccino (small: $3.50, medium: $4.00, large: $4.50)
+- Mocha (small: $4.00, medium: $4.50, large: $5.00)
+
+Tea Options:
+- Black Tea (small: $2.00, medium: $2.50, large: $3.00)
+- Green Tea (small: $2.00, medium: $2.50, large: $3.00)
+- Herbal Tea (small: $2.25, medium: $2.75, large: $3.25)
+- Chai Latte (small: $3.50, medium: $4.00, large: $4.50)
+
+Pastries:
+- Croissant: $2.50
+- Muffin: $3.00
+- Scone: $2.75
+- Cookie: $1.50
+
+We also offer various milk options (whole, skim, oat, almond, soy) and syrups (vanilla, caramel, hazelnut, chocolate).
+
+What would you like to order today?
+
+Customer: I'll have a large latte with oat milk and a croissant please.
+
+Barista Bot: Great choice! I've added a large latte with oat milk and a croissant to your order. 
+
+Your order so far:
+1. Large latte with oat milk - $4.50
+2. Croissant - $2.50
+
+Total: $7.00
+
+Would you like anything else today?
+
+Customer: No, that's all for today. Thanks!
+
+Barista Bot: Perfect! Here's your final order:
+
+1. Large latte with oat milk - $4.50
+2. Croissant - $2.50
+
+Total: $7.00
+
+Your order has been confirmed and will be ready shortly. Thank you for visiting our café today! Enjoy your latte and croissant!
+#+end_src
+
+* Conclusion
+
+In this notebook, we've learned how to build an agentic system using LangGraph that can:
+
+1. Integrate tools with LLMs for enhanced capabilities
+2. Maintain conversation state and track user orders
+3. Create conditional routing for agent decision-making
+4. Handle tool calls and tool responses seamlessly
+5. Visualize the agent's decision flow
+
+This pattern can be extended to build more complex agentic systems for a variety of applications, from customer service bots to productivity assistants and more.
+
+* Next Steps
+
+To build on this foundation, you could:
+
+1. Add more tools like payment processing or loyalty program integration
+2. Implement error handling and recovery strategies
+3. Add personalization based on customer history
+4. Integrate with real backend systems and databases
+5. Add multimodal capabilities (images of menu items, etc.)
