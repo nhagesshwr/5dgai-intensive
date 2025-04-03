@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-from dotenv import load_dotenv
 import os
 from google import genai
 from google.genai import types
 
-load_dotenv()
 API_KEY = os.getenv("AI_STUDIO_API_KEY")
 genai.configure(api_key=API_KEY)
 
