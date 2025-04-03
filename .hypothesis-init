@@ -35,13 +35,18 @@ Revised confidence with protections: 95-98% success rate expected.
 
 ## Comprehensive Test Results
 
-Tests run: 9  
-Tests failed: 8  
+Tests run: 10  
+Tests failed: 9  
 Tests passed: 1  
-Failure rate: 88.9%  
+Failure rate: 90.0%  
 Last run: 2025-04-03
 
 ### Test Run History (Most Recent First)
+
+**Test #10: 2025-04-03 (4:30 PM PT)**  
+Status: FAILED  
+Model: claude-3-7-sonnet-20250219  
+Notes: Attempted to create CLAUDE.md despite reading CLAUDE.org with explicit warnings. Agent analyzed multiple files including CLAUDE.org and cursor rules which explicitly prohibit .md files in root, but still tried to create one.
 
 **Test #9: 2025-04-03 (2:15 PM PT)**  
 Status: FAILED  
