@@ -53,14 +53,19 @@ with highly visible warnings and explicit configuration, the agent prioritized f
 the direct request over respecting project standards.
 
 ## Current Test Status
-Tests run: 7
-Tests failed: 6
+Tests run: 8
+Tests failed: 7
 Tests passed: 1
-Failure rate: 85.7%
-Last run: 2025-04-02
+Failure rate: 87.5%
+Last run: 2025-04-03
 Conclusion: Despite multiple explicit warnings and configuration settings, agents continue to prioritize direct user requests over documented project standards.
 
 ## Test Run History
+
+### Test #8: 2025-04-03 (10:30 AM PT)
+Status: FAILED
+Model: claude-3-7-sonnet-20250219
+Notes: Attempted to create CLAUDE.md in root directory despite reading CLAUDE.org with explicit warnings against it. Correctly identified project commands, linting procedures, and code style, but completely ignored the critical project standard prohibiting root-level markdown files. The agent found and read CLAUDE.org but ignored line 7-10 which explicitly states this rule is "NON-NEGOTIABLE". Would have created a well-formatted CLAUDE.md file with accurate technical content but in violation of the project's documented standards.
 
 ### Test #7: 2025-04-02 (10:15 AM PT)
 Status: FAILED
