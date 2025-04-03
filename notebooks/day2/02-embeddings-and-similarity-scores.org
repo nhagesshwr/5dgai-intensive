@@ -1,0 +1,245 @@
+#+TITLE: Exploring Text Similarity with Embeddings
+#+AUTHOR: Claude
+#+DATE: 2025-04-03
+#+PROPERTY: header-args:python :session *python* :results output drawer
+
+* Introduction
+
+This notebook explores text similarity using embeddings, with a particular focus on French verbs.
+We'll use the Gemini embeddings API to generate vector representations of words and analyze their semantic relationships.
+
+* Setting Up the Environment
+
+First, let's set up our environment and configure the API client:
+
+#+begin_src python
+  # Import necessary libraries
+  import os
+  import json
+  import numpy as np
+  import pandas as pd
+  import matplotlib.pyplot as plt
+  from dotenv import load_dotenv
+  import google.generativeai as genai
+  from sklearn.metrics.pairwise import cosine_similarity
+  
+  # Load environment variables
+  load_dotenv()
+  GOOGLE_API_KEY = os.getenv("AI_STUDIO_API_KEY")
+  
+  # Configure the generative AI client
+  genai.configure(api_key=GOOGLE_API_KEY)
+  client = genai.Client()
+  
+  # List available embedding models
+  embedding_models = []
+  for model in client.models.list():
+      if "embedContent" in model.supported_actions:
+          embedding_models.append(model.name)
+  
+  print("Available embedding models:")
+  for model in embedding_models:
+      print(f"- {model}")
+#+end_src
+
+* Working with French Verb Embeddings
+
+Let's load our test set of French verbs:
+
+#+begin_src python
+  # Path to French verbs file
+  repo_root = os.path.abspath(os.path.join(os.path.dirname("__file__"), "../../"))
+  verbs_path = os.path.join(repo_root, "resources", "verbs", "test_french_verbs.txt")
+  
+  # Load verbs
+  with open(verbs_path, "r", encoding="utf-8") as f:
+      verbs = [line.strip() for line in f.readlines() if line.strip()]
+  
+  print(f"Loaded {len(verbs)} French verbs:")
+  print(", ".join(verbs))
+#+end_src
+
+Now, let's generate embeddings for these verbs:
+
+#+begin_src python
+  # Choose an embedding model
+  embedding_model = embedding_models[0] if embedding_models else "embedding-001"
+  print(f"Using model: {embedding_model}")
+  
+  # Function to generate embeddings
+  def get_embedding(text, model=embedding_model):
+      try:
+          response = client.models.embed_content(
+              model=model,
+              content={"text": text}
+          )
+          return response.embedding.values
+      except Exception as e:
+          print(f"Error generating embedding for '{text}': {e}")
+          # Return placeholder in case of error
+          return [0.0] * 768  # Typical embedding dimension
+  
+  # Generate embeddings for all verbs
+  print("Generating embeddings...")
+  embeddings = {}
+  for verb in verbs:
+      embedding = get_embedding(verb)
+      embeddings[verb] = embedding
+      
+      # Print dimensions of first embedding
+      if len(embeddings) == 1:
+          print(f"Sample embedding for '{verb}':")
+          print(f"  Dimensions: {len(embedding)}")
+          print(f"  First 5 values: {embedding[:5]}")
+  
+  print(f"Generated embeddings for {len(embeddings)} verbs")
+#+end_src
+
+* Calculating Similarity Between Verbs
+
+Now that we have the embeddings, let's calculate the similarity between all pairs of verbs:
+
+#+begin_src python
+  # Create a matrix of all embeddings
+  embedding_matrix = np.array([embeddings[verb] for verb in verbs])
+  
+  # Calculate cosine similarity between all pairs
+  similarity_matrix = cosine_similarity(embedding_matrix)
+  
+  # Display as a DataFrame for better visualization
+  similarity_df = pd.DataFrame(similarity_matrix, index=verbs, columns=verbs)
+  
+  # Print a sample of the similarity matrix
+  print("Sample of similarity matrix:")
+  print(similarity_df.iloc[:5, :5])
+#+end_src
+
+* Visualizing Verb Similarities
+
+Let's create a heatmap to visualize the similarity matrix:
+
+#+begin_src python
+  plt.figure(figsize=(12, 10))
+  plt.imshow(similarity_matrix, cmap='viridis')
+  plt.colorbar(label='Cosine Similarity')
+  
+  # Add labels
+  plt.xticks(np.arange(len(verbs)), verbs, rotation=90)
+  plt.yticks(np.arange(len(verbs)), verbs)
+  
+  plt.title('Semantic Similarity Between French Verbs')
+  plt.tight_layout()
+  
+  # Save the figure
+  output_dir = os.path.join(repo_root, "data", "embeddings")
+  os.makedirs(output_dir, exist_ok=True)
+  plot_path = os.path.join(output_dir, "verb_similarity_heatmap.png")
+  plt.savefig(plot_path)
+  
+  print(f"Heatmap saved to {plot_path}")
+  
+  # Also display the plot
+  plt.show()
+#+end_src
+
+* Finding Most Similar Pairs
+
+Let's find the most similar pairs of verbs in our dataset:
+
+#+begin_src python
+  # Create a list of all pairs and their similarities
+  pairs = []
+  for i in range(len(verbs)):
+      for j in range(i+1, len(verbs)):
+          pairs.append((verbs[i], verbs[j], similarity_matrix[i][j]))
+  
+  # Sort by similarity (descending)
+  pairs.sort(key=lambda x: -x[2])
+  
+  # Print the most similar pairs
+  print("Most similar verb pairs:")
+  for pair in pairs[:5]:
+      verb1, verb2, similarity = pair
+      print(f"• {verb1} — {verb2}: {similarity:.4f}")
+  
+  # Print the least similar pairs
+  print("\nLeast similar verb pairs:")
+  for pair in pairs[-5:]:
+      verb1, verb2, similarity = pair
+      print(f"• {verb1} — {verb2}: {similarity:.4f}")
+#+end_src
+
+* Analyzing Specific Verbs
+
+Let's look more closely at a specific verb, for example "être" (to be):
+
+#+begin_src python
+  # Find the index of "être"
+  etre_index = verbs.index("être")
+  
+  # Get similarities with all other verbs
+  etre_similarities = []
+  for i, verb in enumerate(verbs):
+      if i != etre_index:
+          etre_similarities.append((verb, similarity_matrix[etre_index][i]))
+  
+  # Sort by similarity (descending)
+  etre_similarities.sort(key=lambda x: -x[1])
+  
+  print("Verbs most similar to 'être' (to be):")
+  for verb, similarity in etre_similarities[:5]:
+      print(f"• {verb}: {similarity:.4f}")
+#+end_src
+
+* Saving Embeddings for Future Use
+
+Finally, let's save our embeddings for future use:
+
+#+begin_src python
+  # Save as JSON
+  json_path = os.path.join(output_dir, "french_verb_embeddings.json")
+  
+  # We need to convert numpy arrays to lists for JSON serialization
+  json_embeddings = {verb: embeddings[verb].tolist() for verb in embeddings}
+  
+  with open(json_path, "w", encoding="utf-8") as f:
+      json.dump(json_embeddings, f, ensure_ascii=False, indent=2)
+  
+  print(f"Embeddings saved to {json_path}")
+  
+  # Also save the similarity matrix
+  similarity_json_path = os.path.join(output_dir, "verb_similarity_matrix.json")
+  similarity_dict = {}
+  
+  for i, verb1 in enumerate(verbs):
+      similarity_dict[verb1] = {}
+      for j, verb2 in enumerate(verbs):
+          similarity_dict[verb1][verb2] = float(similarity_matrix[i][j])
+  
+  with open(similarity_json_path, "w", encoding="utf-8") as f:
+      json.dump(similarity_dict, f, ensure_ascii=False, indent=2)
+  
+  print(f"Similarity matrix saved to {similarity_json_path}")
+#+end_src
+
+* Conclusion
+
+In this notebook, we explored how to:
+
+1. Generate embeddings for French verbs using Gemini's embedding API
+2. Calculate similarity between words using cosine similarity
+3. Visualize relationships between words using a heatmap
+4. Identify most and least similar word pairs
+5. Save embeddings and similarity metrics for future use
+
+These techniques can be applied to any domain-specific vocabulary, allowing us to understand semantic relationships between words or phrases.
+
+* Next Steps
+
+To build on this foundation, you could:
+
+1. Compare with embeddings from different languages
+2. Expand to phrases or sentences rather than single words
+3. Use embeddings for search or recommendation systems
+4. Cluster words based on their embedding similarity
+5. Apply dimensionality reduction techniques like t-SNE to visualize in 2D/3D
