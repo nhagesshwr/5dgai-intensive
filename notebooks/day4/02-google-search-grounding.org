@@ -1,0 +1,143 @@
+#+TITLE: Google Search Grounding with Gemini
+#+AUTHOR: Claude
+#+DATE: 2025-04-03
+#+PROPERTY: header-args:python :session *python* :results output drawer
+
+* Introduction
+
+This notebook demonstrates how to use Google Search Grounding with Gemini models to provide up-to-date information in responses.
+
+* Setting Up the Environment
+
+First, let's import the necessary libraries and configure our environment:
+
+#+begin_src python
+  # Import necessary libraries
+  import os
+  from dotenv import load_dotenv
+  import google.generativeai as genai
+  from google.generativeai import types
+  from IPython.display import Markdown
+  import json
+  from pprint import pprint
+
+  # Load API key from environment variables
+  load_dotenv()
+  API_KEY = os.getenv("AI_STUDIO_API_KEY")
+
+  # Configure the generative AI client
+  genai.configure(api_key=API_KEY)
+#+end_src
+
+* Basic Querying with Gemini
+
+Let's start with a basic query to Gemini without search grounding:
+
+#+begin_src python
+  # Create a client
+  client = genai.Client()
+
+  # Function to query Gemini without search grounding
+  def query_without_grounding():
+      response = client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents="When and where is Billie Eilish's next concert?",
+      )
+      return response.candidates[0]
+
+  # Execute the query
+  response = query_without_grounding()
+  print(response.content.parts[0].text)
+#+end_src
+
+* Enabling Search Grounding
+
+Now, let's enable search grounding to get up-to-date information:
+
+#+begin_src python
+  # Configure search grounding
+  config_with_search = types.GenerateContentConfig(
+      tools=[types.Tool(google_search=types.GoogleSearch())],
+  )
+
+  # Function to query with search grounding
+  def query_with_grounding():
+      response = client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents="When and where is Billie Eilish's next concert?",
+          config=config_with_search,
+      )
+      return response.candidates[0]
+
+  # Execute the query with grounding
+  rc = query_with_grounding()
+  print(rc.content.parts[0].text)
+#+end_src
+
+* Examining Grounding Metadata
+
+Let's examine the grounding metadata to see the sources:
+
+#+begin_src python
+  # Retry if needed until we get grounding data
+  while not rc.grounding_metadata.grounding_supports or not rc.grounding_metadata.grounding_chunks:
+      # If incomplete grounding data was returned, retry
+      rc = query_with_grounding()
+
+  # Print the grounding chunks (web sources)
+  print("Web Sources Used for Grounding:")
+  chunks = rc.grounding_metadata.grounding_chunks
+  for chunk in chunks:
+      print(f'{chunk.web.title}: {chunk.web.uri}')
+#+end_src
+
+* Analyzing Grounding Support Details
+
+Let's look at the detailed support information:
+
+#+begin_src python
+  # Print detailed grounding support information
+  print("\nGrounding Support Details:")
+  supports = rc.grounding_metadata.grounding_supports
+  for support in supports:
+      pprint(support.to_json_dict())
+#+end_src
+
+* Asking More Complex Questions
+
+Let's try a more complex question that requires up-to-date information:
+
+#+begin_src python
+  # Function for complex queries
+  def complex_query(question):
+      response = client.models.generate_content(
+          model='gemini-2.0-flash',
+          contents=question,
+          config=config_with_search,
+      )
+      return response.candidates[0]
+  
+  # Query about recent events
+  question = "What were the major tech announcements at the most recent Google I/O event?"
+  result = complex_query(question)
+  
+  print(result.content.parts[0].text)
+  
+  # Show sources
+  if hasattr(result, 'grounding_metadata') and result.grounding_metadata.grounding_chunks:
+      print("\nSources:")
+      for chunk in result.grounding_metadata.grounding_chunks:
+          if hasattr(chunk, 'web'):
+              print(f'- {chunk.web.title}: {chunk.web.uri}')
+#+end_src
+
+* Conclusion
+
+Google Search Grounding significantly enhances the capabilities of Gemini models by providing:
+
+1. Real-time information for timely queries
+2. Verifiable sources for factual information
+3. Reduced hallucinations by grounding responses in actual web content
+4. Transparency about information sources
+
+This capability is particularly useful for applications that need current information, such as event planning, news summaries, and answering questions about rapidly evolving topics.
