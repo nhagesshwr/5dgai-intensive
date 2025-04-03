@@ -31,10 +31,10 @@ the elegance of Lisp syntax and the power of Org-mode's tangling capabilities.
 
 * What You'll Learn in the Course
 
-- *Day 1*: Foundations of Generative AI and Gemini models
-- *Day 2*: Prompt engineering techniques and best practices
-- *Day 3*: Building with Gemini API and fine-tuning models
-- *Day 4*: Multimodal applications and responsible AI
+- *Day 1*: Foundational Large Language Models & Text Generation + Prompt Engineering 
+- *Day 2*: Embeddings and Vector Stores/Databases
+- *Day 3*: Generative AI Agents and Agents Companion
+- *Day 4*: Domain-Specific LLMs and Fine-tuning
 - *Day 5*: Production deployment and advanced use cases
 
 * Quick Start Guide
@@ -98,12 +98,13 @@ the elegance of Lisp syntax and the power of Org-mode's tangling capabilities.
 
 * Core Features Demonstrated
 
-- Text generation with Gemini
-- Chat conversations and context management
-- Prompt engineering techniques
-- System instructions and parameter tuning
-- Multimodal inputs (coming in day 4)
-- RAG implementation examples
+- Text generation with Gemini models
+- Prompt engineering techniques and evaluation
+- Embeddings and vector similarity search
+- RAG (Retrieval Augmented Generation) implementations
+- Function calling and agentic systems with LangGraph
+- Fine-tuning custom models for domain-specific tasks
+- Google Search grounding for real-time information
 
 * Using the Gemini Client
 
@@ -132,35 +133,35 @@ Our simplified client makes it easy to interact with Gemini models using Hy:
 
 * Course Day-by-Day Navigation
 
-** [[file:notebooks/day1/01-introduction.org][Day 1: Foundation Concepts]]
+** [[file:notebooks/day1/01-introduction.org][Day 1: Foundational LLMs & Prompt Engineering]]
 
-- Foundation concepts and initial exercises
-- Introduction to LLMs and Gemini models
-- Basic text generation and prompt techniques
+- Foundational Large Language Models and Text Generation
+- Prompt Engineering techniques and best practices
+- Codelabs: Prompting fundamentals, Evaluation and structured data
 
-** [[file:notebooks/day2/01-prompt-engineering.org][Day 2: Prompt Engineering]]
+** [[file:notebooks/day2/01-prompt-engineering.org][Day 2: Embeddings and Vector Stores]]
 
-- Prompt engineering deep dives
-- Vector embeddings and similarity
-- Improving model outputs
+- Embeddings concepts and applications
+- Vector databases and similarity search
+- Codelabs: RAG question-answering system, Text similarity with embeddings, Neural classification with Keras
 
-** [[file:notebooks/day3/01-building-with-api.org][Day 3: Building with APIs]]
+** [[file:notebooks/day3/01-building-with-api.org][Day 3: Generative AI Agents]]
 
-- Building practical applications
-- System instructions and parameter tuning
-- Error handling and optimizations
+- Core components of AI agents
+- Iterative development process for agents
+- Codelabs: Talk to a database with function calling, Build an agentic ordering system in LangGraph
 
-** [[file:notebooks/day4/01-multimodal-applications.org][Day 4: Multimodal Applications]]
+** [[file:notebooks/day4/01-fine-tuning-a-custom-model.org][Day 4: Domain-Specific LLMs]]
 
-- Working with images, audio, and video
-- Multimodal embeddings 
-- Responsible AI considerations
+- Creating specialized LLMs like SecLM and MedLM/Med-PaLM
+- Fine-tuning models for domain-specific tasks
+- Codelabs: [[file:notebooks/day4/01-fine-tuning-a-custom-model.org][Tune a Gemini model for a custom task]], [[file:notebooks/day4/02-google-search-grounding.org][Use Google Search data in generation]]
 
 ** [[file:notebooks/day5/01-production-deployment.org][Day 5: Production Deployment]]
 
 - Advanced techniques for production
-- Optimization and scaling
-- Real-world implementation strategies
+- Optimization and scaling strategies
+- Real-world implementation case studies
 
 ** Get Help & Community
 
@@ -185,11 +186,12 @@ Our simplified client makes it easy to interact with Gemini models using Hy:
 #+ATTR_HTML: :width 100% :alt Generative AI Course Resources
 [[file:images/gemini/network-visualizations/wave-pattern-blue-purple-gemini.jpeg]]
 
-- Official Course Slides: See ~resources/~ directory  
+- Whitepapers: See ~whitepapers/~ directory for all course whitepapers and endnotes
 - Google AI Studio: https://makersuite.google.com/
 - Gemini API Documentation: https://ai.google.dev/
-- Kaggle Competitions: https://kaggle.com/
-- Course Livestreams: https://www.youtube.com/playlist?list=PLqFaTIg4myu-lbBTrUpoQQIzZZxvrOaP5
+- Kaggle Codelabs: https://kaggle.com/learn/5-day-genai-intensive 
+- Course Livestreams: See ~livestreams/~ directory or YouTube playlist
+- NotebookLM: https://notebooklm.google/ (for interactive whitepaper exploration)
 
 ** License
 
