@@ -137,31 +137,43 @@ Our simplified client makes it easy to interact with Gemini models using Hy:
 
 - Foundational Large Language Models and Text Generation
 - Prompt Engineering techniques and best practices
-- Codelabs: Prompting fundamentals, Evaluation and structured data
+- Codelabs: 
+  - [[https://www.kaggle.com/code/markishere/day-1-prompting][Prompting fundamentals]]
+  - [[https://www.kaggle.com/code/markishere/day-1-evaluation-and-structured-output][Evaluation and structured output]]
 
 ** [[file:notebooks/day2/01-prompt-engineering.org][Day 2: Embeddings and Vector Stores]]
 
 - Embeddings concepts and applications
 - Vector databases and similarity search
-- Codelabs: RAG question-answering system, Text similarity with embeddings, Neural classification with Keras
+- Codelabs:
+  - [[https://www.kaggle.com/code/markishere/day-2-document-q-a-with-rag][Document Q&A with RAG]]
+  - [[https://www.kaggle.com/code/markishere/day-2-embeddings-and-similarity-scores][Embeddings and similarity scores]]
+  - [[https://www.kaggle.com/code/markishere/day-2-classifying-embeddings-with-keras][Classifying embeddings with Keras]]
 
 ** [[file:notebooks/day3/01-building-with-api.org][Day 3: Generative AI Agents]]
 
 - Core components of AI agents
 - Iterative development process for agents
-- Codelabs: Talk to a database with function calling, Build an agentic ordering system in LangGraph
+- Codelabs:
+  - [[https://www.kaggle.com/code/markishere/day-3-building-an-agent-with-langgraph][Building an agent with LangGraph]]
+  - [[https://www.kaggle.com/code/markishere/day-3-function-calling-with-the-gemini-api][Function calling with Gemini API]]
 
 ** [[file:notebooks/day4/01-fine-tuning-a-custom-model.org][Day 4: Domain-Specific LLMs]]
 
 - Creating specialized LLMs like SecLM and MedLM/Med-PaLM
 - Fine-tuning models for domain-specific tasks
-- Codelabs: [[file:notebooks/day4/01-fine-tuning-a-custom-model.org][Tune a Gemini model for a custom task]], [[file:notebooks/day4/02-google-search-grounding.org][Use Google Search data in generation]]
+- Codelabs:
+  - [[https://www.kaggle.com/code/markishere/day-4-fine-tuning-a-custom-model][Fine-tuning a custom model]]
+  - [[https://www.kaggle.com/code/markishere/day-4-google-search-grounding][Google Search grounding]]
 
-** [[file:notebooks/day5/01-production-deployment.org][Day 5: Production Deployment]]
+** [[file:notebooks/day5/01-mlops-for-generative-ai.org][Day 5: MLOps for Generative AI]]
 
-- Advanced techniques for production
-- Optimization and scaling strategies
-- Real-world implementation case studies
+- MLOps practices adapted for Generative AI
+- Vertex AI tools for foundation models
+- AgentOps for agentic applications
+- Resources:
+  - [[https://www.kaggle.com/whitepaper-operationalizing-generative-ai-on-vertex-ai-using-mlops][Whitepaper: Operationalizing Generative AI on Vertex AI using MLOps]]
+  - [[https://github.com/GoogleCloudPlatform/agent-starter-pack][Agent Starter Pack]] (goo.gle/agent-starter-pack)
 
 ** Get Help & Community
 
@@ -193,24 +205,6 @@ Our simplified client makes it easy to interact with Gemini models using Hy:
 - Course Livestreams: See ~livestreams/~ directory or YouTube playlist
 - NotebookLM: https://notebooklm.google/ (for interactive whitepaper exploration)
 
-*** Kaggle Codelab Links
-
-*Day 1:*
-- [[https://www.kaggle.com/code/markishere/day-1-prompting][Prompting fundamentals]]
-- [[https://www.kaggle.com/code/markishere/day-1-evaluation-and-structured-output][Evaluation and structured output]]
-
-*Day 2:*
-- [[https://www.kaggle.com/code/markishere/day-2-document-q-a-with-rag][Document Q&A with RAG]]
-- [[https://www.kaggle.com/code/markishere/day-2-embeddings-and-similarity-scores][Embeddings and similarity scores]]
-- [[https://www.kaggle.com/code/markishere/day-2-classifying-embeddings-with-keras][Classifying embeddings with Keras]]
-
-*Day 3:*
-- [[https://www.kaggle.com/code/markishere/day-3-building-an-agent-with-langgraph][Building an agent with LangGraph]]
-- [[https://www.kaggle.com/code/markishere/day-3-function-calling-with-the-gemini-api][Function calling with Gemini API]]
-
-*Day 4:*
-- [[https://www.kaggle.com/code/markishere/day-4-fine-tuning-a-custom-model][Fine-tuning a custom model]]
-- [[https://www.kaggle.com/code/markishere/day-4-google-search-grounding][Google Search grounding]]
 
 ** License
 

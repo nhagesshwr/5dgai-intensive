@@ -1,0 +1,49 @@
+#+TITLE: 5-Day Gen AI Intensive - Day 5: MLOps for Generative AI
+#+AUTHOR: Jason Walsh
+#+EMAIL: j@wal.sh
+#+DATE: April 5, 2025
+
+* 🎒 Final Assignment: MLOps for Generative AI
+
+This is a placeholder notebook for Day 5 of the 5-Day Gen AI Intensive course.
+
+** Overview
+
+- Listen to the summary podcast episode for this unit
+- Read the [[https://www.kaggle.com/whitepaper-operationalizing-generative-ai-on-vertex-ai-using-mlops][MLOps for Generative AI whitepaper]]
+- Go through the [[https://github.com/GoogleCloudPlatform/agent-starter-pack][Agent Starter Pack repository]] (goo.gle/agent-starter-pack)
+- Optional: Add the whitepaper to NotebookLM for interactive conversation
+
+** 💡 What You'll Learn
+
+You'll discover how to adapt MLOps practices for Generative AI and leverage Vertex AI's tools for:
+- Foundation models 
+- Generative AI applications
+- AgentOps for agentic applications
+
+** Key Topics
+
+*** Adapting MLOps for Generative AI
+- Unique challenges of Gen AI MLOps
+- Monitoring and evaluation frameworks
+- Deployment strategies
+
+*** Vertex AI Tools for Foundation Models
+- Model registry and versioning
+- Deployment and serving infrastructure
+- Monitoring and observability
+
+*** AgentOps for Agentic Applications
+- Agent lifecycle management
+- Testing and evaluation
+- Performance monitoring
+
+** Resources
+
+- [[https://www.kaggle.com/whitepaper-operationalizing-generative-ai-on-vertex-ai-using-mlops][Whitepaper: Operationalizing Generative AI on Vertex AI using MLOps]]
+- [[https://github.com/GoogleCloudPlatform/agent-starter-pack][Agent Starter Pack]] (goo.gle/agent-starter-pack)
+- Google Cloud Vertex AI Documentation
+
+** Notes from Livestream
+
+(Add notes from the Day 5 livestream here)
