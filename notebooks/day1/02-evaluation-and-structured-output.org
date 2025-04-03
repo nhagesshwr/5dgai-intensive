@@ -1,0 +1,47 @@
+#+TITLE: Evaluation and Structured Output
+#+AUTHOR: Claude
+#+DATE: 2025-04-03
+#+PROPERTY: header-args:python :session *python* :results output drawer
+
+* Introduction
+
+This notebook demonstrates how to evaluate LLM outputs and work with structured data using the Gemini API.
+
+* Setup
+
+#+begin_src python
+  # Import necessary libraries
+  import os
+  import json
+  from dotenv import load_dotenv
+  import google.generativeai as genai
+  
+  # Load API key
+  load_dotenv()
+  API_KEY = os.getenv("AI_STUDIO_API_KEY")
+  
+  # Configure the generative AI client
+  genai.configure(api_key=API_KEY)
+  
+  # Create a model instance
+  model = genai.GenerativeModel('gemini-2.0-flash')
+  
+  print("Setup complete!")
+#+end_src
+
+* Placeholder for Future Implementation
+
+This notebook is a placeholder for the Kaggle codelab: 
+[[https://www.kaggle.com/code/markishere/day-1-evaluation-and-structured-output][Day 1: Evaluation and Structured Output]]
+
+Key topics that will be covered:
+- Evaluating LLM outputs
+- Working with structured data formats (JSON, etc.)
+- Using autoraters to assess model responses
+- Implementing evaluation metrics
+
+* Reference Materials
+
+For more information, see:
+- [[https://www.kaggle.com/code/markishere/day-1-evaluation-and-structured-output][Original Kaggle notebook]]
+- Google AI documentation: https://ai.google.dev/

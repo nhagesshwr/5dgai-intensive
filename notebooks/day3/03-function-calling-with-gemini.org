@@ -1,0 +1,50 @@
+#+TITLE: Function Calling with Gemini API
+#+AUTHOR: Claude
+#+DATE: 2025-04-03
+#+PROPERTY: header-args:python :session *python* :results output drawer
+
+* Introduction
+
+This notebook demonstrates how to use function calling with the Gemini API to connect LLMs to external tools and databases.
+
+* Setup
+
+#+begin_src python
+  # Import necessary libraries
+  import os
+  import json
+  import sqlite3
+  from dotenv import load_dotenv
+  import google.generativeai as genai
+  from google.generativeai.types import Tool, FunctionDeclaration
+  
+  # Load API key
+  load_dotenv()
+  API_KEY = os.getenv("AI_STUDIO_API_KEY")
+  
+  # Configure the generative AI client
+  genai.configure(api_key=API_KEY)
+  
+  # Create a model instance
+  model = genai.GenerativeModel('gemini-2.0-flash')
+  
+  print("Setup complete!")
+#+end_src
+
+* Placeholder for Future Implementation
+
+This notebook is a placeholder for the Kaggle codelab: 
+[[https://www.kaggle.com/code/markishere/day-3-function-calling-with-the-gemini-api][Day 3: Function Calling with the Gemini API]]
+
+Key topics that will be covered:
+- Defining function schemas for the LLM
+- Connecting LLMs to databases with SQL
+- Creating natural language interfaces to structured data
+- Implementing function calling for various tools
+- Error handling for function calling
+
+* Reference Materials
+
+For more information, see:
+- [[https://www.kaggle.com/code/markishere/day-3-function-calling-with-the-gemini-api][Original Kaggle notebook]]
+- Google AI documentation: https://ai.google.dev/docs/function_calling

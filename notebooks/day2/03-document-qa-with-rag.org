@@ -1,0 +1,49 @@
+#+TITLE: Document Q&A with RAG
+#+AUTHOR: Claude
+#+DATE: 2025-04-03
+#+PROPERTY: header-args:python :session *python* :results output drawer
+
+* Introduction
+
+This notebook demonstrates how to implement Retrieval Augmented Generation (RAG) for question answering over custom documents.
+
+* Setup
+
+#+begin_src python
+  # Import necessary libraries
+  import os
+  import json
+  import numpy as np
+  from dotenv import load_dotenv
+  import google.generativeai as genai
+  
+  # Load API key
+  load_dotenv()
+  API_KEY = os.getenv("AI_STUDIO_API_KEY")
+  
+  # Configure the generative AI client
+  genai.configure(api_key=API_KEY)
+  
+  # Create a model instance
+  model = genai.GenerativeModel('gemini-2.0-flash')
+  
+  print("Setup complete!")
+#+end_src
+
+* Placeholder for Future Implementation
+
+This notebook is a placeholder for the Kaggle codelab: 
+[[https://www.kaggle.com/code/markishere/day-2-document-q-a-with-rag][Day 2: Document Q&A with RAG]]
+
+Key topics that will be covered:
+- Building a RAG system for question answering
+- Document chunking and embedding
+- Vector similarity search
+- Prompt engineering for RAG
+- Evaluating RAG responses
+
+* Reference Materials
+
+For more information, see:
+- [[https://www.kaggle.com/code/markishere/day-2-document-q-a-with-rag][Original Kaggle notebook]]
+- Google AI documentation: https://ai.google.dev/

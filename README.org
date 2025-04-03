@@ -193,6 +193,25 @@ Our simplified client makes it easy to interact with Gemini models using Hy:
 - Course Livestreams: See ~livestreams/~ directory or YouTube playlist
 - NotebookLM: https://notebooklm.google/ (for interactive whitepaper exploration)
 
+*** Kaggle Codelab Links
+
+*Day 1:*
+- [[https://www.kaggle.com/code/markishere/day-1-prompting][Prompting fundamentals]]
+- [[https://www.kaggle.com/code/markishere/day-1-evaluation-and-structured-output][Evaluation and structured output]]
+
+*Day 2:*
+- [[https://www.kaggle.com/code/markishere/day-2-document-q-a-with-rag][Document Q&A with RAG]]
+- [[https://www.kaggle.com/code/markishere/day-2-embeddings-and-similarity-scores][Embeddings and similarity scores]]
+- [[https://www.kaggle.com/code/markishere/day-2-classifying-embeddings-with-keras][Classifying embeddings with Keras]]
+
+*Day 3:*
+- [[https://www.kaggle.com/code/markishere/day-3-building-an-agent-with-langgraph][Building an agent with LangGraph]]
+- [[https://www.kaggle.com/code/markishere/day-3-function-calling-with-the-gemini-api][Function calling with Gemini API]]
+
+*Day 4:*
+- [[https://www.kaggle.com/code/markishere/day-4-fine-tuning-a-custom-model][Fine-tuning a custom model]]
+- [[https://www.kaggle.com/code/markishere/day-4-google-search-grounding][Google Search grounding]]
+
 ** License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
