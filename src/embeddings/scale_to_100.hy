@@ -245,13 +245,13 @@
   ;; Save embeddings
   (setv embeddings-file (os.path.join scale-dir "embeddings_100.json"))
   (with [f (open embeddings-file "w" :encoding "utf-8")]
-    (setv embeddings-data (get results 'embeddings'))
+    (setv embeddings-data (get results 'embeddings))
     (json.dump embeddings-data f :ensure-ascii False :indent 2))
   
   ;; Save stats  
   (setv stats-file (os.path.join scale-dir "stats_100.json"))
   (with [f (open stats-file "w" :encoding "utf-8")]  
-    (setv stats-data (get results 'stats'))
+    (setv stats-data (get results 'stats))
     (json.dump stats-data f :ensure-ascii False :indent 2))
   
   (print "\n✅ Processing complete!")
