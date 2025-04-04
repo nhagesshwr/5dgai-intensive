@@ -18,8 +18,9 @@
 
 ;; Import GenAI - THE ONE TRUE WAY
 (try
-  (import [google [genai]])
-  (import [google.genai [types]])
+  (import google.genai)
+  (import google.genai.types)
+  (setv genai google.genai)  ; Alias for simplicity
   (except [e ImportError]
     (print "❌ Error: google-genai package not installed!")
     (print "  Try: pip install google-genai==1.7.0")
@@ -75,11 +76,10 @@
   (print f"  Getting embedding for '{verb}'...")
   
   (try
-    (import [google.genai [types]])
     (setv response (client.models.embed_content
                      :model "models/text-embedding-004"
                      :contents verb
-                     :config (types.EmbedContentConfig :task_type "semantic_similarity")))
+                     :config (google.genai.types.EmbedContentConfig :task_type "semantic_similarity")))
     (setv embedding (. response embedding values))
     (print f"  ✓ Got {(len embedding)} dimensions")
     embedding
