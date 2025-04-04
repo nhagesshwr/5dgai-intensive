@@ -9,8 +9,9 @@
 (setv API-KEY (or (os.getenv "AI_STUDIO_API_KEY") 
                  (os.getenv "GOOGLE_API_KEY")))
 
-;; Import GenAI
-(import google.generativeai)
+;; Import GenAI - THE ONE TRUE WAY
+(import [google [genai]])
+(import [google.genai [types]])
 ;; Define helper functions from verb_scaling.hy
 (defn load-verbs [path]
   "Load verbs from file"
