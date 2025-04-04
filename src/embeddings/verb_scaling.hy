@@ -292,6 +292,61 @@
     (json.dump (get results "embeddings") f :ensure-ascii False :indent 2))
   (print f"Embeddings saved to: {embeddings-file}"))
 
+(defn demonstrate-idempotency [verbs]
+  "Demonstrate the idempotency of the caching mechanism by running twice"
+  (print "\n🔄 IDEMPOTENCY DEMONSTRATION")
+  (print "============================")
+  
+  ;; Setup paths
+  (setv repo-root (os.path.dirname (os.path.dirname (os.path.dirname __file__))))
+  (setv output-dir (os.path.join repo-root "data" "embeddings"))
+  (setv cache-dir (os.path.join output-dir "cache"))
+  (os.makedirs cache-dir :exist-ok True)
+  
+  ;; Initialize API client
+  (google.generativeai.configure :api_key API-KEY)
+  (setv client (google.generativeai.Client :api_key API-KEY))
+  
+  ;; Get a model name
+  (setv embedding-models (get-embedding-models client))
+  (setv model-name (if (and embedding-models (> (len embedding-models) 0))
+                       (get embedding-models 0)
+                       "embedding-001"))
+  
+  ;; Pick first verb to test with
+  (setv test-verb (first verbs))
+  (print f"\nTesting idempotency with verb: '{test-verb}'")
+  
+  ;; First run - should hit API if not cached
+  (print "\nFirst run (may hit API if not cached):")
+  (setv start-time-1 (time.time))
+  (setv embedding-1 (process-verb client model-name test-verb cache-dir 3))
+  (setv end-time-1 (time.time))
+  (setv elapsed-1 (round (- end-time-1 start-time-1) 4))
+  
+  ;; Second run - should be cached and much faster
+  (print "\nSecond run (should use cache):")
+  (setv start-time-2 (time.time))
+  (setv embedding-2 (process-verb client model-name test-verb cache-dir 3))
+  (setv end-time-2 (time.time))
+  (setv elapsed-2 (round (- end-time-2 start-time-2) 4))
+  
+  ;; Show the performance difference
+  (print "\n⏱️ Performance Summary:")
+  (print f"  First run time:  {elapsed-1} seconds")
+  (print f"  Second run time: {elapsed-2} seconds")
+  
+  (when (> elapsed-1 0)
+    (setv speedup (round (/ elapsed-1 elapsed-2) 1))
+    (print f"  Speed improvement: {speedup}x faster"))
+  
+  ;; Verify embeddings are identical
+  (setv identical (= embedding-1 embedding-2))
+  (print f"\n✓ Embeddings are identical: {identical}")
+  
+  ;; Return for verification
+  {"first_run" elapsed-1 "second_run" elapsed-2 "identical" identical})
+
 (defn run-test-verbs []
   "Run embeddings for the initial 20 test verbs"
   (print "\n🔬 PHASE 1: Processing 20 test verbs")
@@ -306,9 +361,35 @@
   (setv test-verbs (load-verbs test-verbs-path))
   (print f"Loaded {(len test-verbs)} test verbs: {(.join ', ' test-verbs)}")
   
+  ;; Demonstrate idempotency first with one verb
+  (demonstrate-idempotency test-verbs)
+  
   ;; Process the verbs with standard settings
-  (setv results (run-scaling-test test-verbs 5 3 output-dir))
-  (save-scaling-results results "test" (len test-verbs) output-dir)
+  (print "\nProcessing all test verbs (first run)...")
+  (setv start-time-1 (time.time))
+  (setv results-1 (run-scaling-test test-verbs 5 3 output-dir))
+  (setv end-time-1 (time.time))
+  (setv elapsed-1 (round (- end-time-1 start-time-1) 2))
+  (save-scaling-results results-1 "test" (len test-verbs) output-dir)
+  
+  ;; Run again to demonstrate full idempotency
+  (print "\nProcessing all test verbs (second run - should be much faster)...")
+  (setv start-time-2 (time.time))
+  (setv results-2 (run-scaling-test test-verbs 5 3 output-dir))
+  (setv end-time-2 (time.time))
+  (setv elapsed-2 (round (- end-time-2 start-time-2) 2))
+  
+  ;; Show the performance difference for all verbs
+  (print "\n⏱️ Full Idempotency Summary:")
+  (print f"  First run time:  {elapsed-1} seconds")
+  (print f"  Second run time: {elapsed-2} seconds")
+  
+  (when (> elapsed-1 0)
+    (setv speedup (round (/ elapsed-1 elapsed-2) 1))
+    (print f"  Speed improvement: {speedup}x faster when fully cached"))
+  
+  ;; Use the results from the second run
+  (setv results results-2)
   
   (print f"\n✅ Completed test verbs in {(get (get results \"stats\") \"elapsed_time\")} seconds")
   (print f"Average time per verb: {(get (get results \"stats\") \"avg_time_per_verb\")} seconds")
@@ -407,9 +488,10 @@
   (print "1) Just cache the 20 test verbs")
   (print "2) Run the full scaling test (100-1600 verbs)")
   (print "3) Run everything")
+  (print "4) Demonstrate idempotency (runs one verb twice to show caching)")
   
   (setv choice (try
-                 (int (input "\nEnter your choice (1-3): "))
+                 (int (input "\nEnter your choice (1-4): "))
                  (except [e Exception] 1)))
   
   ;; Process based on choice
@@ -428,6 +510,13 @@
      (run-scaling-tests)
      (generate-summary-report output-dir)
      (print "\n✅ All tests completed!")]
+    
+    [(= choice 4)
+     (setv repo-root (os.path.dirname (os.path.dirname (os.path.dirname __file__))))
+     (setv test-verbs-path (os.path.join repo-root "resources" "verbs" "test_french_verbs.txt"))
+     (setv test-verbs (load-verbs test-verbs-path))
+     (demonstrate-idempotency test-verbs)
+     (print "\n✅ Idempotency demonstration completed!")]
     
     [True
      (print "\n❌ Invalid choice, running test verbs only")
