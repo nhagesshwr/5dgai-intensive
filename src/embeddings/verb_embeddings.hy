@@ -16,12 +16,13 @@
   (print "  Create a .env file with AI_STUDIO_API_KEY=your_api_key")
   (sys.exit 1))
 
-;; Import GenAI
+;; Import GenAI - THE ONE TRUE WAY
 (try
-  (import google.generativeai)
+  (import [google [genai]])
+  (import [google.genai [types]])
   (except [e ImportError]
-    (print "❌ Error: google-generativeai package not installed!")
-    (print "  Try: pip install google-generativeai==1.7.0")
+    (print "❌ Error: google-genai package not installed!")
+    (print "  Try: pip install google-genai==1.7.0")
     (sys.exit 1)))
 
 (defn load-verbs [path]
@@ -70,49 +71,21 @@
       (print f"  ✗ Error saving cache: {e}"))))
 
 (defn get-embedding-from-api [client model-name verb]
-  "Get embedding from Gemini API with multiple fallback methods"
+  "Get embedding from Gemini API using THE ONE TRUE WAY"
   (print f"  Getting embedding for '{verb}'...")
   
   (try
-    ;; Try the most recent API pattern first
-    (try
-      (setv result (client.embeddings.create
-                    :model model-name
-                    :content verb))
-      (setv embedding (. result embedding))
-      (print f"  ✓ Got {(len embedding)} dimensions using new API")
-      embedding
-      
-      (except [e1 Exception]
-        (print f"  Method 1 failed: {e1}")
-        
-        ;; Try alternate API pattern
-        (try
-          (setv embedding-model (google.generativeai.get_model model-name))
-          (setv result (embedding-model.embed_content [verb]))
-          (setv embedding (. result embedding values))
-          (print f"  ✓ Got {(len embedding)} dimensions using model.embed_content")
-          embedding
-          
-          (except [e2 Exception]
-            (print f"  Method 2 failed: {e2}")
-            
-            ;; Try older model.embedContent API
-            (try
-              (setv result (client.models.embedContent
-                            :model model-name
-                            :content verb))
-              (setv embedding (. result embedding values))
-              (print f"  ✓ Got {(len embedding)} dimensions using embedContent")
-              embedding
-              
-              (except [e3 Exception]
-                (print f"  Method 3 failed: {e3}")
-                (print "  Using dummy embedding for testing")
-                [0.1 0.2 0.3 0.4 0.5]))))))
+    (import [google.genai [types]])
+    (setv response (client.models.embed_content
+                     :model "models/text-embedding-004"
+                     :contents verb
+                     :config (types.EmbedContentConfig :task_type "semantic_similarity")))
+    (setv embedding (. response embedding values))
+    (print f"  ✓ Got {(len embedding)} dimensions")
+    embedding
     
     (except [e Exception]
-      (print f"  ✗ All API methods failed: {e}")
+      (print f"  ✗ API call failed: {e}")
       (print "  Using dummy embedding for testing")
       [0.1 0.2 0.3 0.4 0.5])))
 
@@ -233,9 +206,9 @@
   (print f"Loaded {(len verbs)} French verbs from total {(len all-verbs)}:")
   (print (.join ", " verbs))
   
-  ;; Initialize API client
-  (google.generativeai.configure :api_key API-KEY)
-  (setv client (google.generativeai.Client :api_key API-KEY))
+  ;; Initialize API client - THE ONE TRUE WAY
+  (genai.configure :api_key API-KEY)
+  (setv client genai)
   
   ;; Get available models
   (setv embedding-models (get-embedding-models client))
@@ -256,9 +229,10 @@
                        "embedding-001"))
   (print f"Using model: {model-name}")
   
-  ;; Process verbs in batches
+  ;; Process verbs in batches - using fixed model name from THE ONE TRUE WAY
   (print "\nGenerating embeddings...")
-  (setv embeddings (process-batch client model-name verbs cache-dir batch-size max-retries))
+  (setv fixed-model-name "models/text-embedding-004") ;; THE ONE TRUE MODEL
+  (setv embeddings (process-batch client fixed-model-name verbs cache-dir batch-size max-retries))
   
   ;; Save all embeddings and metadata
   (save-embeddings embeddings output-dir)
