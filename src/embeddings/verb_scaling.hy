@@ -216,23 +216,23 @@
         (setv stats {"verb_count" 0
                      "dimension_counts" {}
                      "most_common_dimension" 0})
-        (return stats)))
-  
-  ;; Extract the data
-  (setv verb-count (len embeddings))
-  (setv dimensions (lfor v (.values embeddings) (len v)))
-  (setv dimension-counter (collections.Counter dimensions))
-  
-  ;; Get most common dimension safely
-  (setv most-common (-> dimension-counter .most_common first))
-  (setv most-common-dimension (if most-common (first most-common) 0))
-  
-  ;; Build stats dictionary
-  (setv stats {"verb_count" verb-count
-               "dimension_counts" (dict dimension-counter)
-               "most_common_dimension" most-common-dimension})
-  
-  stats)
+        (return stats))
+      (do 
+        ;; Extract the data
+        (setv verb-count (len embeddings))
+        (setv dimensions (lfor v (.values embeddings) (len v)))
+        (setv dimension-counter (collections.Counter dimensions))
+        
+        ;; Get most common dimension safely
+        (setv most-common (-> dimension-counter .most_common first))
+        (setv most-common-dimension (if most-common (first most-common) 0))
+        
+        ;; Build stats dictionary
+        (setv stats {"verb_count" verb-count
+                     "dimension_counts" (dict dimension-counter)
+                     "most_common_dimension" most-common-dimension})
+        
+        stats)))
 
 (defn run-scaling-test [verbs batch-size max-retries output-dir]
   "Run embeddings for a specific verb list"
