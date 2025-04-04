@@ -140,6 +140,9 @@ Our simplified client makes it easy to interact with Gemini models using Hy:
 - Codelabs: 
   - [[https://www.kaggle.com/code/markishere/day-1-prompting][Prompting fundamentals]]
   - [[https://www.kaggle.com/code/markishere/day-1-evaluation-and-structured-output][Evaluation and structured output]]
+- Whitepapers:
+  - [[https://www.kaggle.com/whitepaper-foundational-llm-and-text-generation][Foundational LLM and Text Generation]] ([[file:whitepapers/llm_endnotes.pdf][Endnotes]])
+  - [[https://www.kaggle.com/whitepaper-prompt-engineering][Prompt Engineering]] ([[file:whitepapers/prompt_engineering_endnotes.pdf][Endnotes]])
 
 ** [[file:notebooks/day2/01-prompt-engineering.org][Day 2: Embeddings and Vector Stores]]
 
@@ -149,6 +152,8 @@ Our simplified client makes it easy to interact with Gemini models using Hy:
   - [[https://www.kaggle.com/code/markishere/day-2-document-q-a-with-rag][Document Q&A with RAG]]
   - [[https://www.kaggle.com/code/markishere/day-2-embeddings-and-similarity-scores][Embeddings and similarity scores]]
   - [[https://www.kaggle.com/code/markishere/day-2-classifying-embeddings-with-keras][Classifying embeddings with Keras]]
+- Whitepapers:
+  - [[https://www.kaggle.com/whitepaper-embeddings-and-vector-stores][Embeddings and Vector Stores]] ([[file:whitepapers/embeddings_endnotes.pdf][Endnotes]])
 
 ** [[file:notebooks/day3/01-building-with-api.org][Day 3: Generative AI Agents]]
 
@@ -157,6 +162,9 @@ Our simplified client makes it easy to interact with Gemini models using Hy:
 - Codelabs:
   - [[https://www.kaggle.com/code/markishere/day-3-building-an-agent-with-langgraph][Building an agent with LangGraph]]
   - [[https://www.kaggle.com/code/markishere/day-3-function-calling-with-the-gemini-api][Function calling with Gemini API]]
+- Whitepapers:
+  - [[https://www.kaggle.com/whitepaper-agents][Generative AI Agents]] ([[file:whitepapers/agents_endnotes.pdf][Endnotes]])
+  - [[https://www.kaggle.com/whitepaper-agent-companion][Agent Companion]] ([[file:whitepapers/agents_companion_endnotes.pdf][Endnotes]])
 
 ** [[file:notebooks/day4/01-fine-tuning-a-custom-model.org][Day 4: Domain-Specific LLMs]]
 
@@ -165,6 +173,8 @@ Our simplified client makes it easy to interact with Gemini models using Hy:
 - Codelabs:
   - [[https://www.kaggle.com/code/markishere/day-4-fine-tuning-a-custom-model][Fine-tuning a custom model]]
   - [[https://www.kaggle.com/code/markishere/day-4-google-search-grounding][Google Search grounding]]
+- Whitepapers:
+  - [[https://www.kaggle.com/whitepaper-solving-domains-specific-problems-using-llms][Solving Domain-Specific Problems Using LLMs]] ([[file:whitepapers/domain_specific_endnotes.pdf][Endnotes]])
 
 ** [[file:notebooks/day5/01-mlops-for-generative-ai.org][Day 5: MLOps for Generative AI]]
 

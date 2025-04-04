@@ -1,7 +1,7 @@
 #+TITLE: CLAUDE Development Guide
 #+AUTHOR: Jason Walsh
 #+EMAIL: j@wal.sh
-#+DATE: March 30, 2025
+#+DATE: April 4, 2025
 
 * ⚠️ CRITICAL PROJECT STANDARD ⚠️
 - ALL documentation MUST use Org-mode (.org) format
@@ -16,17 +16,22 @@
 - Setup environment: ~make setup~
 - Start Poetry shell: ~make dev~
 - Run Python scripts: ~python src/script_name.py~
+- Run Hy scripts: ~hy src/script_name.hy~
 
 ** Testing
 - Run all tests: ~make test~
-- Run single test: ~pytest -xvs tests/path/to/test.py::test_function_name~
+- Run single Python test: ~pytest -xvs tests/python/path/to/test.py::test_function_name~
+- Run single Hy test: ~hy tests/hy/test_specific.hy~
 - Test API connectivity: ~make api-test~
+- Test GenAI: ~make test-genai~
+- Test environment: ~make env-test~
 
 ** Linting and Formatting
 - Run all linters: ~make lint~
 - Format all code: ~make format~
 - Lint specific types: ~make lint-py~, ~make lint-sh~, ~make lint-org~
 - Format specific types: ~make format-py~, ~make format-sh~
+- Run comprehensive linting: ~make lint-all~
 
 ** Tangling
 - Tangle specific file: ~make tangle FILE=path/to/file.org~
@@ -43,6 +48,15 @@
 - 4-space indentation, 100 character line limit
 - Default model is gemini-2.0-flash unless specified
 - Never hardcode API keys - use environment variables
+
+** Hy Conventions
+- Use kebab-case for function and variable names
+- For GenAI imports, use "THE ONE TRUE WAY":
+  #+begin_src hy
+  (import [google [genai]])
+  (import [google.genai [types]])
+  #+end_src
+- Function definitions include docstrings similar to Python
 
 ** Git Commit Format
 - Use Conventional Commits: ~<type>(<scope>): <description>~

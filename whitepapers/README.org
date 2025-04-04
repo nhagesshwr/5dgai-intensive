@@ -9,10 +9,22 @@ This directory contains the endnotes sections extracted from the 5-Day Gen AI In
 
 ** Current Endnotes Files
 
-- [[file:prompt_engineering_endnotes.pdf][prompt_engineering_endnotes.pdf]] - Endnotes from Prompt Engineering whitepaper
-- [[file:embeddings_endnotes.pdf][embeddings_endnotes.pdf]] - Endnotes from Embeddings & Vector Stores whitepaper  
-- [[file:llm_endnotes.pdf][llm_endnotes.pdf]] - Endnotes from Foundational LLMs & Text Generation whitepaper
-- [[file:agents_endnotes.pdf][agents_endnotes.pdf]] - Endnotes from Generative AI Agents whitepaper
+- Day 1:
+  - [[file:llm_endnotes.pdf][llm_endnotes.pdf]] - Endnotes from [[https://www.kaggle.com/whitepaper-foundational-llm-and-text-generation][Foundational LLMs & Text Generation]] whitepaper
+  - [[file:prompt_engineering_endnotes.pdf][prompt_engineering_endnotes.pdf]] - Endnotes from [[https://www.kaggle.com/whitepaper-prompt-engineering][Prompt Engineering]] whitepaper
+
+- Day 2:
+  - [[file:embeddings_endnotes.pdf][embeddings_endnotes.pdf]] - Endnotes from [[https://www.kaggle.com/whitepaper-embeddings-and-vector-stores][Embeddings & Vector Stores]] whitepaper  
+
+- Day 3:
+  - [[file:agents_endnotes.pdf][agents_endnotes.pdf]] - Endnotes from [[https://www.kaggle.com/whitepaper-agents][Generative AI Agents]] whitepaper
+  - [[file:agents_companion_endnotes.pdf][agents_companion_endnotes.pdf]] - Endnotes from [[https://www.kaggle.com/whitepaper-agent-companion][Agent Companion]] whitepaper
+
+- Day 4:
+  - [[file:domain_specific_endnotes.pdf][domain_specific_endnotes.pdf]] - Endnotes from [[https://www.kaggle.com/whitepaper-solving-domains-specific-problems-using-llms][Solving Domain-Specific Problems Using LLMs]] whitepaper
+
+- Day 5:
+  - [[file:operationalizing_vertex_ai_endnotes.pdf][operationalizing_vertex_ai_endnotes.pdf]] - Endnotes from [[https://www.kaggle.com/whitepaper-operationalizing-generative-ai-on-vertex-ai-using-mlops][Operationalizing Generative AI on Vertex AI using MLOps]] whitepaper
 
 ** Extraction Process
 
@@ -47,12 +59,15 @@ pdftk "Complete Unit 3a - Generative AI Agents.pdf" cat 74-end output agents_end
 
 The endnotes sections start on these pages in the original whitepapers:
 
-| Whitepaper                            | Endnotes Start Page | File Link                                                 |
-|---------------------------------------+--------------------+----------------------------------------------------------|
-| Prompt Engineering                    | 68                 | [[file:prompt_engineering_endnotes.pdf][prompt_engineering_endnotes.pdf]] |
-| Embeddings & Vector Stores            | 59                 | [[file:embeddings_endnotes.pdf][embeddings_endnotes.pdf]]           |
-| Foundational Large Language Models    | 82                 | [[file:llm_endnotes.pdf][llm_endnotes.pdf]]                   |
-| Generative AI Agents                  | 74                 | [[file:agents_endnotes.pdf][agents_endnotes.pdf]]               |
+| Day | Whitepaper                                   | Endnotes Start Page | File Link                                                                           |
+|-----+----------------------------------------------+--------------------+------------------------------------------------------------------------------------|
+| 1   | Foundational Large Language Models           | 82                 | [[file:llm_endnotes.pdf][llm_endnotes.pdf]]                                                     |
+| 1   | Prompt Engineering                           | 68                 | [[file:prompt_engineering_endnotes.pdf][prompt_engineering_endnotes.pdf]]                                     |
+| 2   | Embeddings & Vector Stores                   | 59                 | [[file:embeddings_endnotes.pdf][embeddings_endnotes.pdf]]                                             |
+| 3   | Generative AI Agents                         | 74                 | [[file:agents_endnotes.pdf][agents_endnotes.pdf]]                                                 |
+| 3   | Agent Companion                              | 66                 | [[file:agents_companion_endnotes.pdf][agents_companion_endnotes.pdf]]                                       |
+| 4   | Solving Domain-Specific Problems Using LLMs  | 78                 | [[file:domain_specific_endnotes.pdf][domain_specific_endnotes.pdf]]                                       |
+| 5   | Operationalizing Generative AI on Vertex AI  | 69                 | [[file:operationalizing_vertex_ai_endnotes.pdf][operationalizing_vertex_ai_endnotes.pdf]]                         |
 
 *** Benefits of This Approach
 
