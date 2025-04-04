@@ -283,13 +283,13 @@
   ;; Save the stats as JSON
   (setv stats-path (os.path.join stats-dir f"stats_{scale}_{verb-count}.json"))
   (with [f (open stats-path "w" :encoding "utf-8")]
-    (json.dump (get results "stats") f :ensure-ascii False :indent 2))
+    (json.dump (get results 'stats') f :ensure-ascii False :indent 2))
   (print f"Stats saved to: {stats-path}")
   
   ;; Save embeddings if we want to keep them
   (setv embeddings-file (os.path.join stats-dir f"embeddings_{scale}_{verb-count}.json"))
   (with [f (open embeddings-file "w" :encoding "utf-8")]
-    (json.dump (get results "embeddings") f :ensure-ascii False :indent 2))
+    (json.dump (get results 'embeddings') f :ensure-ascii False :indent 2))
   (print f"Embeddings saved to: {embeddings-file}"))
 
 (defn demonstrate-idempotency [verbs]
@@ -391,11 +391,11 @@
   ;; Use the results from the second run
   (setv results results-2)
   
-  (print f"\n✅ Completed test verbs in {(get (get results \"stats\") \"elapsed_time\")} seconds")
-  (print f"Average time per verb: {(get (get results \"stats\") \"avg_time_per_verb\")} seconds")
+  (print f"\n✅ Completed test verbs in {(get (get results 'stats') 'elapsed_time')} seconds")
+  (print f"Average time per verb: {(get (get results 'stats') 'avg_time_per_verb')} seconds")
   
   ;; Return the embeddings for verification
-  (get results "embeddings"))
+  (get results 'embeddings'))
 
 (defn run-scaling-tests []
   "Run scaling tests with increasing number of verbs"
