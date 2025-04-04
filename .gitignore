@@ -26,6 +26,7 @@ env/
 ENV/
 .env
 .venv
+.venv-*/
 .envrc
 .envrc.el
 
@@ -131,3 +132,4 @@ ob-*.el
 # Ignore PDF files in papers directory
 papers/*.pdf
 papers/**/*.pdf
+.venv-claude/
