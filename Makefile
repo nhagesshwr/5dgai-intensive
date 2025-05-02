@@ -315,7 +315,7 @@ env-test:
 # Test Google GenAI API functionality
 test-genai:
 	@echo "${BLUE}Testing Google GenAI API functionality...${RESET}"
-	@$(PYTHON) src/test/test_genai.py
+	@$(HY) src/test/test_genai.hy
 	@echo "${GREEN}GenAI API test complete!${RESET}"
 
 # Generate embeddings for French verbs
