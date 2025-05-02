@@ -1,5 +1,5 @@
-;; Scale to 1000 verbs
-;; Run with: poetry run hy src/embeddings/scale_to_1000.hy
+;; Scale to 2000 verbs
+;; Run with: poetry run hy src/embeddings/scale_to_2000.hy
 
 ;; Import needed functionality - not using imports from verb_scaling (using full version)
 (import os sys json pickle time dotenv collections)
@@ -86,7 +86,7 @@
         
         ;; Try alternate API pattern
         (try
-          (setv embedding-model (google.generativeai.get_model model-name))
+          (setv embedding-model (google.genai.get_model model-name))
           (setv result (embedding-model.embed_content [verb]))
           (setv embedding (. result embedding values))
           (print f"  ✓ Got {(len embedding)} dimensions using model.embed_content")
@@ -183,8 +183,8 @@
   (setv start-time (time.time))
   
   ;; Initialize API client
-  (google.generativeai.configure :api_key API-KEY)
-  (setv client (google.generativeai.Client :api_key API-KEY))
+  (google.genai.configure :api_key API-KEY)
+  (setv client (google.genai.Client :api_key API-KEY))
   
   ;; Set up cache directory
   (setv cache-dir (os.path.join output-dir "cache"))
@@ -219,7 +219,7 @@
             "verb_count" (len verbs)}})
 
 (defn main []
-  (print "🔎 Scaling French Verb Embeddings to 1000 verbs")
+  (print "🔎 Scaling French Verb Embeddings to 2000 verbs")
   
   ;; Setup paths
   (setv repo-root (os.path.dirname (os.path.dirname (os.path.dirname __file__))))
@@ -228,7 +228,7 @@
   (os.makedirs output-dir :exist-ok True)
   
   ;; Load verbs
-  (setv verbs (load-full-verb-list full-verbs-path 1000))
+  (setv verbs (load-full-verb-list full-verbs-path 2000))
   (print f"Loaded {(len verbs)} verbs from the full verb list")
   
   ;; Process with a batch size of 20
@@ -240,17 +240,17 @@
   (setv results (run-scaling-test verbs batch-size max-retries output-dir))
   
   ;; Save results
-  (setv scale-dir (os.path.join output-dir "scaling_1000"))
+  (setv scale-dir (os.path.join output-dir "scaling_2000"))
   (os.makedirs scale-dir :exist-ok True)
   
   ;; Save embeddings
-  (setv embeddings-file (os.path.join scale-dir "embeddings_1000.json"))
+  (setv embeddings-file (os.path.join scale-dir "embeddings_2000.json"))
   (with [f (open embeddings-file "w" :encoding "utf-8")]
     (setv embeddings-data (get results 'embeddings))
     (json.dump embeddings-data f :ensure-ascii False :indent 2))
   
   ;; Save stats  
-  (setv stats-file (os.path.join scale-dir "stats_1000.json"))
+  (setv stats-file (os.path.join scale-dir "stats_2000.json"))
   (with [f (open stats-file "w" :encoding "utf-8")]  
     (setv stats-data (get results 'stats))
     (json.dump stats-data f :ensure-ascii False :indent 2))
