@@ -309,7 +309,7 @@ extract-french-verbs: resources/verbs/french_verbs_list.txt
 # Test environment setup for Google API
 env-test:
 	@echo "${BLUE}Testing environment setup...${RESET}"
-	@$(PYTHON) src/env_test.py
+	@$(HY) src/env_test.hy
 	@echo "${GREEN}Environment test complete!${RESET}"
 
 # Test Google GenAI API functionality
