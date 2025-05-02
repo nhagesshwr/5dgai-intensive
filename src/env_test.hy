@@ -13,10 +13,10 @@
 
 ;; Try imports
 (try
-  (import google.generativeai)
+  (import google.genai)
   (print "✅ Imports successful")
   (try
-    (print f"Package info: {google.generativeai.__version__}")
+    (print f"Package info: {google.genai.__version__}")
     (except [e AttributeError]
       (print "Package info: version not available")))
   
