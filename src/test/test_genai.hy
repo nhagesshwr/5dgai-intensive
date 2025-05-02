@@ -14,14 +14,15 @@
   (print "  Create a .env file with GOOGLE_API_KEY=your_api_key")
   (sys.exit 1))
 
-(print f"API Key: {'*' * (- (len GOOGLE-API-KEY) 8)}{(cut GOOGLE-API-KEY -4 None)}")
+(setv masked-key (+ (* "*" (- (len GOOGLE-API-KEY) 4)) (cut GOOGLE-API-KEY -4 None)))
+(print f"API Key: {masked-key}")
 
 (try
   ;; Import GenAI dependencies
-  (import google.generativeai)
+  (import google.genai)
   
   ;; Initialize client
-  (setv client (google.generativeai.Client :api_key GOOGLE-API-KEY))
+  (setv client (google.genai.Client :api_key GOOGLE-API-KEY))
   
   ;; Test 1: Basic generation
   (print "\n🧪 Test 1: Basic content generation")
