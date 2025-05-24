@@ -202,16 +202,34 @@ Our simplified client makes it easy to interact with Gemini models using Hy:
 | ~make clean~               | Remove build artifacts and cache files       |
 | ~make api-test~            | Test API connectivity with Gemini            |
 | ~make env-test~            | Test environment setup for Google API        |
+| ~make test-genai~          | Test Google GenAI API functionality          |
 | ~make build~               | Tangle all Org files to source code          |
 | ~make tangle~              | Tangle a specific Org file (FILE=path)       |
 | ~make tangle-all~          | Tangle all org files in the project          |
-| ~make lint~                | Run all linters                              |
+| ~make lint~                | Run all linters (Python, Shell, Org, Elisp)  |
+| ~make lint-py~             | Lint Python files                            |
+| ~make lint-sh~             | Lint shell scripts                           |
+| ~make lint-org~            | Lint Org mode files                          |
+| ~make lint-el~             | Lint Emacs Lisp files                        |
 | ~make lint-all~            | Run comprehensive linting with script        |
 | ~make format~              | Format all code files                        |
+| ~make format-py~           | Format Python files with black and isort     |
+| ~make format-sh~           | Format shell scripts with shfmt              |
 | ~make test~                | Run all tests                                |
+| ~make test-paper-summarizer~ | Run paper summarizer tests                |
+| ~make test-livestream~     | Run livestream transcriber tests             |
 | ~make docker~              | Build all Docker containers                  |
+| ~make docker-jupyter~      | Run Jupyter notebook server in Docker        |
+| ~make docker-api~          | Run API service in Docker                    |
 | ~make paper-summaries~     | Generate summaries for all papers            |
+| ~make extract-french-verbs~ | Extract French verbs for embedding tests    |
 | ~make verb-embeddings~     | Process French verbs for embeddings          |
+| ~make dépatouiller~        | Run embedding debug test with dépatouiller   |
+| ~make genai-embeddings~    | Test Google GenAI embeddings for French verbs |
+| ~make verb-similarity~     | Analyze French verb similarity with embeddings |
+| ~make verb-matrix~         | Generate minimal French verb similarity matrix |
+| ~make install-dev-tools~   | Install development tools (linters, formatters) |
+| ~make check-tools~         | Check if required development tools are installed |
 
 ** Course Resources
 
