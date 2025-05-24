@@ -245,27 +245,42 @@ Copy this template to create your ~.env~ file in the project root.
 
 *** Full Command Reference
 
-| Command             | Description                                      |
-|---------------------+--------------------------------------------------|
-| ~make setup~        | Setup Python environment with Poetry             |
-| ~make dev~          | Start Poetry shell for development               |
-| ~make api-test~     | Test API connectivity with Gemini                |
-| ~make lint~         | Run all linters (Python, Shell, Org, Elisp)      |
-| ~make lint-py~      | Lint Python files specifically                   |
-| ~make lint-sh~      | Lint shell scripts specifically                  |
-| ~make lint-org~     | Lint Org mode files                              |
-| ~make lint-el~      | Lint Emacs Lisp files                            |
-| ~make format~       | Format all code files                            |
-| ~make format-py~    | Format Python files with black and isort         |
-| ~make format-sh~    | Format shell scripts with shfmt                  |
-| ~make tangle~       | Tangle a specific org file                       |
-| ~make tangle-all~   | Tangle all org files in the project              |
-| ~make build~        | Build all source files from Org files            |
-| ~make lint-all~     | Run comprehensive linting with lint-all.sh       |
-| ~make test~         | Run tests                                        |
-| ~make docker~       | Build all Docker containers                      |
-| ~make docker-jupyter~ | Run Jupyter notebook server in Docker          |
-| ~make docker-api~   | Run API service in Docker                        |
+| Command                    | Description                                      |
+|----------------------------+--------------------------------------------------|
+| ~make help~                | Show all available make commands                 |
+| ~make setup~               | Setup Python environment with Poetry            |
+| ~make dev~                 | Start Poetry shell for development              |
+| ~make clean~               | Remove build artifacts and cache files          |
+| ~make install-dev-tools~   | Install development tools (linters, formatters) |
+| ~make check-tools~         | Check if required development tools are installed |
+| ~make lint~                | Run all linters (Python, Shell, Org, Elisp)    |
+| ~make lint-all~            | Run comprehensive linting with lint-all.sh      |
+| ~make lint-py~             | Lint Python files specifically                  |
+| ~make lint-sh~             | Lint shell scripts specifically                 |
+| ~make lint-org~            | Lint Org mode files                             |
+| ~make lint-el~             | Lint Emacs Lisp files                           |
+| ~make format~              | Format all code files                           |
+| ~make format-py~           | Format Python files with black and isort        |
+| ~make format-sh~           | Format shell scripts with shfmt                 |
+| ~make tangle~              | Tangle a specific org file (FILE=path)          |
+| ~make tangle-all~          | Tangle all org files in the project             |
+| ~make build~               | Build all source files from Org files           |
+| ~make test~                | Run all tests                                   |
+| ~make test-paper-summarizer~ | Run paper summarizer tests                     |
+| ~make test-livestream~     | Run livestream transcriber tests                |
+| ~make api-test~            | Test API connectivity with Gemini               |
+| ~make env-test~            | Test environment setup for Google API           |
+| ~make test-genai~          | Test Google GenAI API functionality             |
+| ~make docker~              | Build all Docker containers                     |
+| ~make docker-jupyter~      | Run Jupyter notebook server in Docker           |
+| ~make docker-api~          | Run API service in Docker                       |
+| ~make paper-summaries~     | Generate summaries for all papers using Gemini  |
+| ~make extract-french-verbs~ | Extract French verbs for embedding tests       |
+| ~make verb-embeddings~     | Process French verbs for embeddings             |
+| ~make dépatouiller~        | Run embedding debug test with dépatouiller      |
+| ~make genai-embeddings~    | Test Google GenAI embeddings for French verbs   |
+| ~make verb-similarity~     | Analyze French verb similarity with embeddings  |
+| ~make verb-matrix~         | Generate minimal French verb similarity matrix  |
 
 *** Technology Migration Plans
 

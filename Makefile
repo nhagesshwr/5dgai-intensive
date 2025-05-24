@@ -1,7 +1,7 @@
 # 5D-GAI Intensive Course - Makefile
 # Helper commands for project management
 
-.PHONY: help setup dev clean lint lint-py lint-sh lint-org lint-el format format-py format-sh test api-test docker docker-jupyter docker-api install-dev-tools check-tools paper-summaries extract-french-verbs
+.PHONY: help setup dev clean lint lint-all lint-py lint-sh lint-org lint-el format format-py format-sh test test-paper-summarizer test-livestream api-test env-test test-genai docker docker-jupyter docker-api install-dev-tools check-tools tangle tangle-all build paper-summaries extract-french-verbs verb-embeddings dépatouiller genai-embeddings verb-similarity verb-matrix
 
 # Colors for terminal output
 GREEN  := $(shell tput -Txterm setaf 2)
